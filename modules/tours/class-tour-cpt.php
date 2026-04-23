@@ -5,11 +5,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once TOURISM_CORE_PATH . 'helpers/class-template.php';
+require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-taxonomies.php';
+require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-metaboxes.php';
 
 class Tourism_Core_Module_Tours {
 	public function register( Tourism_Core_Loader $loader ) {
 		$loader->add_action( 'init', $this, 'register_cpt' );
 		$loader->add_action( 'init', $this, 'register_meta' );
+
+		$tax = new Tourism_Core_Tour_Taxonomies();
+		$tax->register( $loader );
+
+		$meta = new Tourism_Core_Tour_Metaboxes();
+		$meta->register( $loader );
 	}
 
 	public function register_cpt() {
@@ -34,7 +42,7 @@ class Tourism_Core_Module_Tours {
 				'public'       => true,
 				'has_archive'  => true,
 				'show_in_rest' => true,
-				'menu_icon'    => 'dashicons-palmtree',
+				'menu_icon'    => TOURISM_CORE_URL . 'assets/ico/tours3.svg',
 				'supports'     => array( 'title', 'editor', 'excerpt', 'thumbnail' ),
 				'rewrite'      => array( 'slug' => 'tours' ),
 			)
@@ -66,6 +74,31 @@ class Tourism_Core_Module_Tours {
 				'single'            => true,
 				'show_in_rest'      => true,
 				'sanitize_callback' => 'sanitize_text_field',
+				'auth_callback'     => static function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
+		register_post_meta(
+			'tour',
+			'tourism_destinations',
+			array(
+				'type'              => 'array',
+				'single'            => true,
+				'show_in_rest'      => false,
+				'sanitize_callback' => static function ( $value ) {
+					if ( ! is_array( $value ) ) {
+						return array();
+					}
+					$out = array();
+					foreach ( $value as $v ) {
+						if ( is_numeric( $v ) && (int) $v > 0 ) {
+							$out[] = (int) $v;
+						}
+					}
+					return array_values( array_unique( $out ) );
+				},
 				'auth_callback'     => static function () {
 					return current_user_can( 'edit_posts' );
 				},

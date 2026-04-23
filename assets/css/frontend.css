@@ -33,3 +33,27 @@
 	font-weight: 600;
 }
 
+.tourism-core-notice {
+	padding: 10px 12px;
+	border-radius: 10px;
+	margin: 0 0 12px;
+	border: 1px solid rgba(0,0,0,.12);
+}
+
+.tourism-core-notice--success {
+	background: rgba(0, 200, 100, .08);
+}
+
+.tourism-core-notice--error {
+	background: rgba(220, 50, 50, .08);
+}
+
+.tourism-core-booking__form button {
+	padding: 10px 14px;
+	border-radius: 10px;
+	border: 1px solid rgba(0,0,0,.18);
+	background: #111;
+	color: #fff;
+	cursor: pointer;
+}
+

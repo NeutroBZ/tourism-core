@@ -11,6 +11,7 @@ class Tourism_Core_Frontend_Shortcodes {
 
 	public function register_shortcodes() {
 		add_shortcode( 'tour_list', array( $this, 'tour_list' ) );
+		add_shortcode( 'booking_form', array( $this, 'booking_form' ) );
 	}
 
 	public function tour_list( $atts ) {
@@ -47,6 +48,32 @@ class Tourism_Core_Frontend_Shortcodes {
 		wp_reset_postdata();
 
 		return (string) ob_get_clean();
+	}
+
+	public function booking_form( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'tour_id' => 0,
+			),
+			(array) $atts,
+			'booking_form'
+		);
+
+		$tour_id = (int) $atts['tour_id'];
+		if ( $tour_id <= 0 ) {
+			$tour_id = get_the_ID();
+		}
+
+		if ( $tour_id <= 0 || 'tour' !== get_post_type( $tour_id ) ) {
+			return '';
+		}
+
+		return Tourism_Core_Template::render(
+			'booking-form.php',
+			array(
+				'tour_id' => $tour_id,
+			)
+		);
 	}
 }
 
