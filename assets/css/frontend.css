@@ -1,0 +1,35 @@
+.tourism-core-list {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 16px;
+}
+
+.tourism-core-card {
+	border: 1px solid rgba(0,0,0,.12);
+	border-radius: 12px;
+	padding: 14px;
+	background: #fff;
+}
+
+.tourism-core-card__link {
+	text-decoration: none;
+	color: inherit;
+	display: block;
+}
+
+.tourism-core-card__title {
+	margin: 0 0 8px;
+	font-size: 16px;
+	line-height: 1.25;
+}
+
+.tourism-core-card__meta {
+	font-size: 13px;
+	opacity: .8;
+	margin-bottom: 8px;
+}
+
+.tourism-core-card__price {
+	font-weight: 600;
+}
+
