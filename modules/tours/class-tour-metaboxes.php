@@ -49,6 +49,15 @@ class Tourism_Core_Tour_Metaboxes
 		$duration = get_post_meta($post->ID, 'tourism_duration', true);
 		$dest_ids = (array) get_post_meta($post->ID, 'tourism_destinations', true);
 		$dest_ids = array_map('intval', $dest_ids);
+		$gallery_ids_raw = (array) get_post_meta($post->ID, 'tourism_gallery_ids', true);
+		$gallery_ids = array_values(array_filter(array_map('intval', $gallery_ids_raw)));
+		$itinerary = get_post_meta($post->ID, 'tourism_itinerary', true);
+		$includes = get_post_meta($post->ID, 'tourism_includes', true);
+		$excludes = get_post_meta($post->ID, 'tourism_excludes', true);
+		$things_to_carry = get_post_meta($post->ID, 'tourism_things_to_carry', true);
+		$faqs = get_post_meta($post->ID, 'tourism_faqs', true);
+		$reviews = get_post_meta($post->ID, 'tourism_reviews', true);
+		$route = get_post_meta($post->ID, 'tourism_route', true);
 
 		$destinations = get_posts([
 			'post_type'      => 'destination',
@@ -85,6 +94,54 @@ class Tourism_Core_Tour_Metaboxes
 				</label>
 			<?php endforeach; ?>
 		</div>
+
+		<hr />
+		<p><strong><?php esc_html_e('Photo Gallery', TOURISM_CORE_TD); ?></strong></p>
+		<div id="tour-gallery-preview" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+			<?php foreach ($gallery_ids as $gallery_id) : ?>
+				<?php
+				$thumb = wp_get_attachment_image($gallery_id, 'thumbnail');
+				if (! empty($thumb)) {
+					echo wp_kses_post($thumb);
+				}
+				?>
+			<?php endforeach; ?>
+		</div>
+		<input type="hidden" id="tour_gallery_ids" name="tourism_gallery_ids" value="<?php echo esc_attr(implode(',', $gallery_ids)); ?>" />
+		<p>
+			<button type="button" class="button tourism-upload-gallery"><?php esc_html_e('Select Gallery Images', TOURISM_CORE_TD); ?></button>
+			<button type="button" class="button tourism-remove-gallery"><?php esc_html_e('Clear Gallery', TOURISM_CORE_TD); ?></button>
+		</p>
+
+		<hr />
+		<p>
+			<label for="tourism_itinerary"><strong><?php esc_html_e('Itinerary', TOURISM_CORE_TD); ?></strong></label>
+			<textarea id="tourism_itinerary" name="tourism_itinerary" rows="5" style="width:100%;"><?php echo esc_textarea($itinerary); ?></textarea>
+		</p>
+		<p>
+			<label for="tourism_includes"><strong><?php esc_html_e('What includes', TOURISM_CORE_TD); ?></strong></label>
+			<textarea id="tourism_includes" name="tourism_includes" rows="4" style="width:100%;"><?php echo esc_textarea($includes); ?></textarea>
+		</p>
+		<p>
+			<label for="tourism_excludes"><strong><?php esc_html_e('What does not include', TOURISM_CORE_TD); ?></strong></label>
+			<textarea id="tourism_excludes" name="tourism_excludes" rows="4" style="width:100%;"><?php echo esc_textarea($excludes); ?></textarea>
+		</p>
+		<p>
+			<label for="tourism_things_to_carry"><strong><?php esc_html_e('Things to carry', TOURISM_CORE_TD); ?></strong></label>
+			<textarea id="tourism_things_to_carry" name="tourism_things_to_carry" rows="4" style="width:100%;"><?php echo esc_textarea($things_to_carry); ?></textarea>
+		</p>
+		<p>
+			<label for="tourism_faqs"><strong><?php esc_html_e('FAQs', TOURISM_CORE_TD); ?></strong></label>
+			<textarea id="tourism_faqs" name="tourism_faqs" rows="5" style="width:100%;"><?php echo esc_textarea($faqs); ?></textarea>
+		</p>
+		<p>
+			<label for="tourism_reviews"><strong><?php esc_html_e('Reviews', TOURISM_CORE_TD); ?></strong></label>
+			<textarea id="tourism_reviews" name="tourism_reviews" rows="5" style="width:100%;"><?php echo esc_textarea($reviews); ?></textarea>
+		</p>
+		<p>
+			<label for="tourism_route"><strong><?php esc_html_e('Route', TOURISM_CORE_TD); ?></strong></label>
+			<textarea id="tourism_route" name="tourism_route" rows="4" style="width:100%;"><?php echo esc_textarea($route); ?></textarea>
+		</p>
 
 <?php
 	}
@@ -149,6 +206,38 @@ class Tourism_Core_Tour_Metaboxes
 			update_post_meta($post_id, 'tourism_destinations', []);
 		}
 
+		// GALLERY
+		if (isset($_POST['tourism_gallery_ids'])) {
+			$gallery_ids_raw = sanitize_text_field(wp_unslash($_POST['tourism_gallery_ids']));
+			$parts = array_filter(array_map('trim', explode(',', $gallery_ids_raw)));
+			$gallery_ids = array_values(array_unique(array_filter(array_map('intval', $parts))));
+			update_post_meta($post_id, 'tourism_gallery_ids', $gallery_ids);
+		} else {
+			update_post_meta($post_id, 'tourism_gallery_ids', []);
+		}
+
+		if (isset($_POST['tourism_itinerary'])) {
+			update_post_meta($post_id, 'tourism_itinerary', sanitize_textarea_field(wp_unslash($_POST['tourism_itinerary'])));
+		}
+		if (isset($_POST['tourism_includes'])) {
+			update_post_meta($post_id, 'tourism_includes', sanitize_textarea_field(wp_unslash($_POST['tourism_includes'])));
+		}
+		if (isset($_POST['tourism_excludes'])) {
+			update_post_meta($post_id, 'tourism_excludes', sanitize_textarea_field(wp_unslash($_POST['tourism_excludes'])));
+		}
+		if (isset($_POST['tourism_things_to_carry'])) {
+			update_post_meta($post_id, 'tourism_things_to_carry', sanitize_textarea_field(wp_unslash($_POST['tourism_things_to_carry'])));
+		}
+		if (isset($_POST['tourism_faqs'])) {
+			update_post_meta($post_id, 'tourism_faqs', sanitize_textarea_field(wp_unslash($_POST['tourism_faqs'])));
+		}
+		if (isset($_POST['tourism_reviews'])) {
+			update_post_meta($post_id, 'tourism_reviews', sanitize_textarea_field(wp_unslash($_POST['tourism_reviews'])));
+		}
+		if (isset($_POST['tourism_route'])) {
+			update_post_meta($post_id, 'tourism_route', sanitize_textarea_field(wp_unslash($_POST['tourism_route'])));
+		}
+
 		// HERO IMAGE
 		if (isset($_POST['tour_hero_image'])) {
 			update_post_meta($post_id, '_tour_hero_image', (int) $_POST['tour_hero_image']);
@@ -168,6 +257,7 @@ class Tourism_Core_Tour_Metaboxes
 		wp_add_inline_script('jquery', "
 			jQuery(document).ready(function($){
 				let frame;
+				let galleryFrame;
 
 				$('.tourism-upload-hero').on('click', function(e){
 					e.preventDefault();
@@ -195,6 +285,44 @@ class Tourism_Core_Tour_Metaboxes
 				$('.tourism-remove-hero').on('click', function(){
 					$('#tour_hero_image').val('');
 					$('#tour-hero-preview').html('');
+				});
+
+				$('.tourism-upload-gallery').on('click', function(e){
+					e.preventDefault();
+
+					if(galleryFrame){
+						galleryFrame.open();
+						return;
+					}
+
+					galleryFrame = wp.media({
+						title: 'Select Gallery Images',
+						button: { text: 'Use images' },
+						multiple: true
+					});
+
+					galleryFrame.on('select', function(){
+						const selection = galleryFrame.state().get('selection');
+						const ids = [];
+						let html = '';
+
+						selection.each(function(item){
+							const attachment = item.toJSON();
+							ids.push(attachment.id);
+							const thumb = attachment.sizes && attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.url;
+							html += '<img src=\"'+thumb+'\" style=\"width:80px;height:80px;object-fit:cover;border:1px solid #ddd;\" />';
+						});
+
+						$('#tour_gallery_ids').val(ids.join(','));
+						$('#tour-gallery-preview').html(html);
+					});
+
+					galleryFrame.open();
+				});
+
+				$('.tourism-remove-gallery').on('click', function(){
+					$('#tour_gallery_ids').val('');
+					$('#tour-gallery-preview').html('');
 				});
 			});
 		");

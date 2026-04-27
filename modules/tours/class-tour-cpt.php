@@ -104,6 +104,57 @@ class Tourism_Core_Module_Tours {
 				},
 			)
 		);
+
+		register_post_meta(
+			'tour',
+			'tourism_gallery_ids',
+			array(
+				'type'              => 'array',
+				'single'            => true,
+				'show_in_rest'      => false,
+				'sanitize_callback' => static function ( $value ) {
+					if ( ! is_array( $value ) ) {
+						return array();
+					}
+					$out = array();
+					foreach ( $value as $v ) {
+						if ( is_numeric( $v ) && (int) $v > 0 ) {
+							$out[] = (int) $v;
+						}
+					}
+					return array_values( array_unique( $out ) );
+				},
+				'auth_callback'     => static function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
+		$string_metas = array(
+			'tourism_itinerary',
+			'tourism_includes',
+			'tourism_excludes',
+			'tourism_things_to_carry',
+			'tourism_faqs',
+			'tourism_reviews',
+			'tourism_route',
+		);
+
+		foreach ( $string_metas as $meta_key ) {
+			register_post_meta(
+				'tour',
+				$meta_key,
+				array(
+					'type'              => 'string',
+					'single'            => true,
+					'show_in_rest'      => true,
+					'sanitize_callback' => 'sanitize_textarea_field',
+					'auth_callback'     => static function () {
+						return current_user_can( 'edit_posts' );
+					},
+				)
+			);
+		}
 	}
 }
 
