@@ -130,12 +130,143 @@ class Tourism_Core_Module_Tours {
 			)
 		);
 
+		register_post_meta(
+			'tour',
+			'tourism_gallery_images',
+			array(
+				'type'              => 'array',
+				'single'            => true,
+				'show_in_rest'      => false,
+				'sanitize_callback' => static function ( $value ) {
+					if ( ! is_array( $value ) ) {
+						return array();
+					}
+					$out = array();
+					foreach ( $value as $row ) {
+						if ( ! is_array( $row ) ) {
+							continue;
+						}
+						$id      = isset( $row['id'] ) ? (int) $row['id'] : 0;
+						$url     = isset( $row['url'] ) ? esc_url_raw( (string) $row['url'] ) : '';
+						$title   = isset( $row['title'] ) ? sanitize_text_field( (string) $row['title'] ) : '';
+						$caption = isset( $row['caption'] ) ? sanitize_textarea_field( (string) $row['caption'] ) : '';
+						if ( $id <= 0 && $url === '' ) {
+							continue;
+						}
+						if ( $id > 0 ) {
+							$att_url = wp_get_attachment_url( $id );
+							if ( $att_url ) {
+								$url = $att_url;
+							}
+						}
+						$out[] = array(
+							'id'      => $id,
+							'url'     => $url,
+							'title'   => $title,
+							'caption' => $caption,
+						);
+					}
+					return array_values( $out );
+				},
+				'auth_callback'     => static function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
+		register_post_meta(
+			'tour',
+			'tourism_faqs',
+			array(
+				'type'              => 'array',
+				'single'            => true,
+				'show_in_rest'      => false,
+				'sanitize_callback' => static function ( $value ) {
+					if ( ! is_array( $value ) ) {
+						return array();
+					}
+					$out = array();
+					foreach ( $value as $row ) {
+						if ( ! is_array( $row ) ) {
+							continue;
+						}
+						$question = isset( $row['question'] ) ? sanitize_text_field( (string) $row['question'] ) : '';
+						$answer   = isset( $row['answer'] ) ? sanitize_textarea_field( (string) $row['answer'] ) : '';
+						if ( $question === '' && $answer === '' ) {
+							continue;
+						}
+						$out[] = array(
+							'question' => $question,
+							'answer'   => $answer,
+						);
+					}
+					return array_values( $out );
+				},
+				'auth_callback'     => static function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
+		register_post_meta(
+			'tour',
+			'tourism_includes',
+			array(
+				'type'              => 'array',
+				'single'            => true,
+				'show_in_rest'      => false,
+				'sanitize_callback' => static function ( $value ) {
+					if ( ! is_array( $value ) ) {
+						return array();
+					}
+					$out = array();
+					foreach ( $value as $v ) {
+						if ( is_string( $v ) ) {
+							$t = sanitize_text_field( $v );
+							if ( $t !== '' ) {
+								$out[] = $t;
+							}
+						}
+					}
+					return array_values( $out );
+				},
+				'auth_callback'     => static function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
+		register_post_meta(
+			'tour',
+			'tourism_excludes',
+			array(
+				'type'              => 'array',
+				'single'            => true,
+				'show_in_rest'      => false,
+				'sanitize_callback' => static function ( $value ) {
+					if ( ! is_array( $value ) ) {
+						return array();
+					}
+					$out = array();
+					foreach ( $value as $v ) {
+						if ( is_string( $v ) ) {
+							$t = sanitize_text_field( $v );
+							if ( $t !== '' ) {
+								$out[] = $t;
+							}
+						}
+					}
+					return array_values( $out );
+				},
+				'auth_callback'     => static function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
 		$string_metas = array(
 			'tourism_itinerary',
-			'tourism_includes',
-			'tourism_excludes',
 			'tourism_things_to_carry',
-			'tourism_faqs',
 			'tourism_reviews',
 			'tourism_route',
 		);
