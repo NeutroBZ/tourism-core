@@ -56,6 +56,16 @@ class Tourism_Core_Tour_Metaboxes
 			'default'
 		);
 
+		// What to bring (icon + title + short description)
+		add_meta_box(
+			'tourism-core-tour-bring',
+			__('What to bring', TOURISM_CORE_TD),
+			array($this, 'render_bring'),
+			'tour',
+			'normal',
+			'default'
+		);
+
 		// FAQs (modular template)
 		add_meta_box(
 			'tourism-core-tour-faqs',
@@ -79,7 +89,6 @@ class Tourism_Core_Tour_Metaboxes
 		$dest_ids = (array) get_post_meta($post->ID, 'tourism_destinations', true);
 		$dest_ids = array_map('intval', $dest_ids);
 		$itinerary = get_post_meta($post->ID, 'tourism_itinerary', true);
-		$things_to_carry = get_post_meta($post->ID, 'tourism_things_to_carry', true);
 		$reviews = get_post_meta($post->ID, 'tourism_reviews', true);
 		$route = get_post_meta($post->ID, 'tourism_route', true);
 
@@ -123,10 +132,6 @@ class Tourism_Core_Tour_Metaboxes
 		<p>
 			<label for="tourism_itinerary"><strong><?php esc_html_e('Itinerary', TOURISM_CORE_TD); ?></strong></label>
 			<textarea id="tourism_itinerary" name="tourism_itinerary" rows="5" style="width:100%;"><?php echo esc_textarea($itinerary); ?></textarea>
-		</p>
-		<p>
-			<label for="tourism_things_to_carry"><strong><?php esc_html_e('Things to carry', TOURISM_CORE_TD); ?></strong></label>
-			<textarea id="tourism_things_to_carry" name="tourism_things_to_carry" rows="4" style="width:100%;"><?php echo esc_textarea($things_to_carry); ?></textarea>
 		</p>
 		<p>
 			<label for="tourism_reviews"><strong><?php esc_html_e('Reviews', TOURISM_CORE_TD); ?></strong></label>
@@ -232,6 +237,79 @@ class Tourism_Core_Tour_Metaboxes
 		$tourism_core_excludes_list = $this->get_tour_label_list_for_edit($post_id, 'tourism_excludes');
 
 		$template = TOURISM_CORE_PATH . 'modules/tours/templates/includes-metabox.php';
+		if (is_readable($template)) {
+			include $template;
+		}
+	}
+
+	/**
+	 * Normalize bring items for editor rows.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array<int, array{id: int, url: string, title: string, description: string}>
+	 */
+	private function get_tour_bring_items_for_edit($post_id)
+	{
+		$raw = get_post_meta($post_id, 'tourism_bring_items', true);
+
+		if (is_array($raw)) {
+			$out = array();
+			foreach ($raw as $row) {
+				if (! is_array($row)) {
+					continue;
+				}
+				$id = isset($row['id']) ? (int) $row['id'] : 0;
+				$url = isset($row['url']) ? (string) $row['url'] : '';
+				$title = isset($row['title']) ? (string) $row['title'] : '';
+				$description = isset($row['description']) ? (string) $row['description'] : '';
+				if ($id > 0 && $url === '') {
+					$url = (string) wp_get_attachment_url($id);
+				}
+				if ($id <= 0 && $url === '') {
+					continue;
+				}
+				$out[] = array(
+					'id'          => $id,
+					'url'         => $url,
+					'title'       => $title,
+					'description' => $description,
+				);
+			}
+			return $out;
+		}
+
+		// Legacy fallback: one text blob -> title-only rows.
+		$legacy = get_post_meta($post_id, 'tourism_things_to_carry', true);
+		if (is_string($legacy) && $legacy !== '') {
+			$out = array();
+			$lines = preg_split('/\r\n|\r|\n/', $legacy);
+			foreach ((array) $lines as $line) {
+				$line = trim((string) $line);
+				if ($line !== '') {
+					$out[] = array(
+						'id'          => 0,
+						'url'         => '',
+						'title'       => $line,
+						'description' => '',
+					);
+				}
+			}
+			return $out;
+		}
+
+		return array();
+	}
+
+	/**
+	 * Bring items metabox (templates/bring-metabox.php).
+	 *
+	 * @param \WP_Post $post Post object.
+	 */
+	public function render_bring($post)
+	{
+		$tourism_core_bring_items = $this->get_tour_bring_items_for_edit((int) $post->ID);
+
+		$template = TOURISM_CORE_PATH . 'modules/tours/templates/bring-metabox.php';
 		if (is_readable($template)) {
 			include $template;
 		}
@@ -460,8 +538,41 @@ class Tourism_Core_Tour_Metaboxes
 			update_post_meta($post_id, 'tourism_excludes', $excludes_out);
 		}
 
-		if (isset($_POST['tourism_things_to_carry'])) {
-			update_post_meta($post_id, 'tourism_things_to_carry', sanitize_textarea_field(wp_unslash($_POST['tourism_things_to_carry'])));
+		// Bring items (icon image + title + short description).
+		if (isset($_POST['tourism_bring_metabox_present'])) {
+			$bring_rows = array();
+			$legacy_lines = array();
+			if (isset($_POST['tourism_bring_items']) && is_array($_POST['tourism_bring_items'])) {
+				foreach (wp_unslash($_POST['tourism_bring_items']) as $row) {
+					if (! is_array($row)) {
+						continue;
+					}
+					$bid = isset($row['id']) ? (int) $row['id'] : 0;
+					$burl = isset($row['url']) ? esc_url_raw($row['url']) : '';
+					$btitle = isset($row['title']) ? sanitize_text_field($row['title']) : '';
+					$bdesc = isset($row['description']) ? sanitize_textarea_field($row['description']) : '';
+					if ($bid <= 0 && $burl === '' && $btitle === '' && $bdesc === '') {
+						continue;
+					}
+					if ($bid > 0) {
+						$att_url = wp_get_attachment_url($bid);
+						if ($att_url) {
+							$burl = $att_url;
+						}
+					}
+					$bring_rows[] = array(
+						'id'          => $bid,
+						'url'         => $burl,
+						'title'       => $btitle,
+						'description' => $bdesc,
+					);
+					if ($btitle !== '') {
+						$legacy_lines[] = $btitle;
+					}
+				}
+			}
+			update_post_meta($post_id, 'tourism_bring_items', $bring_rows);
+			update_post_meta($post_id, 'tourism_things_to_carry', implode("\n", $legacy_lines));
 		}
 		// FAQs (repeater: only when metabox is on the screen — avoids wiping if hidden in Screen Options).
 		if (isset($_POST['tourism_faqs_metabox_present'])) {
@@ -535,6 +646,13 @@ class Tourism_Core_Tour_Metaboxes
 			.tourism-core-label-row-header .tourism-core-handle{cursor:move;color:#787c82;}
 			.tourism-core-label-item-title{flex:1;font-size:12px;font-weight:600;}
 			.tourism-core-label-row-body{padding:8px;}
+			#tourism-core-bring-items-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:12px;}
+			.tourism-core-bring-item{border:1px solid #c3c4c7;background:#fff;padding:8px;}
+			.tourism-core-bring-preview{position:relative;aspect-ratio:1/1;background:#f0f0f1;border:1px solid #dcdcde;margin-bottom:8px;overflow:hidden;}
+			.tourism-core-bring-preview img{display:block;width:100%;height:100%;object-fit:contain;padding:8px;}
+			.tourism-core-bring-actions{position:absolute;right:4px;top:4px;z-index:2;display:flex;gap:4px;}
+			.tourism-core-bring-actions .button{min-width:30px;padding:0 5px;}
+			.tourism-core-bring-fields label{display:block;margin:5px 0 2px;font-size:12px;font-weight:600;}
 			'
 		);
 
@@ -746,6 +864,65 @@ class Tourism_Core_Tour_Metaboxes
 						e.preventDefault();
 						$(this).closest('.tourism-core-faq-item').remove();
 						tourismCoreRenumberFaqs();
+					});
+				}
+
+				function tourismCoreRenumberBring(){
+					const \$c = $('#tourism-core-bring-items-container');
+					if(!\$c.length) return;
+					\$c.children('.tourism-core-bring-item').each(function(i){
+						const \$item = $(this);
+						\$item.find('.tourism-core-bring-field-id').attr('name', 'tourism_bring_items['+i+'][id]');
+						\$item.find('.tourism-core-bring-field-url').attr('name', 'tourism_bring_items['+i+'][url]');
+						\$item.find('.tourism-core-bring-field-title').attr('name', 'tourism_bring_items['+i+'][title]').attr('id', 'tourism_bring_title_'+i);
+						\$item.find('.tourism-core-bring-field-description').attr('name', 'tourism_bring_items['+i+'][description]').attr('id', 'tourism_bring_description_'+i);
+						\$item.find('label[for^=\"tourism_bring_title_\"]').attr('for', 'tourism_bring_title_'+i);
+						\$item.find('label[for^=\"tourism_bring_description_\"]').attr('for', 'tourism_bring_description_'+i);
+					});
+				}
+
+				const \$bringContainer = $('#tourism-core-bring-items-container');
+				if(\$bringContainer.length){
+					\$bringContainer.sortable({
+						items: '> .tourism-core-bring-item',
+						cancel: 'input,textarea,button,select,option',
+						update: function(){ tourismCoreRenumberBring(); }
+					});
+
+					$(document).on('click', '#tourism-core-add-bring-item', function(e){
+						e.preventDefault();
+						const \$tpl = $('#tourism-core-bring-item-template').children('.tourism-core-bring-item').first();
+						if(!\$tpl.length) return;
+						const \$clone = \$tpl.clone(true, true);
+						\$bringContainer.append(\$clone);
+						tourismCoreRenumberBring();
+					});
+
+					$(document).on('click', '.tourism-core-remove-bring-item', function(e){
+						e.preventDefault();
+						$(this).closest('.tourism-core-bring-item').remove();
+						tourismCoreRenumberBring();
+					});
+
+					$(document).on('click', '.tourism-core-replace-bring-image', function(e){
+						e.preventDefault();
+						const \$item = $(this).closest('.tourism-core-bring-item');
+						const media = wp.media({
+							title: 'Select icon image',
+							button: { text: 'Use image' },
+							library: { type: 'image' },
+							multiple: false
+						});
+						media.on('select', function(){
+							const att = media.state().get('selection').first().toJSON();
+							const url = (att.sizes && att.sizes.thumbnail && att.sizes.thumbnail.url) ? att.sizes.thumbnail.url : att.url;
+							\$item.find('.tourism-core-bring-field-id').val(String(att.id));
+							\$item.find('.tourism-core-bring-field-url').val(att.url);
+							\$item.find('.tourism-core-no-image').remove();
+							\$item.find('.tourism-core-bring-preview img').remove();
+							\$item.find('.tourism-core-bring-preview').prepend('<img src=\"'+url+'\" alt=\"\" />');
+						});
+						media.open();
 					});
 				}
 			});
