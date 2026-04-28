@@ -56,6 +56,16 @@ class Tourism_Core_Tour_Metaboxes
 			'default'
 		);
 
+		// Itinerary (days + description + dynamic features)
+		add_meta_box(
+			'tourism-core-tour-itinerary',
+			__('Tour Itinerary', TOURISM_CORE_TD),
+			array($this, 'render_itinerary'),
+			'tour',
+			'normal',
+			'default'
+		);
+
 		// What to bring (icon + title + short description)
 		add_meta_box(
 			'tourism-core-tour-bring',
@@ -88,7 +98,6 @@ class Tourism_Core_Tour_Metaboxes
 		$duration = get_post_meta($post->ID, 'tourism_duration', true);
 		$dest_ids = (array) get_post_meta($post->ID, 'tourism_destinations', true);
 		$dest_ids = array_map('intval', $dest_ids);
-		$itinerary = get_post_meta($post->ID, 'tourism_itinerary', true);
 		$reviews = get_post_meta($post->ID, 'tourism_reviews', true);
 		$route = get_post_meta($post->ID, 'tourism_route', true);
 
@@ -128,11 +137,6 @@ class Tourism_Core_Tour_Metaboxes
 			<?php endforeach; ?>
 		</div>
 
-		<hr />
-		<p>
-			<label for="tourism_itinerary"><strong><?php esc_html_e('Itinerary', TOURISM_CORE_TD); ?></strong></label>
-			<textarea id="tourism_itinerary" name="tourism_itinerary" rows="5" style="width:100%;"><?php echo esc_textarea($itinerary); ?></textarea>
-		</p>
 		<p>
 			<label for="tourism_reviews"><strong><?php esc_html_e('Reviews', TOURISM_CORE_TD); ?></strong></label>
 			<textarea id="tourism_reviews" name="tourism_reviews" rows="5" style="width:100%;"><?php echo esc_textarea($reviews); ?></textarea>
@@ -237,6 +241,80 @@ class Tourism_Core_Tour_Metaboxes
 		$tourism_core_excludes_list = $this->get_tour_label_list_for_edit($post_id, 'tourism_excludes');
 
 		$template = TOURISM_CORE_PATH . 'modules/tours/templates/includes-metabox.php';
+		if (is_readable($template)) {
+			include $template;
+		}
+	}
+
+	/**
+	 * Normalize itinerary rows for the editor.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array<int, array{day: string, description: string, features: array<int, array{label: string, value: string}>}>
+	 */
+	private function get_tour_itinerary_for_edit($post_id)
+	{
+		$raw = get_post_meta($post_id, 'tourism_itinerary_items', true);
+
+		if (is_array($raw)) {
+			$out = array();
+			foreach ($raw as $row) {
+				if (! is_array($row)) {
+					continue;
+				}
+
+				$features = array();
+				if (isset($row['features']) && is_array($row['features'])) {
+					foreach ($row['features'] as $feature) {
+						if (! is_array($feature)) {
+							continue;
+						}
+						$label = isset($feature['label']) ? trim((string) $feature['label']) : '';
+						$value = isset($feature['value']) ? trim((string) $feature['value']) : '';
+						if ($label === '' && $value === '') {
+							continue;
+						}
+						$features[] = array(
+							'label' => $label,
+							'value' => $value,
+						);
+					}
+				}
+
+				$out[] = array(
+					'day'         => isset($row['day']) ? (string) $row['day'] : '',
+					'description' => isset($row['description']) ? (string) $row['description'] : '',
+					'features'    => $features,
+				);
+			}
+
+			return $out;
+		}
+
+		$legacy = get_post_meta($post_id, 'tourism_itinerary', true);
+		if (is_string($legacy) && trim($legacy) !== '') {
+			return array(
+				array(
+					'day'         => __('Day 1', TOURISM_CORE_TD),
+					'description' => $legacy,
+					'features'    => array(),
+				),
+			);
+		}
+
+		return array();
+	}
+
+	/**
+	 * Itinerary metabox (markup in templates/itinerary-metabox.php).
+	 *
+	 * @param \WP_Post $post Post object.
+	 */
+	public function render_itinerary($post)
+	{
+		$tourism_core_itinerary_items = $this->get_tour_itinerary_for_edit((int) $post->ID);
+
+		$template = TOURISM_CORE_PATH . 'modules/tours/templates/itinerary-metabox.php';
 		if (is_readable($template)) {
 			include $template;
 		}
@@ -504,8 +582,68 @@ class Tourism_Core_Tour_Metaboxes
 			update_post_meta($post_id, 'tourism_gallery_ids', array_values(array_unique(array_filter($sync_ids))));
 		}
 
-		if (isset($_POST['tourism_itinerary'])) {
-			update_post_meta($post_id, 'tourism_itinerary', sanitize_textarea_field(wp_unslash($_POST['tourism_itinerary'])));
+		if (isset($_POST['tourism_itinerary_metabox_present'])) {
+			$itinerary_items = array();
+			$legacy_sections = array();
+
+			if (isset($_POST['tourism_itinerary_items']) && is_array($_POST['tourism_itinerary_items'])) {
+				foreach (wp_unslash($_POST['tourism_itinerary_items']) as $row) {
+					if (! is_array($row)) {
+						continue;
+					}
+
+					$day = isset($row['day']) ? sanitize_text_field($row['day']) : '';
+					$description = isset($row['description']) ? sanitize_textarea_field($row['description']) : '';
+					$features = array();
+
+					if (isset($row['features']) && is_array($row['features'])) {
+						foreach ($row['features'] as $feature) {
+							if (! is_array($feature)) {
+								continue;
+							}
+							$label = isset($feature['label']) ? sanitize_text_field($feature['label']) : '';
+							$value = isset($feature['value']) ? sanitize_text_field($feature['value']) : '';
+							if ($label === '' && $value === '') {
+								continue;
+							}
+							$features[] = array(
+								'label' => $label,
+								'value' => $value,
+							);
+						}
+					}
+
+					if ($day === '' && $description === '' && $features === array()) {
+						continue;
+					}
+
+					$itinerary_items[] = array(
+						'day'         => $day,
+						'description' => $description,
+						'features'    => $features,
+					);
+
+					$legacy_chunk = array();
+					if ($day !== '') {
+						$legacy_chunk[] = $day;
+					}
+					if ($description !== '') {
+						$legacy_chunk[] = $description;
+					}
+					foreach ($features as $feature) {
+						$feature_line = trim($feature['label'] . ': ' . $feature['value'], ': ');
+						if ($feature_line !== '') {
+							$legacy_chunk[] = $feature_line;
+						}
+					}
+					if ($legacy_chunk !== array()) {
+						$legacy_sections[] = implode("\n", $legacy_chunk);
+					}
+				}
+			}
+
+			update_post_meta($post_id, 'tourism_itinerary_items', $itinerary_items);
+			update_post_meta($post_id, 'tourism_itinerary', implode("\n\n", $legacy_sections));
 		}
 
 		// Includes / excludes (repeaters; only when metabox is visible).
@@ -646,6 +784,17 @@ class Tourism_Core_Tour_Metaboxes
 			.tourism-core-label-row-header .tourism-core-handle{cursor:move;color:#787c82;}
 			.tourism-core-label-item-title{flex:1;font-size:12px;font-weight:600;}
 			.tourism-core-label-row-body{padding:8px;}
+			#tourism-core-itinerary-container{display:grid;gap:12px;margin-bottom:12px;}
+			.tourism-core-itinerary-item{border:1px solid #c3c4c7;background:#fff;}
+			.tourism-core-itinerary-header{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #c3c4c7;background:#f6f7f7;}
+			.tourism-core-itinerary-header .tourism-core-handle{cursor:move;color:#787c82;}
+			.tourism-core-itinerary-header h4{margin:0;flex:1;font-size:13px;}
+			.tourism-core-itinerary-body{padding:10px;}
+			.tourism-core-itinerary-body > p{margin-top:0;}
+			.tourism-core-itinerary-feature-list{display:grid;gap:8px;margin:10px 0;}
+			.tourism-core-itinerary-feature-row{display:grid;grid-template-columns:minmax(140px,180px) 1fr auto;gap:8px;align-items:center;}
+			.tourism-core-itinerary-feature-row .button{white-space:nowrap;}
+			@media (max-width:782px){.tourism-core-itinerary-feature-row{grid-template-columns:1fr;}}
 			#tourism-core-bring-items-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:12px;}
 			.tourism-core-bring-item{border:1px solid #c3c4c7;background:#fff;padding:8px;}
 			.tourism-core-bring-preview{position:relative;aspect-ratio:1/1;background:#f0f0f1;border:1px solid #dcdcde;margin-bottom:8px;overflow:hidden;}
@@ -762,6 +911,30 @@ class Tourism_Core_Tour_Metaboxes
 					});
 				}
 
+				function tourismCoreRenumberItinerary(){
+					const \$c = $('#tourism-core-itinerary-container');
+					if(!\$c.length) return;
+					\$c.children('.tourism-core-itinerary-item').each(function(i){
+						const \$item = $(this);
+						\$item.attr('data-tourism-core-index', String(i));
+						\$item.find('.tourism-core-item-number').text(String(i + 1));
+						\$item.find('.tourism-core-itinerary-day').attr('name', 'tourism_itinerary_items['+i+'][day]').attr('id', 'tourism_core_itinerary_day_'+i);
+						\$item.find('.tourism-core-itinerary-description').attr('name', 'tourism_itinerary_items['+i+'][description]').attr('id', 'tourism_core_itinerary_description_'+i);
+						\$item.find('label[for^=\"tourism_core_itinerary_day_\"]').attr('for', 'tourism_core_itinerary_day_'+i);
+						\$item.find('label[for^=\"tourism_core_itinerary_description_\"]').attr('for', 'tourism_core_itinerary_description_'+i);
+
+						\$item.find('.tourism-core-itinerary-feature-row').each(function(j){
+							const \$feature = $(this);
+							\$feature.find('.tourism-core-itinerary-feature-label')
+								.attr('name', 'tourism_itinerary_items['+i+'][features]['+j+'][label]')
+								.attr('id', 'tourism_core_itinerary_feature_label_'+i+'_'+j);
+							\$feature.find('.tourism-core-itinerary-feature-value')
+								.attr('name', 'tourism_itinerary_items['+i+'][features]['+j+'][value]')
+								.attr('id', 'tourism_core_itinerary_feature_value_'+i+'_'+j);
+						});
+					});
+				}
+
 				function tourismCoreRenumberIncludes(){
 					const \$c = $('#tourism-core-includes-container');
 					if(!\$c.length) return;
@@ -865,6 +1038,51 @@ class Tourism_Core_Tour_Metaboxes
 						$(this).closest('.tourism-core-faq-item').remove();
 						tourismCoreRenumberFaqs();
 					});
+				}
+
+				const \$itineraryContainer = $('#tourism-core-itinerary-container');
+				if(\$itineraryContainer.length){
+					\$itineraryContainer.sortable({
+						handle: '.tourism-core-handle',
+						items: '> .tourism-core-itinerary-item',
+						cancel: 'input,textarea,button,select,option',
+						update: function(){ tourismCoreRenumberItinerary(); }
+					});
+
+					$(document).on('click', '#tourism-core-add-itinerary-item', function(e){
+						e.preventDefault();
+						const tmpl = $('#tourism-core-tmpl-itinerary-item').html();
+						if(!tmpl) return;
+						const idx = \$itineraryContainer.children('.tourism-core-itinerary-item').length;
+						const html = tmpl
+							.split('{{tourism_index}}').join(String(idx))
+							.split('{{tourism_index_plus_one}}').join(String(idx + 1));
+						\$itineraryContainer.append(html);
+						tourismCoreRenumberItinerary();
+					});
+
+					$(document).on('click', '.tourism-core-delete-itinerary', function(e){
+						e.preventDefault();
+						$(this).closest('.tourism-core-itinerary-item').remove();
+						tourismCoreRenumberItinerary();
+					});
+
+					$(document).on('click', '.tourism-core-add-itinerary-feature', function(e){
+						e.preventDefault();
+						const \$item = $(this).closest('.tourism-core-itinerary-item');
+						const tmpl = $('#tourism-core-tmpl-itinerary-feature').html();
+						if(!tmpl) return;
+						\$item.find('.tourism-core-itinerary-feature-list').append(tmpl);
+						tourismCoreRenumberItinerary();
+					});
+
+					$(document).on('click', '.tourism-core-delete-itinerary-feature', function(e){
+						e.preventDefault();
+						$(this).closest('.tourism-core-itinerary-feature-row').remove();
+						tourismCoreRenumberItinerary();
+					});
+
+					tourismCoreRenumberItinerary();
 				}
 
 				function tourismCoreRenumberBring(){
