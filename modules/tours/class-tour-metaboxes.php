@@ -56,6 +56,26 @@ class Tourism_Core_Tour_Metaboxes
 			'default'
 		);
 
+		// Introduction (title + description)
+		add_meta_box(
+			'tourism-core-tour-introduction',
+			__('Tour Introduction', TOURISM_CORE_TD),
+			array($this, 'render_introduction'),
+			'tour',
+			'normal',
+			'default'
+		);
+
+		// Pricing (current + previous + discount)
+		add_meta_box(
+			'tourism-core-tour-pricing',
+			__('Tour Pricing', TOURISM_CORE_TD),
+			array($this, 'render_pricing'),
+			'tour',
+			'normal',
+			'default'
+		);
+
 		// Itinerary (days + description + dynamic features)
 		add_meta_box(
 			'tourism-core-tour-itinerary',
@@ -94,12 +114,12 @@ class Tourism_Core_Tour_Metaboxes
 	{
 		wp_nonce_field('tourism_core_save_tour', 'tourism_core_tour_nonce');
 
-		$price    = get_post_meta($post->ID, 'tourism_price_from', true);
 		$duration = get_post_meta($post->ID, 'tourism_duration', true);
+		$duration_options = $this->get_tour_duration_options_for_edit((int) $post->ID, $duration);
+		$difficulty = get_post_meta($post->ID, 'tourism_difficulty', true);
+		$difficulty_options = $this->get_tour_difficulty_options_for_edit((int) $post->ID, $difficulty);
 		$dest_ids = (array) get_post_meta($post->ID, 'tourism_destinations', true);
 		$dest_ids = array_map('intval', $dest_ids);
-		$reviews = get_post_meta($post->ID, 'tourism_reviews', true);
-		$route = get_post_meta($post->ID, 'tourism_route', true);
 
 		$destinations = get_posts([
 			'post_type'      => 'destination',
@@ -111,17 +131,77 @@ class Tourism_Core_Tour_Metaboxes
 		]);
 ?>
 
-		<p>
-			<label><strong><?php esc_html_e('Price from', TOURISM_CORE_TD); ?></strong></label>
-			<input type="number" step="0.01" min="0" name="tourism_price_from"
-				value="<?php echo esc_attr($price); ?>" style="width:100%;" />
-		</p>
+		<div class="tourism-core-details-grid">
+			<div class="tourism-core-detail-column">
+				<p>
+					<label><strong><?php esc_html_e('Duration', TOURISM_CORE_TD); ?></strong></label>
+					<select name="tourism_duration" id="tourism_duration" style="width:100%;">
+						<option value=""><?php esc_html_e('Select a duration', TOURISM_CORE_TD); ?></option>
+						<?php foreach ($duration_options as $duration_option) : ?>
+							<option value="<?php echo esc_attr($duration_option); ?>" <?php selected($duration, $duration_option); ?>>
+								<?php echo esc_html($duration_option); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+				</p>
 
-		<p>
-			<label><strong><?php esc_html_e('Duration', TOURISM_CORE_TD); ?></strong></label>
-			<input type="text" name="tourism_duration"
-				value="<?php echo esc_attr($duration); ?>" style="width:100%;" />
-		</p>
+				<div class="tourism-core-duration-builder">
+					<p><strong><?php esc_html_e('Duration options', TOURISM_CORE_TD); ?></strong></p>
+					<div id="tourism-core-duration-options-list">
+						<?php foreach ($duration_options as $duration_index => $duration_option) : ?>
+							<div class="tourism-core-duration-option-row">
+								<input
+									type="text"
+									class="widefat tourism-core-duration-option-input"
+									name="tourism_duration_options[<?php echo esc_attr((string) $duration_index); ?>]"
+									value="<?php echo esc_attr($duration_option); ?>"
+									placeholder="<?php esc_attr_e('Example: Full day', TOURISM_CORE_TD); ?>"
+								/>
+								<button type="button" class="button tourism-core-delete-duration-option"><?php esc_html_e('Delete', TOURISM_CORE_TD); ?></button>
+							</div>
+						<?php endforeach; ?>
+					</div>
+					<p>
+						<button type="button" id="tourism-core-add-duration-option" class="button button-secondary"><?php esc_html_e('Add option', TOURISM_CORE_TD); ?></button>
+					</p>
+				</div>
+			</div>
+
+			<div class="tourism-core-detail-column">
+				<p>
+					<label><strong><?php esc_html_e('Difficulty', TOURISM_CORE_TD); ?></strong></label>
+					<select name="tourism_difficulty" id="tourism_difficulty" style="width:100%;">
+						<option value=""><?php esc_html_e('Select a difficulty', TOURISM_CORE_TD); ?></option>
+						<?php foreach ($difficulty_options as $difficulty_option) : ?>
+							<option value="<?php echo esc_attr($difficulty_option); ?>" <?php selected($difficulty, $difficulty_option); ?>>
+								<?php echo esc_html($difficulty_option); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+				</p>
+
+				<div class="tourism-core-difficulty-builder">
+					<p><strong><?php esc_html_e('Difficulty options', TOURISM_CORE_TD); ?></strong></p>
+					<div id="tourism-core-difficulty-options-list">
+						<?php foreach ($difficulty_options as $difficulty_index => $difficulty_option) : ?>
+							<div class="tourism-core-difficulty-option-row">
+								<input
+									type="text"
+									class="widefat tourism-core-difficulty-option-input"
+									name="tourism_difficulty_options[<?php echo esc_attr((string) $difficulty_index); ?>]"
+									value="<?php echo esc_attr($difficulty_option); ?>"
+									placeholder="<?php esc_attr_e('Example: Moderate', TOURISM_CORE_TD); ?>"
+								/>
+								<button type="button" class="button tourism-core-delete-difficulty-option"><?php esc_html_e('Delete', TOURISM_CORE_TD); ?></button>
+							</div>
+						<?php endforeach; ?>
+					</div>
+					<p>
+						<button type="button" id="tourism-core-add-difficulty-option" class="button button-secondary"><?php esc_html_e('Add option', TOURISM_CORE_TD); ?></button>
+					</p>
+				</div>
+			</div>
+		</div>
 
 		<p><strong><?php esc_html_e('Destinations', TOURISM_CORE_TD); ?></strong></p>
 
@@ -137,16 +217,89 @@ class Tourism_Core_Tour_Metaboxes
 			<?php endforeach; ?>
 		</div>
 
-		<p>
-			<label for="tourism_reviews"><strong><?php esc_html_e('Reviews', TOURISM_CORE_TD); ?></strong></label>
-			<textarea id="tourism_reviews" name="tourism_reviews" rows="5" style="width:100%;"><?php echo esc_textarea($reviews); ?></textarea>
-		</p>
-		<p>
-			<label for="tourism_route"><strong><?php esc_html_e('Route', TOURISM_CORE_TD); ?></strong></label>
-			<textarea id="tourism_route" name="tourism_route" rows="4" style="width:100%;"><?php echo esc_textarea($route); ?></textarea>
-		</p>
-
 <?php
+	}
+
+	/**
+	 * Duration options for the editor.
+	 *
+	 * @param int    $post_id           Post ID.
+	 * @param string $selected_duration Current selected duration.
+	 * @return array<int, string>
+	 */
+	private function get_tour_duration_options_for_edit($post_id, $selected_duration = '')
+	{
+		$defaults = array(
+			'Full day',
+			'Half day',
+			'2 Days',
+		);
+
+		$stored = get_post_meta($post_id, 'tourism_duration_options', true);
+		$options = array();
+
+		if (is_array($stored)) {
+			foreach ($stored as $option) {
+				if (! is_string($option)) {
+					continue;
+				}
+				$option = trim($option);
+				if ($option !== '') {
+					$options[] = $option;
+				}
+			}
+		}
+
+		if ($options === array()) {
+			$options = $defaults;
+		}
+
+		if (is_string($selected_duration) && trim($selected_duration) !== '' && ! in_array(trim($selected_duration), $options, true)) {
+			$options[] = trim($selected_duration);
+		}
+
+		return array_values(array_unique($options));
+	}
+
+	/**
+	 * Difficulty options for the editor.
+	 *
+	 * @param int    $post_id             Post ID.
+	 * @param string $selected_difficulty Current selected difficulty.
+	 * @return array<int, string>
+	 */
+	private function get_tour_difficulty_options_for_edit($post_id, $selected_difficulty = '')
+	{
+		$defaults = array(
+			'Easy',
+			'Moderate',
+			'Challenging',
+		);
+
+		$stored = get_post_meta($post_id, 'tourism_difficulty_options', true);
+		$options = array();
+
+		if (is_array($stored)) {
+			foreach ($stored as $option) {
+				if (! is_string($option)) {
+					continue;
+				}
+				$option = trim($option);
+				if ($option !== '') {
+					$options[] = $option;
+				}
+			}
+		}
+
+		if ($options === array()) {
+			$options = $defaults;
+		}
+
+		if (is_string($selected_difficulty) && trim($selected_difficulty) !== '' && ! in_array(trim($selected_difficulty), $options, true)) {
+			$options[] = trim($selected_difficulty);
+		}
+
+		return array_values(array_unique($options));
 	}
 
 	/**
@@ -241,6 +394,69 @@ class Tourism_Core_Tour_Metaboxes
 		$tourism_core_excludes_list = $this->get_tour_label_list_for_edit($post_id, 'tourism_excludes');
 
 		$template = TOURISM_CORE_PATH . 'modules/tours/templates/includes-metabox.php';
+		if (is_readable($template)) {
+			include $template;
+		}
+	}
+
+	/**
+	 * Introduction rows for the editor.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array{title: string, description: string}
+	 */
+	private function get_tour_introduction_for_edit($post_id)
+	{
+		return array(
+			'title'       => (string) get_post_meta($post_id, 'tourism_intro_title', true),
+			'description' => (string) get_post_meta($post_id, 'tourism_intro_description', true),
+		);
+	}
+
+	/**
+	 * Introduction metabox.
+	 *
+	 * @param \WP_Post $post Post object.
+	 */
+	public function render_introduction($post)
+	{
+		$tourism_core_introduction = $this->get_tour_introduction_for_edit((int) $post->ID);
+
+		$template = TOURISM_CORE_PATH . 'modules/tours/templates/introduction-metabox.php';
+		if (is_readable($template)) {
+			include $template;
+		}
+	}
+
+	/**
+	 * Pricing data for the editor.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array{price_now: string, price_before: string, discount_percent: string}
+	 */
+	private function get_tour_pricing_for_edit($post_id)
+	{
+		$price_now = get_post_meta($post_id, 'tourism_price_from', true);
+		$price_before = get_post_meta($post_id, 'tourism_price_before', true);
+		$discount_percent = get_post_meta($post_id, 'tourism_price_discount_percent', true);
+
+		return array(
+			'price_now'         => $price_now === '' ? '' : (string) $price_now,
+			'price_before'      => $price_before === '' ? '' : (string) $price_before,
+			'discount_percent'  => $discount_percent === '' ? '' : (string) $discount_percent,
+		);
+	}
+
+	/**
+	 * Pricing metabox.
+	 *
+	 * @param \WP_Post $post Post object.
+	 */
+	public function render_pricing($post)
+	{
+		$tourism_core_pricing = $this->get_tour_pricing_for_edit((int) $post->ID);
+
+		$template = TOURISM_CORE_PATH . 'modules/tours/templates/pricing-metabox.php';
 		if (is_readable($template)) {
 			include $template;
 		}
@@ -528,15 +744,65 @@ class Tourism_Core_Tour_Metaboxes
 		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
 		if (! current_user_can('edit_post', $post_id)) return;
 
-		// PRICE
-		if (isset($_POST['tourism_price_from'])) {
-			$raw = sanitize_text_field(wp_unslash($_POST['tourism_price_from']));
-			update_post_meta($post_id, 'tourism_price_from', is_numeric($raw) ? (float) $raw : '');
-		}
-
 		// DURATION
 		if (isset($_POST['tourism_duration'])) {
 			update_post_meta($post_id, 'tourism_duration', sanitize_text_field(wp_unslash($_POST['tourism_duration'])));
+		}
+		if (isset($_POST['tourism_duration_options']) && is_array($_POST['tourism_duration_options'])) {
+			$duration_options = array();
+			foreach (wp_unslash($_POST['tourism_duration_options']) as $option) {
+				$option = sanitize_text_field((string) $option);
+				if ($option !== '') {
+					$duration_options[] = $option;
+				}
+			}
+			update_post_meta($post_id, 'tourism_duration_options', array_values(array_unique($duration_options)));
+		}
+
+		// DIFFICULTY
+		if (isset($_POST['tourism_difficulty'])) {
+			update_post_meta($post_id, 'tourism_difficulty', sanitize_text_field(wp_unslash($_POST['tourism_difficulty'])));
+		}
+		if (isset($_POST['tourism_difficulty_options']) && is_array($_POST['tourism_difficulty_options'])) {
+			$difficulty_options = array();
+			foreach (wp_unslash($_POST['tourism_difficulty_options']) as $option) {
+				$option = sanitize_text_field((string) $option);
+				if ($option !== '') {
+					$difficulty_options[] = $option;
+				}
+			}
+			update_post_meta($post_id, 'tourism_difficulty_options', array_values(array_unique($difficulty_options)));
+		}
+
+		// Introduction (title + description).
+		if (isset($_POST['tourism_introduction_metabox_present'])) {
+			$intro_title = isset($_POST['tourism_intro_title']) ? sanitize_text_field(wp_unslash($_POST['tourism_intro_title'])) : '';
+			$intro_description = isset($_POST['tourism_intro_description']) ? sanitize_textarea_field(wp_unslash($_POST['tourism_intro_description'])) : '';
+
+			update_post_meta($post_id, 'tourism_intro_title', $intro_title);
+			update_post_meta($post_id, 'tourism_intro_description', $intro_description);
+		}
+
+		// Pricing (current price + previous price + discount percent).
+		if (isset($_POST['tourism_pricing_metabox_present'])) {
+			$price_now_raw = isset($_POST['tourism_price_from']) ? sanitize_text_field(wp_unslash($_POST['tourism_price_from'])) : '';
+			$price_before_raw = isset($_POST['tourism_price_before']) ? sanitize_text_field(wp_unslash($_POST['tourism_price_before'])) : '';
+			$discount_raw = isset($_POST['tourism_price_discount_percent']) ? sanitize_text_field(wp_unslash($_POST['tourism_price_discount_percent'])) : '';
+
+			$price_now = is_numeric($price_now_raw) ? (float) $price_now_raw : '';
+			$price_before = is_numeric($price_before_raw) ? (float) $price_before_raw : '';
+			$discount = is_numeric($discount_raw) ? (float) $discount_raw : '';
+
+			if ($discount !== '' && $discount < 0) {
+				$discount = 0.0;
+			}
+			if ($discount !== '' && $discount > 100) {
+				$discount = 100.0;
+			}
+
+			update_post_meta($post_id, 'tourism_price_from', $price_now);
+			update_post_meta($post_id, 'tourism_price_before', $price_before);
+			update_post_meta($post_id, 'tourism_price_discount_percent', $discount);
 		}
 
 		// DESTINATIONS
@@ -733,13 +999,6 @@ class Tourism_Core_Tour_Metaboxes
 			}
 			update_post_meta($post_id, 'tourism_faqs', $faq_items);
 		}
-		if (isset($_POST['tourism_reviews'])) {
-			update_post_meta($post_id, 'tourism_reviews', sanitize_textarea_field(wp_unslash($_POST['tourism_reviews'])));
-		}
-		if (isset($_POST['tourism_route'])) {
-			update_post_meta($post_id, 'tourism_route', sanitize_textarea_field(wp_unslash($_POST['tourism_route'])));
-		}
-
 		// HERO IMAGE
 		if (isset($_POST['tour_hero_image'])) {
 			update_post_meta($post_id, '_tour_hero_image', (int) $_POST['tour_hero_image']);
@@ -784,6 +1043,22 @@ class Tourism_Core_Tour_Metaboxes
 			.tourism-core-label-row-header .tourism-core-handle{cursor:move;color:#787c82;}
 			.tourism-core-label-item-title{flex:1;font-size:12px;font-weight:600;}
 			.tourism-core-label-row-body{padding:8px;}
+			.tourism-core-introduction-fields label,
+			.tourism-core-pricing-fields label{display:block;margin:0 0 4px;font-weight:600;}
+			.tourism-core-pricing-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px;}
+			@media (max-width:782px){.tourism-core-pricing-grid{grid-template-columns:1fr;}}
+			.tourism-core-pricing-help{margin:8px 0 0;color:#646970;font-size:12px;}
+			.tourism-core-details-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
+			@media (max-width:782px){.tourism-core-details-grid{grid-template-columns:1fr;}}
+			.tourism-core-detail-column p:first-child{margin-top:0;}
+			.tourism-core-duration-builder{margin:10px 0 14px;}
+			#tourism-core-duration-options-list{display:grid;gap:8px;margin-top:8px;}
+			.tourism-core-duration-option-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;}
+			@media (max-width:782px){.tourism-core-duration-option-row{grid-template-columns:1fr;}}
+			.tourism-core-difficulty-builder{margin:10px 0 14px;}
+			#tourism-core-difficulty-options-list{display:grid;gap:8px;margin-top:8px;}
+			.tourism-core-difficulty-option-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;}
+			@media (max-width:782px){.tourism-core-difficulty-option-row{grid-template-columns:1fr;}}
 			#tourism-core-itinerary-container{display:grid;gap:12px;margin-bottom:12px;}
 			.tourism-core-itinerary-item{border:1px solid #c3c4c7;background:#fff;}
 			.tourism-core-itinerary-header{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #c3c4c7;background:#f6f7f7;}
@@ -804,6 +1079,12 @@ class Tourism_Core_Tour_Metaboxes
 			.tourism-core-bring-fields label{display:block;margin:5px 0 2px;font-size:12px;font-weight:600;}
 			'
 		);
+
+		$tourism_core_i18n_select_duration = esc_js(__('Select a duration', TOURISM_CORE_TD));
+		$tourism_core_i18n_select_difficulty = esc_js(__('Select a difficulty', TOURISM_CORE_TD));
+		$tourism_core_i18n_example_full_day = esc_js(__('Example: Full day', TOURISM_CORE_TD));
+		$tourism_core_i18n_example_moderate = esc_js(__('Example: Moderate', TOURISM_CORE_TD));
+		$tourism_core_i18n_delete = esc_js(__('Delete', TOURISM_CORE_TD)); 
 
 		wp_add_inline_script('jquery', "
 			jQuery(document).ready(function($){
@@ -836,6 +1117,143 @@ class Tourism_Core_Tour_Metaboxes
 					$('#tour_hero_image').val('');
 					$('#tour-hero-preview').html('');
 				});
+
+				function tourismCoreSyncPricingBeforePrice(){
+					const \$priceNow = $('#tourism_price_from');
+					const \$discount = $('#tourism_price_discount_percent');
+					const \$priceBefore = $('#tourism_price_before');
+					if(!\$priceNow.length || !\$discount.length || !\$priceBefore.length) return;
+
+					const now = parseFloat(\$priceNow.val());
+					const discount = parseFloat(\$discount.val());
+
+					if(isNaN(now) || isNaN(discount) || discount <= 0 || discount >= 100){
+						if(!isNaN(now) && (isNaN(discount) || discount <= 0)){
+							\$priceBefore.val(now.toFixed(2));
+						}
+						return;
+					}
+
+					const before = now / (1 - (discount / 100));
+					if(isFinite(before)){
+						\$priceBefore.val(before.toFixed(2));
+					}
+				}
+
+				$(document).on('input change', '#tourism_price_from, #tourism_price_discount_percent', function(){
+					tourismCoreSyncPricingBeforePrice();
+				});
+
+				$(document).on('click', '#tourism-core-calc-price-before', function(e){
+					e.preventDefault();
+					tourismCoreSyncPricingBeforePrice();
+				});
+
+				function tourismCoreRefreshDurationSelect(){
+					const \$select = $('#tourism_duration');
+					const \$rows = $('#tourism-core-duration-options-list .tourism-core-duration-option-input');
+					if(!\$select.length) return;
+
+					const currentValue = \$select.val();
+					let optionsHtml = '<option value=\"\">{$tourism_core_i18n_select_duration}</option>';
+
+					\$rows.each(function(){
+						const value = $.trim($(this).val());
+						if(!value) return;
+						const safeValue = $('<div>').text(value).html();
+						const selected = value === currentValue ? ' selected' : '';
+						optionsHtml += '<option value=\"'+safeValue+'\"'+selected+'>'+safeValue+'</option>';
+					});
+
+					\$select.html(optionsHtml);
+
+					if(currentValue){
+						\$select.val(currentValue);
+					}
+				}
+
+				function tourismCoreRenumberDurationOptions(){
+					$('#tourism-core-duration-options-list .tourism-core-duration-option-row').each(function(i){
+						$(this).find('.tourism-core-duration-option-input').attr('name', 'tourism_duration_options['+i+']');
+					});
+					tourismCoreRefreshDurationSelect();
+				}
+
+				function tourismCoreRefreshDifficultySelect(){
+					const \$select = $('#tourism_difficulty');
+					const \$rows = $('#tourism-core-difficulty-options-list .tourism-core-difficulty-option-input');
+					if(!\$select.length) return;
+
+					const currentValue = \$select.val();
+					let optionsHtml = '<option value=\"\">{$tourism_core_i18n_select_difficulty}</option>';
+
+					\$rows.each(function(){
+						const value = $.trim($(this).val());
+						if(!value) return;
+						const safeValue = $('<div>').text(value).html();
+						const selected = value === currentValue ? ' selected' : '';
+						optionsHtml += '<option value=\"'+safeValue+'\"'+selected+'>'+safeValue+'</option>';
+					});
+
+					\$select.html(optionsHtml);
+
+					if(currentValue){
+						\$select.val(currentValue);
+					}
+				}
+
+				function tourismCoreRenumberDifficultyOptions(){
+					$('#tourism-core-difficulty-options-list .tourism-core-difficulty-option-row').each(function(i){
+						$(this).find('.tourism-core-difficulty-option-input').attr('name', 'tourism_difficulty_options['+i+']');
+					});
+					tourismCoreRefreshDifficultySelect();
+				}
+
+				$(document).on('click', '#tourism-core-add-duration-option', function(e){
+					e.preventDefault();
+					$('#tourism-core-duration-options-list').append(
+						'<div class=\"tourism-core-duration-option-row\">' +
+							'<input type=\"text\" class=\"widefat tourism-core-duration-option-input\" value=\"\" placeholder=\"{$tourism_core_i18n_example_full_day}\" />' +
+							'<button type=\"button\" class=\"button tourism-core-delete-duration-option\">{$tourism_core_i18n_delete}</button>' +
+						'</div>'
+					);
+					tourismCoreRenumberDurationOptions();
+				});
+
+				$(document).on('click', '.tourism-core-delete-duration-option', function(e){
+					e.preventDefault();
+					$(this).closest('.tourism-core-duration-option-row').remove();
+					tourismCoreRenumberDurationOptions();
+				});
+
+				$(document).on('input change', '.tourism-core-duration-option-input', function(){
+					tourismCoreRefreshDurationSelect();
+				});
+
+				tourismCoreRenumberDurationOptions();
+
+				$(document).on('click', '#tourism-core-add-difficulty-option', function(e){
+					e.preventDefault();
+					$('#tourism-core-difficulty-options-list').append(
+						'<div class=\"tourism-core-difficulty-option-row\">' +
+							'<input type=\"text\" class=\"widefat tourism-core-difficulty-option-input\" value=\"\" placeholder=\"{$tourism_core_i18n_example_moderate}\" />' +
+							'<button type=\"button\" class=\"button tourism-core-delete-difficulty-option\">{$tourism_core_i18n_delete}</button>' +
+						'</div>'
+					);
+					tourismCoreRenumberDifficultyOptions();
+				});
+
+				$(document).on('click', '.tourism-core-delete-difficulty-option', function(e){
+					e.preventDefault();
+					$(this).closest('.tourism-core-difficulty-option-row').remove();
+					tourismCoreRenumberDifficultyOptions();
+				});
+
+				$(document).on('input change', '.tourism-core-difficulty-option-input', function(){
+					tourismCoreRefreshDifficultySelect();
+				});
+
+				tourismCoreRenumberDifficultyOptions();
 
 				function tourismCoreRenumberGallery(){
 					const \$g = $('#tourism-core-gallery-images-container');

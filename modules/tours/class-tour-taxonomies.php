@@ -15,18 +15,6 @@ class Tourism_Core_Tour_Taxonomies {
 			__( 'Tour Types', TOURISM_CORE_TD ),
 			__( 'Tour Type', TOURISM_CORE_TD )
 		);
-
-		$this->register_taxonomy(
-			'tour_difficulty',
-			__( 'Difficulties', TOURISM_CORE_TD ),
-			__( 'Difficulty', TOURISM_CORE_TD )
-		);
-
-		$this->register_taxonomy(
-			'tour_duration',
-			__( 'Durations', TOURISM_CORE_TD ),
-			__( 'Duration', TOURISM_CORE_TD )
-		);
 	}
 
 	private function register_taxonomy( $taxonomy, $plural, $singular ) {

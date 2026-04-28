@@ -7,6 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Tourism_Core_Module_Destinations {
 	public function register( Tourism_Core_Loader $loader ) {
 		$loader->add_action( 'init', $this, 'register_cpt' );
+		$metaboxes = new Tourism_Core_Destination_Metaboxes();
+		$metaboxes->register( $loader );
 	}
 
 	public function register_cpt() {
@@ -31,7 +33,7 @@ class Tourism_Core_Module_Destinations {
 				'has_archive'  => true,
 				'show_in_rest' => true,
 				'menu_icon'    => TOURISM_CORE_URL . 'assets/ico/destinations3.svg',
-				'supports'     => array( 'title', 'editor', 'excerpt', 'thumbnail' ),
+				'supports'     => array( 'title', 'thumbnail' ),
 				'rewrite'      => array( 'slug' => 'destinations' ),
 			)
 		);
