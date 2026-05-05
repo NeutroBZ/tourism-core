@@ -105,6 +105,16 @@ class Tourism_Core_Tour_Metaboxes
 			'normal',
 			'default'
 		);
+
+		// Highlights (modular template)
+		add_meta_box(
+			'tourism-core-tour-highlights',
+			__('Tour Highlights', TOURISM_CORE_TD),
+			array($this, 'render_highlights'),
+			'tour',
+			'normal',
+			'default'
+		);
 	}
 
 	/* =========================
@@ -331,6 +341,40 @@ class Tourism_Core_Tour_Metaboxes
 				array(
 					'question' => '',
 					'answer'   => $raw,
+				),
+			);
+		}
+
+		return array();
+	}
+
+	/**
+	 * Normalize Highlights meta for the editor (array of description rows).
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array<int, array{description: string}>
+	 */
+	private function get_tour_highlights_for_edit($post_id)
+	{
+		$raw = get_post_meta($post_id, 'tourism_highlights', true);
+
+		if (is_array($raw)) {
+			$out = array();
+			foreach ($raw as $row) {
+				if (! is_array($row)) {
+					continue;
+				}
+				$out[] = array(
+					'description' => isset($row['description']) ? (string) $row['description'] : '',
+				);
+			}
+			return $out;
+		}
+
+		if (is_string($raw) && trim($raw) !== '') {
+			return array(
+				array(
+					'description' => $raw,
 				),
 			);
 		}
@@ -703,6 +747,21 @@ class Tourism_Core_Tour_Metaboxes
 		}
 	}
 
+	/**
+	 * Highlights metabox (markup lives in templates/highlights-metabox.php).
+	 *
+	 * @param \WP_Post $post Post object.
+	 */
+	public function render_highlights($post)
+	{
+		$tourism_core_highlights = $this->get_tour_highlights_for_edit((int) $post->ID);
+
+		$template = TOURISM_CORE_PATH . 'modules/tours/templates/highlights-metabox.php';
+		if (is_readable($template)) {
+			include $template;
+		}
+	}
+
 	/* =========================
 	   HERO IMAGE
 	========================= */
@@ -999,6 +1058,26 @@ class Tourism_Core_Tour_Metaboxes
 			}
 			update_post_meta($post_id, 'tourism_faqs', $faq_items);
 		}
+
+		// Highlights (repeater: only when metabox is on the screen — avoids wiping if hidden in Screen Options).
+		if (isset($_POST['tourism_highlights_metabox_present'])) {
+			$highlight_items = array();
+			if (isset($_POST['tourism_highlights']) && is_array($_POST['tourism_highlights'])) {
+				foreach (wp_unslash($_POST['tourism_highlights']) as $row) {
+					if (! is_array($row)) {
+						continue;
+					}
+					$description = isset($row['description']) ? sanitize_textarea_field($row['description']) : '';
+					if ($description === '') {
+						continue;
+					}
+					$highlight_items[] = array(
+						'description' => $description,
+					);
+				}
+			}
+			update_post_meta($post_id, 'tourism_highlights', $highlight_items);
+		}
 		// HERO IMAGE
 		if (isset($_POST['tour_hero_image'])) {
 			update_post_meta($post_id, '_tour_hero_image', (int) $_POST['tour_hero_image']);
@@ -1024,6 +1103,11 @@ class Tourism_Core_Tour_Metaboxes
 			#tourism-core-faqs-container .tourism-core-faq-header h4{margin:0;flex:1;font-size:13px;}
 			#tourism-core-faqs-container .tourism-core-handle{cursor:move;color:#787c82;}
 			#tourism-core-faqs-container .tourism-core-faq-content{padding:10px;}
+			#tourism-core-highlights-container .tourism-core-highlight-item{border:1px solid #c3c4c7;background:#fff;margin-bottom:10px;}
+			#tourism-core-highlights-container .tourism-core-highlight-header{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #c3c4c7;background:#f6f7f7;}
+			#tourism-core-highlights-container .tourism-core-highlight-header h4{margin:0;flex:1;font-size:13px;}
+			#tourism-core-highlights-container .tourism-core-handle{cursor:move;color:#787c82;}
+			#tourism-core-highlights-container .tourism-core-highlight-content{padding:10px;}
 			.tourism-core-gallery-metabox-container{margin-top:4px;}
 			#tourism-core-gallery-images-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:12px;}
 			.tourism-core-gallery-image-item{border:1px solid #c3c4c7;background:#fff;padding:10px;}
@@ -1329,6 +1413,19 @@ class Tourism_Core_Tour_Metaboxes
 					});
 				}
 
+				function tourismCoreRenumberHighlights(){
+					const \$c = $('#tourism-core-highlights-container');
+					if(!\$c.length) return;
+					\$c.children('.tourism-core-highlight-item').each(function(i){
+						const \$item = $(this);
+						\$item.attr('data-tourism-core-index', String(i));
+						\$item.find('.tourism-core-item-number').text(String(i + 1));
+						\$item.find('textarea[name^=\"tourism_highlights[\"]').attr('name', 'tourism_highlights['+i+'][description]');
+						\$item.find('label[for^=\"tourism_core_highlight_description_\"]').attr('for', 'tourism_core_highlight_description_'+i);
+						\$item.find('textarea[id^=\"tourism_core_highlight_description_\"]').attr('id', 'tourism_core_highlight_description_'+i);
+					});
+				}
+
 				function tourismCoreRenumberItinerary(){
 					const \$c = $('#tourism-core-itinerary-container');
 					if(!\$c.length) return;
@@ -1456,6 +1553,38 @@ class Tourism_Core_Tour_Metaboxes
 						$(this).closest('.tourism-core-faq-item').remove();
 						tourismCoreRenumberFaqs();
 					});
+				}
+
+				const \$highlightsContainer = $('#tourism-core-highlights-container');
+				if(\$highlightsContainer.length){
+					\$highlightsContainer.sortable({
+						handle: '.tourism-core-handle',
+						items: '> .tourism-core-highlight-item',
+						cancel: 'input,textarea,button,select,option',
+						update: function(){
+							tourismCoreRenumberHighlights();
+						}
+					});
+
+					$(document).on('click', '#tourism-core-add-highlight', function(e){
+						e.preventDefault();
+						const tmpl = $('#tourism-core-tmpl-highlight-item').html();
+						if(!tmpl) return;
+						const idx = \$highlightsContainer.children('.tourism-core-highlight-item').length;
+						const html = tmpl
+							.split('{{tourism_index}}').join(String(idx))
+							.split('{{tourism_index_plus_one}}').join(String(idx + 1));
+						\$highlightsContainer.append(html);
+						tourismCoreRenumberHighlights();
+					});
+
+					$(document).on('click', '.tourism-core-delete-highlight', function(e){
+						e.preventDefault();
+						$(this).closest('.tourism-core-highlight-item').remove();
+						tourismCoreRenumberHighlights();
+					});
+
+					tourismCoreRenumberHighlights();
 				}
 
 				const \$itineraryContainer = $('#tourism-core-itinerary-container');
