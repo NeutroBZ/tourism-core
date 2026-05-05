@@ -70,31 +70,31 @@ class Tourism_Core_Destination_Metaboxes
 		}
 	}
 
+	/**
+	 * Hero: imagen + título corto opcional sobre el h1 del hero y línea breve opcional.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array{hero_id: int, title: string, short_description: string}
+	 */
+	private function get_destination_hero_for_edit($post_id)
+	{
+		return array(
+			'hero_id'           => (int) get_post_meta($post_id, '_destination_hero_image', true),
+			'title'             => (string) get_post_meta($post_id, 'tourism_destination_hero_title', true),
+			'short_description' => (string) get_post_meta($post_id, 'tourism_destination_hero_short_description', true),
+		);
+	}
+
 	public function render_hero($post)
 	{
 		wp_nonce_field('tourism_core_save_destination', 'tourism_core_destination_nonce');
 
-		$hero_id = (int) get_post_meta($post->ID, '_destination_hero_image', true);
-		$image = $hero_id ? wp_get_attachment_image($hero_id, 'medium') : '';
-		?>
+		$tourism_core_destination_hero = $this->get_destination_hero_for_edit((int) $post->ID);
 
-		<div>
-			<div id="destination-hero-preview" style="margin-bottom:10px;">
-				<?php echo $image; ?>
-			</div>
-
-			<input type="hidden" id="destination_hero_image" name="destination_hero_image" value="<?php echo esc_attr((string) $hero_id); ?>" />
-
-			<button type="button" class="button tourism-upload-destination-hero">
-				<?php esc_html_e('Select Image', TOURISM_CORE_TD); ?>
-			</button>
-
-			<button type="button" class="button tourism-remove-destination-hero">
-				<?php esc_html_e('Remove', TOURISM_CORE_TD); ?>
-			</button>
-		</div>
-
-		<?php
+		$template = TOURISM_CORE_PATH . 'modules/destinations/templates/hero-metabox.php';
+		if (is_readable($template)) {
+			include $template;
+		}
 	}
 
 	/**
@@ -158,9 +158,15 @@ class Tourism_Core_Destination_Metaboxes
 		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
 		if (! current_user_can('edit_post', $post_id)) return;
 
-		// HERO IMAGE
-		if (isset($_POST['destination_hero_image'])) {
-			update_post_meta($post_id, '_destination_hero_image', (int) $_POST['destination_hero_image']);
+		// Hero (imagen + textos opcionales; sólo si el metabox está visible).
+		if (isset($_POST['tourism_destination_hero_metabox_present'])) {
+			$hero_id = isset($_POST['destination_hero_image']) ? (int) wp_unslash($_POST['destination_hero_image']) : 0;
+			update_post_meta($post_id, '_destination_hero_image', $hero_id);
+
+			$hero_title = isset($_POST['tourism_destination_hero_title']) ? sanitize_text_field(wp_unslash($_POST['tourism_destination_hero_title'])) : '';
+			$hero_short_description = isset($_POST['tourism_destination_hero_short_description']) ? sanitize_textarea_field(wp_unslash($_POST['tourism_destination_hero_short_description'])) : '';
+			update_post_meta($post_id, 'tourism_destination_hero_title', $hero_title);
+			update_post_meta($post_id, 'tourism_destination_hero_short_description', $hero_short_description);
 		}
 
 		// INTRO
@@ -233,6 +239,8 @@ class Tourism_Core_Destination_Metaboxes
 			.tourism-core-destination-image-actions .button{min-width:32px;padding:0 6px;}
 			.tourism-core-destination-image-details label{display:block;margin:6px 0 2px;font-weight:600;}
 			.tourism-core-destination-image-details input,.tourism-core-destination-image-details textarea{width:100%;}
+			.tourism-core-destination-hero-text-fields label{display:block;margin:0 0 4px;}
+			.tourism-core-destination-hero-preview-wrap img{width:100%;display:block;}
 			'
 		);
 

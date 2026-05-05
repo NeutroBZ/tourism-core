@@ -32,7 +32,7 @@ $tourism_core_itinerary_items = isset($tourism_core_itinerary_items) && is_array
 				<span class="tourism-core-handle dashicons dashicons-move" aria-hidden="true"></span>
 				<h4>
 					<?php esc_html_e('Day', TOURISM_CORE_TD); ?>
-					#<span class="tourism-core-item-number"><?php echo esc_html((string) ((int) $tourism_core_index + 1)); ?></span>
+					<span class="tourism-core-item-number"><?php echo esc_html((string) ((int) $tourism_core_index + 1)); ?></span>
 				</h4>
 				<button type="button" class="tourism-core-delete-itinerary button"><?php esc_html_e('Delete', TOURISM_CORE_TD); ?></button>
 			</div>
