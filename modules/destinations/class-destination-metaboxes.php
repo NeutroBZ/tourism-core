@@ -44,6 +44,26 @@ class Tourism_Core_Destination_Metaboxes
 			'normal',
 			'default'
 		);
+
+		// Highlights (title + description)
+		add_meta_box(
+			'tourism-core-destination-highlights',
+			__('Destination Highlights', TOURISM_CORE_TD),
+			array($this, 'render_highlights'),
+			'destination',
+			'normal',
+			'default'
+		);
+
+		// Season (best months + travel tip)
+		add_meta_box(
+			'tourism-core-destination-season',
+			__('Season & tips', TOURISM_CORE_TD),
+			array($this, 'render_season'),
+			'destination',
+			'normal',
+			'default'
+		);
 	}
 
 	/**
@@ -148,6 +168,104 @@ class Tourism_Core_Destination_Metaboxes
 		}
 	}
 
+	/**
+	 * Highlights filas para el editor.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array<int, array{title: string, description: string}>
+	 */
+	private function get_destination_highlights_for_edit($post_id)
+	{
+		$raw = get_post_meta($post_id, 'tourism_destination_highlights', true);
+
+		if (! is_array($raw)) {
+			return array();
+		}
+
+		$out = array();
+		foreach ($raw as $row) {
+			if (! is_array($row)) {
+				continue;
+			}
+			$out[] = array(
+				'title'       => isset($row['title']) ? (string) $row['title'] : '',
+				'description' => isset($row['description']) ? (string) $row['description'] : '',
+			);
+		}
+
+		return $out;
+	}
+
+	public function render_highlights($post)
+	{
+		wp_nonce_field('tourism_core_save_destination', 'tourism_core_destination_nonce');
+
+		$tourism_core_destination_highlights = $this->get_destination_highlights_for_edit((int) $post->ID);
+
+		$template = TOURISM_CORE_PATH . 'modules/destinations/templates/highlights-metabox.php';
+		if (is_readable($template)) {
+			include $template;
+		}
+	}
+
+	/**
+	 * Etiquetas de mes localizadas (1 = enero … 12 = diciembre según configuración).
+	 *
+	 * @return array<int, string>
+	 */
+	private function get_destination_month_labels()
+	{
+		$labels = array();
+		for ($m = 1; $m <= 12; $m++) {
+			// Fecha estable para evitar días inválidos al variar meses.
+			$ts = strtotime(sprintf('2000-%02d-15 12:00:00', $m));
+			$labels[$m] = wp_date('F', $ts);
+		}
+		return $labels;
+	}
+
+	/**
+	 * Temporada / mejor época para el editor.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array{best_months: array<int, int>, travel_tip: string}
+	 */
+	private function get_destination_season_for_edit($post_id)
+	{
+		$raw_months = get_post_meta($post_id, 'tourism_destination_best_months', true);
+		$best_months = array();
+
+		if (is_array($raw_months)) {
+			foreach ($raw_months as $v) {
+				$i = (int) $v;
+				if ($i >= 1 && $i <= 12) {
+					$best_months[] = $i;
+				}
+			}
+		}
+
+		$best_months = array_values(array_unique($best_months));
+		sort($best_months);
+
+		return array(
+			'best_months' => $best_months,
+			'travel_tip'  => (string) get_post_meta($post_id, 'tourism_destination_travel_tip', true),
+		);
+	}
+
+	public function render_season($post)
+	{
+		wp_nonce_field('tourism_core_save_destination', 'tourism_core_destination_nonce');
+
+		$tourism_core_destination_season = $this->get_destination_season_for_edit((int) $post->ID);
+		$tourism_core_destination_month_labels = $this->get_destination_month_labels();
+
+		$template = TOURISM_CORE_PATH . 'modules/destinations/templates/season-metabox.php';
+		if (is_readable($template)) {
+			include $template;
+		}
+	}
+
 	public function save($post_id, $post)
 	{
 		if (! isset($_POST['tourism_core_destination_nonce']) ||
@@ -216,6 +334,47 @@ class Tourism_Core_Destination_Metaboxes
 			update_post_meta($post_id, 'tourism_destination_gallery_images', $gallery_rows);
 			update_post_meta($post_id, 'tourism_destination_gallery_ids', array_values(array_unique(array_filter($sync_ids))));
 		}
+
+		// Highlights (repeater: sólo cuando el metabox está visible).
+		if (isset($_POST['tourism_destination_highlights_metabox_present'])) {
+			$highlight_rows = array();
+			if (isset($_POST['tourism_destination_highlights']) && is_array($_POST['tourism_destination_highlights'])) {
+				foreach (wp_unslash($_POST['tourism_destination_highlights']) as $row) {
+					if (! is_array($row)) {
+						continue;
+					}
+					$htitle = isset($row['title']) ? sanitize_text_field($row['title']) : '';
+					$hdesc = isset($row['description']) ? sanitize_textarea_field($row['description']) : '';
+					if ($htitle === '' && $hdesc === '') {
+						continue;
+					}
+					$highlight_rows[] = array(
+						'title'       => $htitle,
+						'description' => $hdesc,
+					);
+				}
+			}
+			update_post_meta($post_id, 'tourism_destination_highlights', $highlight_rows);
+		}
+
+		// Season (mejores meses + tip; sólo si el metabox está visible).
+		if (isset($_POST['tourism_destination_season_metabox_present'])) {
+			$best_months = array();
+			if (isset($_POST['tourism_destination_best_months']) && is_array($_POST['tourism_destination_best_months'])) {
+				foreach (wp_unslash($_POST['tourism_destination_best_months']) as $v) {
+					$i = (int) $v;
+					if ($i >= 1 && $i <= 12) {
+						$best_months[] = $i;
+					}
+				}
+			}
+			$best_months = array_values(array_unique($best_months));
+			sort($best_months);
+			update_post_meta($post_id, 'tourism_destination_best_months', $best_months);
+
+			$travel_tip = isset($_POST['tourism_destination_travel_tip']) ? sanitize_text_field(wp_unslash($_POST['tourism_destination_travel_tip'])) : '';
+			update_post_meta($post_id, 'tourism_destination_travel_tip', $travel_tip);
+		}
 	}
 
 	public function enqueue_admin_assets($hook)
@@ -240,7 +399,35 @@ class Tourism_Core_Destination_Metaboxes
 			.tourism-core-destination-image-details label{display:block;margin:6px 0 2px;font-weight:600;}
 			.tourism-core-destination-image-details input,.tourism-core-destination-image-details textarea{width:100%;}
 			.tourism-core-destination-hero-text-fields label{display:block;margin:0 0 4px;}
-			.tourism-core-destination-hero-preview-wrap img{width:100%;display:block;}
+			.tourism-core-destination-hero-preview-wrap{
+				display:flex;
+				justify-content:center;
+				align-items:center;
+				min-height:72px;
+				max-height:220px;
+				border:1px solid #dcdcde;
+				background:#f0f0f1;
+				padding:8px;
+				box-sizing:border-box;
+			}
+			.tourism-core-destination-hero-preview-wrap img{
+				max-width:100%;
+				max-height:200px;
+				width:auto;
+				height:auto;
+				object-fit:contain;
+				display:block;
+			}
+			#tourism-core-destination-highlights-container .tourism-core-destination-highlight-item{border:1px solid #c3c4c7;background:#fff;margin-bottom:10px;}
+			#tourism-core-destination-highlights-container .tourism-core-destination-highlight-header{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #c3c4c7;background:#f6f7f7;}
+			#tourism-core-destination-highlights-container .tourism-core-destination-highlight-header h4{margin:0;flex:1;font-size:13px;}
+			#tourism-core-destination-highlights-container .tourism-core-handle{cursor:move;color:#787c82;}
+			#tourism-core-destination-highlights-container .tourism-core-destination-highlight-content{padding:10px;}
+			.tourism-core-season-best-months-heading{margin-bottom:6px;}
+			.tourism-core-season-months-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px 12px;margin-top:10px;max-width:720px;}
+			.tourism-core-season-month-label{display:flex;align-items:center;gap:6px;font-size:13px;}
+			.tourism-core-season-month-label input{margin:0;}
+			@media (max-width:782px){.tourism-core-season-months-grid{grid-template-columns:1fr 1fr;}}
 			'
 		);
 
@@ -266,7 +453,7 @@ class Tourism_Core_Destination_Metaboxes
 						const attachment = frame.state().get('selection').first().toJSON();
 						$('#destination_hero_image').val(attachment.id);
 						const url = (attachment.sizes && attachment.sizes.medium && attachment.sizes.medium.url) ? attachment.sizes.medium.url : attachment.url;
-						$('#destination-hero-preview').html('<img src=\"'+url+'\" style=\"width:100%;\" />');
+						$('#destination-hero-preview').html('<img src=\"'+url+'\" alt=\"\" />');
 					});
 
 					frame.open();
@@ -286,6 +473,22 @@ class Tourism_Core_Destination_Metaboxes
 						\$item.find('.tourism-core-destination-gallery-field-url').attr('name', 'tourism_destination_gallery_images['+i+'][url]');
 						\$item.find('.tourism-core-destination-image-details input[type=\"text\"]').attr('name', 'tourism_destination_gallery_images['+i+'][title]');
 						\$item.find('.tourism-core-destination-image-details textarea').attr('name', 'tourism_destination_gallery_images['+i+'][caption]');
+					});
+				}
+
+				function tourismCoreRenumberDestinationHighlights(){
+					const \$c = $('#tourism-core-destination-highlights-container');
+					if(!\$c.length) return;
+					\$c.children('.tourism-core-destination-highlight-item').each(function(i){
+						const \$item = $(this);
+						\$item.attr('data-tourism-core-index', String(i));
+						\$item.find('.tourism-core-item-number').text(String(i + 1));
+						\$item.find('input[name^=\"tourism_destination_highlights[\"]').attr('name', 'tourism_destination_highlights['+i+'][title]');
+						\$item.find('textarea[name^=\"tourism_destination_highlights[\"]').attr('name', 'tourism_destination_highlights['+i+'][description]');
+						\$item.find('label[for^=\"tourism_core_destination_highlight_title_\"]').attr('for', 'tourism_core_destination_highlight_title_'+i);
+						\$item.find('input[id^=\"tourism_core_destination_highlight_title_\"]').attr('id', 'tourism_core_destination_highlight_title_'+i);
+						\$item.find('label[for^=\"tourism_core_destination_highlight_description_\"]').attr('for', 'tourism_core_destination_highlight_description_'+i);
+						\$item.find('textarea[id^=\"tourism_core_destination_highlight_description_\"]').attr('id', 'tourism_core_destination_highlight_description_'+i);
 					});
 				}
 
@@ -333,6 +536,38 @@ class Tourism_Core_Destination_Metaboxes
 						});
 						media.open();
 					});
+				}
+
+				const \$highlightsContainer = $('#tourism-core-destination-highlights-container');
+				if(\$highlightsContainer.length){
+					\$highlightsContainer.sortable({
+						handle: '.tourism-core-handle',
+						items: '> .tourism-core-destination-highlight-item',
+						cancel: 'input,textarea,button,select,option',
+						update: function(){
+							tourismCoreRenumberDestinationHighlights();
+						}
+					});
+
+					$(document).on('click', '#tourism-core-add-destination-highlight', function(e){
+						e.preventDefault();
+						const tmpl = $('#tourism-core-tmpl-destination-highlight-item').html();
+						if(!tmpl) return;
+						const idx = \$highlightsContainer.children('.tourism-core-destination-highlight-item').length;
+						const html = tmpl
+							.split('{{tourism_index}}').join(String(idx))
+							.split('{{tourism_index_plus_one}}').join(String(idx + 1));
+						\$highlightsContainer.append(html);
+						tourismCoreRenumberDestinationHighlights();
+					});
+
+					$(document).on('click', '.tourism-core-delete-destination-highlight', function(e){
+						e.preventDefault();
+						$(this).closest('.tourism-core-destination-highlight-item').remove();
+						tourismCoreRenumberDestinationHighlights();
+					});
+
+					tourismCoreRenumberDestinationHighlights();
 				}
 			});
 		");
