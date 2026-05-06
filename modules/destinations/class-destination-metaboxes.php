@@ -64,6 +64,16 @@ class Tourism_Core_Destination_Metaboxes
 			'normal',
 			'default'
 		);
+
+		// Ubicación (Departamento/Provincia/Distrito + coordenadas + altitud)
+		add_meta_box(
+			'tourism-core-destination-ubication',
+			__('Ubicación', TOURISM_CORE_TD),
+			array($this, 'render_ubication'),
+			'destination',
+			'normal',
+			'default'
+		);
 	}
 
 	/**
@@ -266,6 +276,86 @@ class Tourism_Core_Destination_Metaboxes
 		}
 	}
 
+	/**
+	 * @param int $post_id
+	 * @return array{
+	 *   departamento_term_id:int,
+	 *   provincia_term_id:int,
+	 *   distrito_term_id:int,
+	 *   departamentos:array<int,WP_Term>,
+	 *   provincias:array<int,WP_Term>,
+	 *   distritos:array<int,WP_Term>,
+	 *   latitud:string,
+	 *   longitud:string,
+	 *   altitud:string
+	 * }
+	 */
+	private function get_destination_ubication_for_edit($post_id)
+	{
+		$departamento_terms = get_the_terms($post_id, 'departamento');
+		$provincia_terms = get_the_terms($post_id, 'provincia');
+		$distrito_terms = get_the_terms($post_id, 'distrito');
+
+		$departamento_term_id = (is_array($departamento_terms) && ! empty($departamento_terms) && $departamento_terms[0] instanceof WP_Term)
+			? (int) $departamento_terms[0]->term_id
+			: 0;
+		$provincia_term_id = (is_array($provincia_terms) && ! empty($provincia_terms) && $provincia_terms[0] instanceof WP_Term)
+			? (int) $provincia_terms[0]->term_id
+			: 0;
+		$distrito_term_id = (is_array($distrito_terms) && ! empty($distrito_terms) && $distrito_terms[0] instanceof WP_Term)
+			? (int) $distrito_terms[0]->term_id
+			: 0;
+
+		$departamentos = get_terms(
+			array(
+				'taxonomy'   => 'departamento',
+				'hide_empty' => false,
+				'orderby'    => 'name',
+				'order'      => 'ASC',
+			)
+		);
+		$provincias = get_terms(
+			array(
+				'taxonomy'   => 'provincia',
+				'hide_empty' => false,
+				'orderby'    => 'name',
+				'order'      => 'ASC',
+			)
+		);
+		$distritos = get_terms(
+			array(
+				'taxonomy'   => 'distrito',
+				'hide_empty' => false,
+				'orderby'    => 'name',
+				'order'      => 'ASC',
+			)
+		);
+
+		return array(
+			'departamento_term_id' => $departamento_term_id,
+			'provincia_term_id'    => $provincia_term_id,
+			'distrito_term_id'     => $distrito_term_id,
+			'departamentos'        => is_array($departamentos) ? $departamentos : array(),
+			'provincias'           => is_array($provincias) ? $provincias : array(),
+			'distritos'            => is_array($distritos) ? $distritos : array(),
+			'latitud'              => (string) get_post_meta($post_id, 'tourism_destination_latitud', true),
+			'longitud'             => (string) get_post_meta($post_id, 'tourism_destination_longitud', true),
+			'altitud'              => (string) get_post_meta($post_id, 'tourism_destination_altitud', true),
+		);
+	}
+
+	public function render_ubication($post)
+	{
+		wp_nonce_field('tourism_core_save_destination', 'tourism_core_destination_nonce');
+
+		$tourism_core_destination_ubication = $this->get_destination_ubication_for_edit((int) $post->ID);
+
+		$template = TOURISM_CORE_PATH . 'modules/destinations/templates/ubication-metabox.php';
+		if (is_readable($template)) {
+			include $template;
+		}
+	}
+
 	public function save($post_id, $post)
 	{
 		if (! isset($_POST['tourism_core_destination_nonce']) ||
@@ -374,6 +464,25 @@ class Tourism_Core_Destination_Metaboxes
 
 			$travel_tip = isset($_POST['tourism_destination_travel_tip']) ? sanitize_text_field(wp_unslash($_POST['tourism_destination_travel_tip'])) : '';
 			update_post_meta($post_id, 'tourism_destination_travel_tip', $travel_tip);
+		}
+
+		// Ubicación (taxonomías + coordenadas + altitud; sólo si el metabox está visible).
+		if (isset($_POST['tourism_destination_ubication_metabox_present'])) {
+			$departamento_term_id = isset($_POST['tourism_destination_departamento_term']) ? (int) wp_unslash($_POST['tourism_destination_departamento_term']) : 0;
+			$provincia_term_id = isset($_POST['tourism_destination_provincia_term']) ? (int) wp_unslash($_POST['tourism_destination_provincia_term']) : 0;
+			$distrito_term_id = isset($_POST['tourism_destination_distrito_term']) ? (int) wp_unslash($_POST['tourism_destination_distrito_term']) : 0;
+
+			wp_set_object_terms($post_id, $departamento_term_id > 0 ? array($departamento_term_id) : array(), 'departamento', false);
+			wp_set_object_terms($post_id, $provincia_term_id > 0 ? array($provincia_term_id) : array(), 'provincia', false);
+			wp_set_object_terms($post_id, $distrito_term_id > 0 ? array($distrito_term_id) : array(), 'distrito', false);
+
+			$latitud = isset($_POST['tourism_destination_latitud']) ? sanitize_text_field(wp_unslash($_POST['tourism_destination_latitud'])) : '';
+			$longitud = isset($_POST['tourism_destination_longitud']) ? sanitize_text_field(wp_unslash($_POST['tourism_destination_longitud'])) : '';
+			$altitud = isset($_POST['tourism_destination_altitud']) ? sanitize_text_field(wp_unslash($_POST['tourism_destination_altitud'])) : '';
+
+			update_post_meta($post_id, 'tourism_destination_latitud', $latitud);
+			update_post_meta($post_id, 'tourism_destination_longitud', $longitud);
+			update_post_meta($post_id, 'tourism_destination_altitud', $altitud);
 		}
 	}
 

@@ -7,6 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Tourism_Core_Module_Destinations {
 	public function register( Tourism_Core_Loader $loader ) {
 		$loader->add_action( 'init', $this, 'register_cpt' );
+		$taxonomies = new Tourism_Core_Destination_Taxonomies();
+		$taxonomies->register($loader);
 		$metaboxes = new Tourism_Core_Destination_Metaboxes();
 		$metaboxes->register( $loader );
 	}

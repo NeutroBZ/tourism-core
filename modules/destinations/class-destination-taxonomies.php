@@ -1,0 +1,54 @@
+<?php
+
+if (! defined('ABSPATH')) {
+	exit;
+}
+
+class Tourism_Core_Destination_Taxonomies
+{
+	public function register(Tourism_Core_Loader $loader)
+	{
+		$loader->add_action('init', $this, 'register_taxonomies');
+	}
+
+	public function register_taxonomies()
+	{
+		$this->register_taxonomy(
+			'departamento',
+			__('Departamentos', TOURISM_CORE_TD),
+			__('Departamento', TOURISM_CORE_TD)
+		);
+
+		$this->register_taxonomy(
+			'provincia',
+			__('Provincias', TOURISM_CORE_TD),
+			__('Provincia', TOURISM_CORE_TD)
+		);
+
+		$this->register_taxonomy(
+			'distrito',
+			__('Distritos', TOURISM_CORE_TD),
+			__('Distrito', TOURISM_CORE_TD)
+		);
+	}
+
+	private function register_taxonomy($taxonomy, $plural, $singular)
+	{
+		register_taxonomy(
+			(string) $taxonomy,
+			array('destination'),
+			array(
+				'labels'            => array(
+					'name'          => $plural,
+					'singular_name' => $singular,
+				),
+				'public'            => true,
+				'hierarchical'      => true,
+				'show_in_rest'      => true,
+				'show_admin_column' => true,
+				'rewrite'           => array('slug' => $taxonomy),
+			)
+		);
+	}
+}
+

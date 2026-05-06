@@ -9,6 +9,7 @@ require_once TOURISM_CORE_PATH . 'frontend/class-shortcodes.php';
 require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-cpt.php';
 require_once TOURISM_CORE_PATH . 'modules/destinations/class-destination-cpt.php';
 require_once TOURISM_CORE_PATH . 'modules/destinations/class-destination-metaboxes.php';
+require_once TOURISM_CORE_PATH . 'modules/destinations/class-destination-taxonomies.php';
 require_once TOURISM_CORE_PATH . 'modules/emails/class-email-manager.php';
 require_once TOURISM_CORE_PATH . 'modules/bookings/class-bookings-module.php';
 require_once TOURISM_CORE_PATH . 'admin/class-admin.php';
@@ -83,6 +84,8 @@ class Tourism_Core_Plugin {
 
 		$dest = new Tourism_Core_Module_Destinations();
 		$dest->register_cpt();
+		$dest_tax = new Tourism_Core_Destination_Taxonomies();
+		$dest_tax->register_taxonomies();
 
 		$emails   = new Tourism_Core_Email_Manager();
 		$bookings = new Tourism_Core_Module_Bookings( $emails );
