@@ -17,6 +17,9 @@ class Tourism_Core_Destination_Metaboxes
 		$loader->add_action('manage_destination_posts_custom_column', $this, 'render_order_column', 10, 2);
 		$loader->add_filter('manage_edit-destination_sortable_columns', $this, 'make_order_column_sortable');
 		$loader->add_action('pre_get_posts', $this, 'apply_admin_order_sorting');
+
+		// Quick edit support for manual ordering.
+		$loader->add_action('quick_edit_custom_box', $this, 'render_quick_edit_order_field', 10, 2);
 	}
 
 	public function add_order_column($columns)
@@ -431,6 +434,27 @@ class Tourism_Core_Destination_Metaboxes
 
 	public function save($post_id, $post)
 	{
+		// 1) Quick Edit: allow saving only the manual order field with its own nonce.
+		if (isset($_POST['tourism_core_destination_quickedit_nonce']) &&
+			wp_verify_nonce(
+				sanitize_text_field(wp_unslash($_POST['tourism_core_destination_quickedit_nonce'])),
+				'tourism_core_quickedit_destination'
+			)
+		) {
+			if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+			if (! current_user_can('edit_post', $post_id)) return;
+
+			if (isset($_POST['tourism_destination_order'])) {
+				$order = (int) wp_unslash($_POST['tourism_destination_order']);
+				if ($order < 0) {
+					$order = 0;
+				}
+				update_post_meta($post_id, 'tourism_destination_order', $order);
+			}
+			return;
+		}
+
+		// 2) Full edit screen save: require the main metabox nonce.
 		if (! isset($_POST['tourism_core_destination_nonce']) ||
 			! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['tourism_core_destination_nonce'])), 'tourism_core_save_destination')) {
 			return;
@@ -756,8 +780,48 @@ class Tourism_Core_Destination_Metaboxes
 
 					tourismCoreRenumberDestinationHighlights();
 				}
+
+				// Quick edit: populate manual order field from the list table column.
+				if (typeof inlineEditPost !== 'undefined') {
+					const originalEdit = inlineEditPost.edit;
+					inlineEditPost.edit = function(id){
+						originalEdit.apply(this, arguments);
+						let postId = 0;
+						if (typeof id === 'object' && id !== null) {
+							postId = parseInt(this.getId(id), 10);
+						} else {
+							postId = parseInt(id, 10);
+						}
+						if (!postId) return;
+
+						const \$row = $('#post-' + postId);
+						const \$editRow = $('#edit-' + postId);
+						if (!\$row.length || !\$editRow.length) return;
+
+						const current = $.trim(\$row.find('td.column-tourism_destination_order').text());
+						\$editRow.find('input[name=\"tourism_destination_order\"]').val(current !== '' ? parseInt(current, 10) : 0);
+					};
+				}
 			});
 		");
+	}
+
+	public function render_quick_edit_order_field($column_name, $post_type)
+	{
+		if ($post_type !== 'destination' || $column_name !== 'tourism_destination_order') {
+			return;
+		}
+		?>
+		<fieldset class="inline-edit-col-right">
+			<div class="inline-edit-col">
+				<?php wp_nonce_field('tourism_core_quickedit_destination', 'tourism_core_destination_quickedit_nonce'); ?>
+				<label class="inline-edit-group">
+					<span class="title"><?php esc_html_e('Orden', TOURISM_CORE_TD); ?></span>
+					<input type="number" min="0" step="1" name="tourism_destination_order" value="" />
+				</label>
+			</div>
+		</fieldset>
+		<?php
 	}
 }
 
