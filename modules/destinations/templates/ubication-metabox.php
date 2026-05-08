@@ -49,6 +49,7 @@ $tourism_core_distritos = isset($tourism_core_destination_ubication['distritos']
 $tourism_core_latitud = isset($tourism_core_destination_ubication['latitud']) ? (string) $tourism_core_destination_ubication['latitud'] : '';
 $tourism_core_longitud = isset($tourism_core_destination_ubication['longitud']) ? (string) $tourism_core_destination_ubication['longitud'] : '';
 $tourism_core_altitud = isset($tourism_core_destination_ubication['altitud']) ? (string) $tourism_core_destination_ubication['altitud'] : '';
+$tourism_core_order = isset($tourism_core_destination_ubication['order']) ? (int) $tourism_core_destination_ubication['order'] : 0;
 ?>
 
 <input type="hidden" name="tourism_destination_ubication_metabox_present" value="1" />
@@ -136,3 +137,20 @@ $tourism_core_altitud = isset($tourism_core_destination_ubication['altitud']) ? 
 		/>
 	</p>
 </div>
+
+<p style="margin-top:14px;margin-bottom:0;">
+	<label for="tourism_destination_order"><strong><?php esc_html_e('Orden en listados', TOURISM_CORE_TD); ?></strong></label>
+	<input
+		type="number"
+		min="0"
+		step="1"
+		id="tourism_destination_order"
+		name="tourism_destination_order"
+		value="<?php echo esc_attr((string) $tourism_core_order); ?>"
+		class="small-text"
+		style="margin-right:6px;"
+	/>
+	<span class="description">
+		<?php esc_html_e('Usa números enteros (0, 1, 2…). Menor número = aparece antes en el listado de destinos.', TOURISM_CORE_TD); ?>
+	</span>
+</p>

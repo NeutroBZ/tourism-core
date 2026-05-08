@@ -11,6 +11,77 @@ class Tourism_Core_Destination_Metaboxes
 		$loader->add_action('add_meta_boxes', $this, 'add_meta_boxes');
 		$loader->add_action('save_post_destination', $this, 'save', 10, 2);
 		$loader->add_action('admin_enqueue_scripts', $this, 'enqueue_admin_assets');
+
+		// Admin list table column for manual ordering.
+		$loader->add_filter('manage_destination_posts_columns', $this, 'add_order_column');
+		$loader->add_action('manage_destination_posts_custom_column', $this, 'render_order_column', 10, 2);
+		$loader->add_filter('manage_edit-destination_sortable_columns', $this, 'make_order_column_sortable');
+		$loader->add_action('pre_get_posts', $this, 'apply_admin_order_sorting');
+	}
+
+	public function add_order_column($columns)
+	{
+		if (! is_array($columns)) {
+			return $columns;
+		}
+
+		$new_columns = array();
+		foreach ($columns as $key => $label) {
+			$new_columns[$key] = $label;
+			if ($key === 'title') {
+				$new_columns['tourism_destination_order'] = __('Order', TOURISM_CORE_TD);
+			}
+		}
+
+		if (! isset($new_columns['tourism_destination_order'])) {
+			$new_columns['tourism_destination_order'] = __('Order', TOURISM_CORE_TD);
+		}
+
+		return $new_columns;
+	}
+
+	public function render_order_column($column, $post_id)
+	{
+		if ($column !== 'tourism_destination_order') {
+			return;
+		}
+
+		$value = (int) get_post_meta((int) $post_id, 'tourism_destination_order', true);
+		echo esc_html((string) $value);
+	}
+
+	public function make_order_column_sortable($columns)
+	{
+		if (! is_array($columns)) {
+			return $columns;
+		}
+
+		$columns['tourism_destination_order'] = 'tourism_destination_order';
+		return $columns;
+	}
+
+	public function apply_admin_order_sorting($query)
+	{
+		if (! $query instanceof WP_Query) {
+			return;
+		}
+
+		if (! is_admin() || ! $query->is_main_query()) {
+			return;
+		}
+
+		$screen_post_type = isset($_GET['post_type']) ? sanitize_key(wp_unslash($_GET['post_type'])) : '';
+		if ($screen_post_type !== 'destination') {
+			return;
+		}
+
+		$orderby = $query->get('orderby');
+		if ($orderby !== 'tourism_destination_order') {
+			return;
+		}
+
+		$query->set('meta_key', 'tourism_destination_order');
+		$query->set('orderby', 'meta_value_num');
 	}
 
 	public function add_meta_boxes()
@@ -287,7 +358,8 @@ class Tourism_Core_Destination_Metaboxes
 	 *   distritos:array<int,WP_Term>,
 	 *   latitud:string,
 	 *   longitud:string,
-	 *   altitud:string
+	 *   altitud:string,
+	 *   order:int
 	 * }
 	 */
 	private function get_destination_ubication_for_edit($post_id)
@@ -341,6 +413,7 @@ class Tourism_Core_Destination_Metaboxes
 			'latitud'              => (string) get_post_meta($post_id, 'tourism_destination_latitud', true),
 			'longitud'             => (string) get_post_meta($post_id, 'tourism_destination_longitud', true),
 			'altitud'              => (string) get_post_meta($post_id, 'tourism_destination_altitud', true),
+			'order'                => (int) get_post_meta($post_id, 'tourism_destination_order', true),
 		);
 	}
 
@@ -479,10 +552,15 @@ class Tourism_Core_Destination_Metaboxes
 			$latitud = isset($_POST['tourism_destination_latitud']) ? sanitize_text_field(wp_unslash($_POST['tourism_destination_latitud'])) : '';
 			$longitud = isset($_POST['tourism_destination_longitud']) ? sanitize_text_field(wp_unslash($_POST['tourism_destination_longitud'])) : '';
 			$altitud = isset($_POST['tourism_destination_altitud']) ? sanitize_text_field(wp_unslash($_POST['tourism_destination_altitud'])) : '';
+			$order = isset($_POST['tourism_destination_order']) ? (int) wp_unslash($_POST['tourism_destination_order']) : 0;
+			if ($order < 0) {
+				$order = 0;
+			}
 
 			update_post_meta($post_id, 'tourism_destination_latitud', $latitud);
 			update_post_meta($post_id, 'tourism_destination_longitud', $longitud);
 			update_post_meta($post_id, 'tourism_destination_altitud', $altitud);
+			update_post_meta($post_id, 'tourism_destination_order', $order);
 		}
 	}
 
