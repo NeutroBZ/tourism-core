@@ -11,8 +11,81 @@ class Tourism_Core_Tour_Metaboxes
 		$loader->add_action('add_meta_boxes', $this, 'add_meta_boxes');
 		$loader->add_action('save_post_tour', $this, 'save', 10, 2);
 		$loader->add_action('admin_enqueue_scripts', $this, 'enqueue_admin_assets');
+
+		// Admin list table column for manual ordering.
+		$loader->add_filter('manage_tour_posts_columns', $this, 'add_order_column');
+		$loader->add_action('manage_tour_posts_custom_column', $this, 'render_order_column', 10, 2);
+		$loader->add_filter('manage_edit-tour_sortable_columns', $this, 'make_order_column_sortable');
+		$loader->add_action('pre_get_posts', $this, 'apply_admin_order_sorting');
+
+		// Quick edit support for manual ordering.
+		$loader->add_action('quick_edit_custom_box', $this, 'render_quick_edit_order_field', 10, 2);
 	}
-	
+
+	public function add_order_column($columns)
+	{
+		if (! is_array($columns)) {
+			return $columns;
+		}
+
+		$new_columns = array();
+		foreach ($columns as $key => $label) {
+			$new_columns[$key] = $label;
+			if ($key === 'title') {
+				$new_columns['tourism_tour_order'] = __('Order', TOURISM_CORE_TD);
+			}
+		}
+
+		if (! isset($new_columns['tourism_tour_order'])) {
+			$new_columns['tourism_tour_order'] = __('Order', TOURISM_CORE_TD);
+		}
+
+		return $new_columns;
+	}
+
+	public function render_order_column($column, $post_id)
+	{
+		if ($column !== 'tourism_tour_order') {
+			return;
+		}
+
+		$value = (int) get_post_meta((int) $post_id, 'tourism_tour_order', true);
+		echo esc_html((string) $value);
+	}
+
+	public function make_order_column_sortable($columns)
+	{
+		if (! is_array($columns)) {
+			return $columns;
+		}
+
+		$columns['tourism_tour_order'] = 'tourism_tour_order';
+		return $columns;
+	}
+
+	public function apply_admin_order_sorting($query)
+	{
+		if (! $query instanceof WP_Query) {
+			return;
+		}
+
+		if (! is_admin() || ! $query->is_main_query()) {
+			return;
+		}
+
+		$screen_post_type = isset($_GET['post_type']) ? sanitize_key(wp_unslash($_GET['post_type'])) : '';
+		if ($screen_post_type !== 'tour') {
+			return;
+		}
+
+		$orderby = $query->get('orderby');
+		if ($orderby !== 'tourism_tour_order') {
+			return;
+		}
+
+		$query->set('meta_key', 'tourism_tour_order');
+		$query->set('orderby', 'meta_value_num');
+	}
 
 	public function add_meta_boxes()
 	{
@@ -113,6 +186,16 @@ class Tourism_Core_Tour_Metaboxes
 			array($this, 'render_highlights'),
 			'tour',
 			'normal',
+			'default'
+		);
+
+		// Manual order.
+		add_meta_box(
+			'tourism-core-tour-order',
+			__('Orden', TOURISM_CORE_TD),
+			array($this, 'render_order'),
+			'tour',
+			'side',
 			'default'
 		);
 	}
@@ -790,11 +873,58 @@ class Tourism_Core_Tour_Metaboxes
 <?php
 	}
 
+	/**
+	 * Manual order value for editor.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return int
+	 */
+	private function get_tour_order_for_edit($post_id)
+	{
+		$order = (int) get_post_meta($post_id, 'tourism_tour_order', true);
+		return $order < 0 ? 0 : $order;
+	}
+
+	/**
+	 * Manual order metabox.
+	 *
+	 * @param \WP_Post $post Post object.
+	 */
+	public function render_order($post)
+	{
+		$tourism_core_tour_order = $this->get_tour_order_for_edit((int) $post->ID);
+
+		$template = TOURISM_CORE_PATH . 'modules/tours/templates/order-tour-metabox.php';
+		if (is_readable($template)) {
+			include $template;
+		}
+	}
+
 	/* =========================
 	   SAVE
 	========================= */
 	public function save($post_id, $post)
 	{
+		// 1) Quick Edit: allow saving only the manual order field with its own nonce.
+		if (isset($_POST['tourism_core_tour_quickedit_nonce']) &&
+			wp_verify_nonce(
+				sanitize_text_field(wp_unslash($_POST['tourism_core_tour_quickedit_nonce'])),
+				'tourism_core_quickedit_tour'
+			)
+		) {
+			if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+			if (! current_user_can('edit_post', $post_id)) return;
+
+			if (isset($_POST['tourism_tour_order'])) {
+				$order = (int) wp_unslash($_POST['tourism_tour_order']);
+				if ($order < 0) {
+					$order = 0;
+				}
+				update_post_meta($post_id, 'tourism_tour_order', $order);
+			}
+			return;
+		}
+
 		if (! isset($_POST['tourism_core_tour_nonce']) ||
 			! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['tourism_core_tour_nonce'])), 'tourism_core_save_tour')) {
 			return;
@@ -1081,6 +1211,15 @@ class Tourism_Core_Tour_Metaboxes
 		// HERO IMAGE
 		if (isset($_POST['tour_hero_image'])) {
 			update_post_meta($post_id, '_tour_hero_image', (int) $_POST['tour_hero_image']);
+		}
+
+		// Manual order (only when metabox is on the screen — avoids wiping if hidden in Screen Options).
+		if (isset($_POST['tourism_tour_order_metabox_present'])) {
+			$order = isset($_POST['tourism_tour_order']) ? (int) wp_unslash($_POST['tourism_tour_order']) : 0;
+			if ($order < 0) {
+				$order = 0;
+			}
+			update_post_meta($post_id, 'tourism_tour_order', $order);
 		}
 	}
 
@@ -1690,7 +1829,47 @@ class Tourism_Core_Tour_Metaboxes
 						media.open();
 					});
 				}
+
+				// Quick edit: populate manual order field from the list table column.
+				if (typeof inlineEditPost !== 'undefined') {
+					const originalEdit = inlineEditPost.edit;
+					inlineEditPost.edit = function(id){
+						originalEdit.apply(this, arguments);
+						let postId = 0;
+						if (typeof id === 'object' && id !== null) {
+							postId = parseInt(this.getId(id), 10);
+						} else {
+							postId = parseInt(id, 10);
+						}
+						if (!postId) return;
+
+						const \$row = $('#post-' + postId);
+						const \$editRow = $('#edit-' + postId);
+						if (!\$row.length || !\$editRow.length) return;
+
+						const current = $.trim(\$row.find('td.column-tourism_tour_order').text());
+						\$editRow.find('input[name=\"tourism_tour_order\"]').val(current !== '' ? parseInt(current, 10) : 0);
+					};
+				}
 			});
 		");
+	}
+
+	public function render_quick_edit_order_field($column_name, $post_type)
+	{
+		if ($post_type !== 'tour' || $column_name !== 'tourism_tour_order') {
+			return;
+		}
+		?>
+		<fieldset class="inline-edit-col-right">
+			<div class="inline-edit-col">
+				<?php wp_nonce_field('tourism_core_quickedit_tour', 'tourism_core_tour_quickedit_nonce'); ?>
+				<label class="inline-edit-group">
+					<span class="title"><?php esc_html_e('Orden', TOURISM_CORE_TD); ?></span>
+					<input type="number" min="0" step="1" name="tourism_tour_order" value="" />
+				</label>
+			</div>
+		</fieldset>
+		<?php
 	}
 }
