@@ -1,0 +1,387 @@
+/**
+ * Tour CPT metabox admin styles (Tourism Core).
+ */
+
+#tourism-core-faqs-container .tourism-core-faq-item {
+	border: 1px solid #c3c4c7;
+	background: #fff;
+	margin-bottom: 10px;
+}
+
+#tourism-core-faqs-container .tourism-core-faq-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border-bottom: 1px solid #c3c4c7;
+	background: #f6f7f7;
+}
+
+#tourism-core-faqs-container .tourism-core-faq-header h4 {
+	margin: 0;
+	flex: 1;
+	font-size: 13px;
+}
+
+#tourism-core-faqs-container .tourism-core-handle {
+	cursor: move;
+	color: #787c82;
+}
+
+#tourism-core-faqs-container .tourism-core-faq-content {
+	padding: 10px;
+}
+
+#tourism-core-highlights-container .tourism-core-highlight-item {
+	border: 1px solid #c3c4c7;
+	background: #fff;
+	margin-bottom: 10px;
+}
+
+#tourism-core-highlights-container .tourism-core-highlight-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border-bottom: 1px solid #c3c4c7;
+	background: #f6f7f7;
+}
+
+#tourism-core-highlights-container .tourism-core-highlight-header h4 {
+	margin: 0;
+	flex: 1;
+	font-size: 13px;
+}
+
+#tourism-core-highlights-container .tourism-core-handle {
+	cursor: move;
+	color: #787c82;
+}
+
+#tourism-core-highlights-container .tourism-core-highlight-content {
+	padding: 10px;
+}
+
+.tourism-core-gallery-metabox-container {
+	margin-top: 4px;
+}
+
+#tourism-core-gallery-images-container {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.tourism-core-gallery-image-item {
+	border: 1px solid #c3c4c7;
+	background: #fff;
+	padding: 10px;
+}
+
+.tourism-core-image-preview {
+	position: relative;
+	aspect-ratio: 4 / 3;
+	background: #f0f0f1;
+	border: 1px solid #dcdcde;
+	margin-bottom: 10px;
+	overflow: hidden;
+}
+
+.tourism-core-image-preview img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.tourism-core-no-image {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	min-height: 120px;
+	color: #646970;
+	font-size: 12px;
+	text-align: center;
+	padding: 8px;
+}
+
+.tourism-core-image-actions {
+	position: absolute;
+	right: 6px;
+	top: 6px;
+	z-index: 2;
+	display: flex;
+	gap: 4px;
+}
+
+.tourism-core-image-actions .button {
+	min-width: 32px;
+	padding: 0 6px;
+}
+
+.tourism-core-image-details label {
+	display: block;
+	margin: 6px 0 2px;
+	font-weight: 600;
+}
+
+.tourism-core-image-details input,
+.tourism-core-image-details textarea {
+	width: 100%;
+}
+
+.tourism-core-includes-metabox-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+	align-items: start;
+}
+
+@media (max-width: 782px) {
+	.tourism-core-includes-metabox-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.tourism-core-includes-heading {
+	margin: 0 0 10px;
+	font-size: 13px;
+}
+
+.tourism-core-label-sortable {
+	min-height: 8px;
+}
+
+.tourism-core-label-item {
+	border: 1px solid #c3c4c7;
+	background: #fff;
+	margin-bottom: 8px;
+}
+
+.tourism-core-label-row-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 8px;
+	border-bottom: 1px solid #c3c4c7;
+	background: #f6f7f7;
+}
+
+.tourism-core-label-row-header .tourism-core-handle {
+	cursor: move;
+	color: #787c82;
+}
+
+.tourism-core-label-item-title {
+	flex: 1;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.tourism-core-label-row-body {
+	padding: 8px;
+}
+
+.tourism-core-introduction-fields label,
+.tourism-core-pricing-fields label {
+	display: block;
+	margin: 0 0 4px;
+	font-weight: 600;
+}
+
+.tourism-core-pricing-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 12px;
+	margin-top: 10px;
+}
+
+@media (max-width: 782px) {
+	.tourism-core-pricing-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.tourism-core-pricing-help {
+	margin: 8px 0 0;
+	color: #646970;
+	font-size: 12px;
+}
+
+.tourism-core-details-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+	align-items: start;
+}
+
+@media (max-width: 782px) {
+	.tourism-core-details-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.tourism-core-detail-column p:first-child {
+	margin-top: 0;
+}
+
+.tourism-core-duration-builder {
+	margin: 10px 0 14px;
+}
+
+#tourism-core-duration-options-list {
+	display: grid;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.tourism-core-duration-option-row {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 8px;
+	align-items: center;
+}
+
+@media (max-width: 782px) {
+	.tourism-core-duration-option-row {
+		grid-template-columns: 1fr;
+	}
+}
+
+.tourism-core-difficulty-builder {
+	margin: 10px 0 14px;
+}
+
+#tourism-core-difficulty-options-list {
+	display: grid;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.tourism-core-difficulty-option-row {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 8px;
+	align-items: center;
+}
+
+@media (max-width: 782px) {
+	.tourism-core-difficulty-option-row {
+		grid-template-columns: 1fr;
+	}
+}
+
+#tourism-core-itinerary-container {
+	display: grid;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.tourism-core-itinerary-item {
+	border: 1px solid #c3c4c7;
+	background: #fff;
+}
+
+.tourism-core-itinerary-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border-bottom: 1px solid #c3c4c7;
+	background: #f6f7f7;
+}
+
+.tourism-core-itinerary-header .tourism-core-handle {
+	cursor: move;
+	color: #787c82;
+}
+
+.tourism-core-itinerary-header h4 {
+	margin: 0;
+	flex: 1;
+	font-size: 13px;
+}
+
+.tourism-core-itinerary-body {
+	padding: 10px;
+}
+
+.tourism-core-itinerary-body > p {
+	margin-top: 0;
+}
+
+.tourism-core-itinerary-feature-list {
+	display: grid;
+	gap: 8px;
+	margin: 10px 0;
+}
+
+.tourism-core-itinerary-feature-row {
+	display: grid;
+	grid-template-columns: minmax(140px, 180px) 1fr auto;
+	gap: 8px;
+	align-items: center;
+}
+
+.tourism-core-itinerary-feature-row .button {
+	white-space: nowrap;
+}
+
+@media (max-width: 782px) {
+	.tourism-core-itinerary-feature-row {
+		grid-template-columns: 1fr;
+	}
+}
+
+#tourism-core-bring-items-container {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+	gap: 10px;
+	margin-bottom: 12px;
+}
+
+.tourism-core-bring-item {
+	border: 1px solid #c3c4c7;
+	background: #fff;
+	padding: 8px;
+}
+
+.tourism-core-bring-preview {
+	position: relative;
+	aspect-ratio: 1 / 1;
+	background: #f0f0f1;
+	border: 1px solid #dcdcde;
+	margin-bottom: 8px;
+	overflow: hidden;
+}
+
+.tourism-core-bring-preview img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	padding: 8px;
+}
+
+.tourism-core-bring-actions {
+	position: absolute;
+	right: 4px;
+	top: 4px;
+	z-index: 2;
+	display: flex;
+	gap: 4px;
+}
+
+.tourism-core-bring-actions .button {
+	min-width: 30px;
+	padding: 0 5px;
+}
+
+.tourism-core-bring-fields label {
+	display: block;
+	margin: 5px 0 2px;
+	font-size: 12px;
+	font-weight: 600;
+}
