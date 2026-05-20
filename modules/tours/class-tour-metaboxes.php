@@ -850,27 +850,14 @@ class Tourism_Core_Tour_Metaboxes
 	========================= */
 	public function render_hero($post)
 	{
-		$hero_id = get_post_meta($post->ID, '_tour_hero_image', true);
-		$image   = $hero_id ? wp_get_attachment_image($hero_id, 'medium') : '';
-?>
+		$tourism_core_tour_hero = array(
+			'hero_id' => (int) get_post_meta($post->ID, '_tour_hero_image', true),
+		);
 
-		<div>
-			<div id="tour-hero-preview" style="margin-bottom:10px;">
-				<?php echo $image; ?>
-			</div>
-
-			<input type="hidden" id="tour_hero_image" name="tour_hero_image" value="<?php echo esc_attr($hero_id); ?>" />
-
-			<button type="button" class="button tourism-upload-hero">
-				<?php esc_html_e('Select Image', TOURISM_CORE_TD); ?>
-			</button>
-
-			<button type="button" class="button tourism-remove-hero">
-				<?php esc_html_e('Remove', TOURISM_CORE_TD); ?>
-			</button>
-		</div>
-
-<?php
+		$template = TOURISM_CORE_PATH . 'modules/tours/templates/hero-metabox.php';
+		if (is_readable($template)) {
+			include $template;
+		}
 	}
 
 	/**
@@ -1208,9 +1195,13 @@ class Tourism_Core_Tour_Metaboxes
 			}
 			update_post_meta($post_id, 'tourism_highlights', $highlight_items);
 		}
-		// HERO IMAGE
-		if (isset($_POST['tour_hero_image'])) {
-			update_post_meta($post_id, '_tour_hero_image', (int) $_POST['tour_hero_image']);
+		// HERO IMAGE (only when metabox is on the screen — avoids wiping if hidden in Screen Options).
+		if (isset($_POST['tourism_tour_hero_metabox_present'])) {
+			$hero_id = isset($_POST['tour_hero_image']) ? (int) wp_unslash($_POST['tour_hero_image']) : 0;
+			if ($hero_id < 0) {
+				$hero_id = 0;
+			}
+			update_post_meta($post_id, '_tour_hero_image', $hero_id);
 		}
 
 		// Manual order (only when metabox is on the screen — avoids wiping if hidden in Screen Options).

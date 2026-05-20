@@ -385,3 +385,21 @@
 	font-size: 12px;
 	font-weight: 600;
 }
+
+/* Hero image (Tour) preview: keep image contained in metabox. */
+.tourism-core-tour-hero-preview-wrap {
+	position: relative;
+	aspect-ratio: 16 / 9;
+	max-width: 360px;
+	width: 100%;
+	overflow: hidden;
+	background: #f0f0f1;
+	border: 1px solid #dcdcde;
+}
+
+.tourism-core-tour-hero-preview-wrap img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
