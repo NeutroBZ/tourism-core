@@ -15,6 +15,10 @@ class Tourism_Core_Frontend_Shortcodes {
 	}
 
 	public function tour_list( $atts ) {
+		if ( function_exists( 'tourism_core_is_module_enabled' ) && ! tourism_core_is_module_enabled( 'tours' ) ) {
+			return '';
+		}
+
 		$atts = shortcode_atts(
 			array(
 				'posts_per_page' => 6,
@@ -51,6 +55,10 @@ class Tourism_Core_Frontend_Shortcodes {
 	}
 
 	public function booking_form( $atts ) {
+		if ( function_exists( 'tourism_core_is_module_enabled' ) && ! tourism_core_is_module_enabled( 'bookings' ) ) {
+			return '';
+		}
+
 		$atts = shortcode_atts(
 			array(
 				'tour_id' => 0,

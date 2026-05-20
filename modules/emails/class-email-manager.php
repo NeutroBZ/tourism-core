@@ -20,7 +20,13 @@ class Tourism_Core_Email_Manager {
 			return false;
 		}
 
-		$to = get_option( 'admin_email' );
+		$to = '';
+		if ( function_exists( 'tourism_core_get_agency' ) ) {
+			$to = tourism_core_get_agency( 'email' );
+		}
+		if ( ! is_email( $to ) ) {
+			$to = (string) get_option( 'admin_email' );
+		}
 		if ( ! $to ) {
 			return false;
 		}
