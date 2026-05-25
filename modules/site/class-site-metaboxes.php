@@ -124,6 +124,9 @@ class Tourism_Core_Site_Metaboxes {
 		}
 
 		if ( isset( $_POST['tourism_site_agency_metabox_present'] ) ) {
+			update_post_meta( $post_id, 'tourism_agency_company_name', isset( $_POST['tourism_agency_company_name'] ) ? sanitize_text_field( wp_unslash( $_POST['tourism_agency_company_name'] ) ) : '' );
+			update_post_meta( $post_id, 'tourism_agency_commercial_name', isset( $_POST['tourism_agency_commercial_name'] ) ? sanitize_text_field( wp_unslash( $_POST['tourism_agency_commercial_name'] ) ) : '' );
+			update_post_meta( $post_id, 'tourism_agency_ruc', isset( $_POST['tourism_agency_ruc'] ) ? $this->sanitize_ruc( wp_unslash( $_POST['tourism_agency_ruc'] ) ) : '' );
 			update_post_meta( $post_id, 'tourism_agency_name', isset( $_POST['tourism_agency_name'] ) ? sanitize_text_field( wp_unslash( $_POST['tourism_agency_name'] ) ) : '' );
 			update_post_meta( $post_id, 'tourism_agency_phone', isset( $_POST['tourism_agency_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['tourism_agency_phone'] ) ) : '' );
 			update_post_meta( $post_id, 'tourism_agency_whatsapp', isset( $_POST['tourism_agency_whatsapp'] ) ? sanitize_text_field( wp_unslash( $_POST['tourism_agency_whatsapp'] ) ) : '' );
@@ -150,6 +153,15 @@ class Tourism_Core_Site_Metaboxes {
 			Tourism_Core_Config::instance()->set_modules( $modules );
 			set_transient( 'tourism_core_modules_saved', 1, 30 );
 		}
+	}
+
+	/**
+	 * @param mixed $value
+	 * @return string
+	 */
+	private function sanitize_ruc( $value ) {
+		$digits = preg_replace( '/\D/', '', (string) $value );
+		return substr( $digits, 0, 20 );
 	}
 
 	public function modules_saved_notice() {

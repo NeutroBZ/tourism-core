@@ -85,7 +85,10 @@ class Tourism_Core_Config {
 		}
 
 		return array(
-			'name'        => (string) get_post_meta( $post_id, 'tourism_agency_name', true ),
+			'company_name'    => (string) get_post_meta( $post_id, 'tourism_agency_company_name', true ),
+			'commercial_name' => (string) get_post_meta( $post_id, 'tourism_agency_commercial_name', true ),
+			'ruc'             => (string) get_post_meta( $post_id, 'tourism_agency_ruc', true ),
+			'name'            => (string) get_post_meta( $post_id, 'tourism_agency_name', true ),
 			'phone'       => (string) get_post_meta( $post_id, 'tourism_agency_phone', true ),
 			'whatsapp'    => (string) get_post_meta( $post_id, 'tourism_agency_whatsapp', true ),
 			'email'       => (string) get_post_meta( $post_id, 'tourism_agency_email', true ),
@@ -113,7 +116,10 @@ class Tourism_Core_Config {
 	 */
 	private function empty_agency() {
 		return array(
-			'name'        => '',
+			'company_name'    => '',
+			'commercial_name' => '',
+			'ruc'             => '',
+			'name'            => '',
 			'phone'       => '',
 			'whatsapp'    => '',
 			'email'       => '',
