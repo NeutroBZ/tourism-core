@@ -85,15 +85,16 @@ class Tourism_Core_Config {
 		}
 
 		return array(
-			'name'      => (string) get_post_meta( $post_id, 'tourism_agency_name', true ),
-			'phone'     => (string) get_post_meta( $post_id, 'tourism_agency_phone', true ),
-			'whatsapp'  => (string) get_post_meta( $post_id, 'tourism_agency_whatsapp', true ),
-			'email'     => (string) get_post_meta( $post_id, 'tourism_agency_email', true ),
-			'address'   => (string) get_post_meta( $post_id, 'tourism_agency_address', true ),
-			'facebook'  => (string) get_post_meta( $post_id, 'tourism_social_facebook', true ),
-			'instagram' => (string) get_post_meta( $post_id, 'tourism_social_instagram', true ),
-			'tiktok'    => (string) get_post_meta( $post_id, 'tourism_social_tiktok', true ),
-			'hours'     => (string) get_post_meta( $post_id, 'tourism_agency_hours', true ),
+			'name'        => (string) get_post_meta( $post_id, 'tourism_agency_name', true ),
+			'phone'       => (string) get_post_meta( $post_id, 'tourism_agency_phone', true ),
+			'whatsapp'    => (string) get_post_meta( $post_id, 'tourism_agency_whatsapp', true ),
+			'email'       => (string) get_post_meta( $post_id, 'tourism_agency_email', true ),
+			'address'     => (string) get_post_meta( $post_id, 'tourism_agency_address', true ),
+			'google_maps' => (string) get_post_meta( $post_id, 'tourism_agency_google_maps', true ),
+			'facebook'    => (string) get_post_meta( $post_id, 'tourism_social_facebook', true ),
+			'instagram'   => (string) get_post_meta( $post_id, 'tourism_social_instagram', true ),
+			'tiktok'      => (string) get_post_meta( $post_id, 'tourism_social_tiktok', true ),
+			'hours'       => (string) get_post_meta( $post_id, 'tourism_agency_hours', true ),
 		);
 	}
 
@@ -112,15 +113,16 @@ class Tourism_Core_Config {
 	 */
 	private function empty_agency() {
 		return array(
-			'name'      => '',
-			'phone'     => '',
-			'whatsapp'  => '',
-			'email'     => '',
-			'address'   => '',
-			'facebook'  => '',
-			'instagram' => '',
-			'tiktok'    => '',
-			'hours'     => '',
+			'name'        => '',
+			'phone'       => '',
+			'whatsapp'    => '',
+			'email'       => '',
+			'address'     => '',
+			'google_maps' => '',
+			'facebook'    => '',
+			'instagram'   => '',
+			'tiktok'      => '',
+			'hours'       => '',
 		);
 	}
 

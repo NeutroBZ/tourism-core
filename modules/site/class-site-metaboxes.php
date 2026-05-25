@@ -129,6 +129,7 @@ class Tourism_Core_Site_Metaboxes {
 			update_post_meta( $post_id, 'tourism_agency_whatsapp', isset( $_POST['tourism_agency_whatsapp'] ) ? sanitize_text_field( wp_unslash( $_POST['tourism_agency_whatsapp'] ) ) : '' );
 			update_post_meta( $post_id, 'tourism_agency_email', isset( $_POST['tourism_agency_email'] ) ? sanitize_email( wp_unslash( $_POST['tourism_agency_email'] ) ) : '' );
 			update_post_meta( $post_id, 'tourism_agency_address', isset( $_POST['tourism_agency_address'] ) ? sanitize_textarea_field( wp_unslash( $_POST['tourism_agency_address'] ) ) : '' );
+			update_post_meta( $post_id, 'tourism_agency_google_maps', isset( $_POST['tourism_agency_google_maps'] ) ? esc_url_raw( wp_unslash( $_POST['tourism_agency_google_maps'] ) ) : '' );
 		}
 
 		if ( isset( $_POST['tourism_site_social_metabox_present'] ) ) {

@@ -20,7 +20,8 @@ $tourism_core_name     = isset( $tourism_core_site_agency['name'] ) ? (string) $
 $tourism_core_phone    = isset( $tourism_core_site_agency['phone'] ) ? (string) $tourism_core_site_agency['phone'] : '';
 $tourism_core_whatsapp = isset( $tourism_core_site_agency['whatsapp'] ) ? (string) $tourism_core_site_agency['whatsapp'] : '';
 $tourism_core_email    = isset( $tourism_core_site_agency['email'] ) ? (string) $tourism_core_site_agency['email'] : '';
-$tourism_core_address  = isset( $tourism_core_site_agency['address'] ) ? (string) $tourism_core_site_agency['address'] : '';
+$tourism_core_address     = isset( $tourism_core_site_agency['address'] ) ? (string) $tourism_core_site_agency['address'] : '';
+$tourism_core_google_maps = isset( $tourism_core_site_agency['google_maps'] ) ? (string) $tourism_core_site_agency['google_maps'] : '';
 ?>
 
 <input type="hidden" name="tourism_site_agency_metabox_present" value="1" />
@@ -49,5 +50,10 @@ $tourism_core_address  = isset( $tourism_core_site_agency['address'] ) ? (string
 	<p style="margin:0;grid-column:1/-1;">
 		<label for="tourism_agency_address"><strong><?php esc_html_e( 'Address', TOURISM_CORE_TD ); ?></strong></label>
 		<textarea id="tourism_agency_address" name="tourism_agency_address" class="widefat" rows="3"><?php echo esc_textarea( $tourism_core_address ); ?></textarea>
+	</p>
+
+	<p style="margin:0;grid-column:1/-1;">
+		<label for="tourism_agency_google_maps"><strong><?php esc_html_e( 'Google Maps link', TOURISM_CORE_TD ); ?></strong></label>
+		<input type="url" id="tourism_agency_google_maps" name="tourism_agency_google_maps" value="<?php echo esc_attr( $tourism_core_google_maps ); ?>" class="widefat" placeholder="https://maps.google.com/..." />
 	</p>
 </div>
