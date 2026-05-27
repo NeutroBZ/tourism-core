@@ -198,6 +198,16 @@ class Tourism_Core_Tour_Metaboxes
 			'side',
 			'default'
 		);
+
+		// WeTravel booking UUID.
+		add_meta_box(
+			'tourism-core-tour-wetravel',
+			__('WeTravel — UUID del Tour', TOURISM_CORE_TD),
+			array($this, 'render_wetravel'),
+			'tour',
+			'normal',
+			'low'
+		);
 	}
 
 	/* =========================
@@ -887,6 +897,33 @@ class Tourism_Core_Tour_Metaboxes
 		}
 	}
 
+	/**
+	 * WeTravel UUID value for editor.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return string
+	 */
+	private function get_tour_wetravel_uuid_for_edit($post_id)
+	{
+		$uuid = absint(get_post_meta($post_id, '_wetravel_button_code', true));
+		return $uuid > 0 ? (string) $uuid : '';
+	}
+
+	/**
+	 * WeTravel UUID metabox.
+	 *
+	 * @param \WP_Post $post Post object.
+	 */
+	public function render_wetravel($post)
+	{
+		$tourism_core_wetravel_uuid = $this->get_tour_wetravel_uuid_for_edit((int) $post->ID);
+
+		$template = TOURISM_CORE_PATH . 'modules/tours/templates/wetravel-metabox.php';
+		if (is_readable($template)) {
+			include $template;
+		}
+	}
+
 	/* =========================
 	   SAVE
 	========================= */
@@ -1212,6 +1249,16 @@ class Tourism_Core_Tour_Metaboxes
 			}
 			update_post_meta($post_id, 'tourism_tour_order', $order);
 		}
+
+		// WeTravel UUID (only when metabox is on the screen — avoids wiping if hidden in Screen Options).
+		if (isset($_POST['tourism_wetravel_metabox_present'])) {
+			$uuid = isset($_POST['tourism_wetravel_button_code']) ? absint(wp_unslash($_POST['tourism_wetravel_button_code'])) : 0;
+			if ($uuid > 0) {
+				update_post_meta($post_id, '_wetravel_button_code', $uuid);
+			} else {
+				delete_post_meta($post_id, '_wetravel_button_code');
+			}
+		}
 	}
 
 	/* =========================
@@ -1280,5 +1327,24 @@ class Tourism_Core_Tour_Metaboxes
 			</div>
 		</fieldset>
 		<?php
+	}
+}
+
+if (! function_exists('tourism_core_get_wetravel_button_code')) {
+	/**
+	 * Returns the saved WeTravel UUID for a tour.
+	 *
+	 * @param int|null $post_id Post ID, defaults to current post.
+	 * @return string
+	 */
+	function tourism_core_get_wetravel_button_code($post_id = null)
+	{
+		$post_id = $post_id ? (int) $post_id : (int) get_the_ID();
+		if ($post_id <= 0) {
+			return '';
+		}
+
+		$uuid = absint(get_post_meta($post_id, '_wetravel_button_code', true));
+		return $uuid > 0 ? (string) $uuid : '';
 	}
 }
