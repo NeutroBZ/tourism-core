@@ -188,7 +188,35 @@ class Tourism_Core_Site_Metaboxes {
 		}
 
 		if ( isset( $_POST['tourism_site_hours_metabox_present'] ) ) {
-			update_post_meta( $post_id, 'tourism_agency_hours', isset( $_POST['tourism_agency_hours'] ) ? sanitize_textarea_field( wp_unslash( $_POST['tourism_agency_hours'] ) ) : '' );
+			$allowed_days = array( 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun' );
+			$days_raw     = isset( $_POST['tourism_agency_hours_days'] ) && is_array( $_POST['tourism_agency_hours_days'] )
+				? wp_unslash( $_POST['tourism_agency_hours_days'] )
+				: array();
+
+			$days = array();
+			foreach ( $days_raw as $day ) {
+				$day = sanitize_key( (string) $day );
+				if ( in_array( $day, $allowed_days, true ) ) {
+					$days[] = $day;
+				}
+			}
+			$days = array_values( array_unique( $days ) );
+
+			$open  = $this->sanitize_hours_time_input( isset( $_POST['tourism_agency_hours_open'] ) ? wp_unslash( $_POST['tourism_agency_hours_open'] ) : array(), array( 'hour' => '9', 'minute' => '00', 'ampm' => 'AM' ) );
+			$close = $this->sanitize_hours_time_input( isset( $_POST['tourism_agency_hours_close'] ) ? wp_unslash( $_POST['tourism_agency_hours_close'] ) : array(), array( 'hour' => '6', 'minute' => '00', 'ampm' => 'PM' ) );
+
+			$schedule = array(
+				'days'  => $days,
+				'open'  => $open,
+				'close' => $close,
+			);
+			update_post_meta( $post_id, 'tourism_agency_hours_schedule', $schedule );
+
+			$hours_text = isset( $_POST['tourism_agency_hours'] ) ? sanitize_textarea_field( wp_unslash( $_POST['tourism_agency_hours'] ) ) : '';
+			if ( '' === trim( $hours_text ) ) {
+				$hours_text = $this->build_hours_summary( $schedule );
+			}
+			update_post_meta( $post_id, 'tourism_agency_hours', $hours_text );
 		}
 
 		if ( isset( $_POST['tourism_site_modules_metabox_present'] ) ) {
@@ -208,6 +236,70 @@ class Tourism_Core_Site_Metaboxes {
 	private function sanitize_ruc( $value ) {
 		$digits = preg_replace( '/\D/', '', (string) $value );
 		return substr( $digits, 0, 20 );
+	}
+
+	/**
+	 * @param mixed $raw
+	 * @param array{hour:string,minute:string,ampm:string} $default
+	 * @return array{hour:string,minute:string,ampm:string}
+	 */
+	private function sanitize_hours_time_input( $raw, $default ) {
+		$raw = is_array( $raw ) ? $raw : array();
+
+		$hour   = isset( $raw['hour'] ) ? (string) $raw['hour'] : $default['hour'];
+		$minute = isset( $raw['minute'] ) ? (string) $raw['minute'] : $default['minute'];
+		$ampm   = isset( $raw['ampm'] ) ? strtoupper( (string) $raw['ampm'] ) : $default['ampm'];
+
+		$hour_int = (int) $hour;
+		if ( $hour_int < 1 || $hour_int > 12 ) {
+			$hour_int = (int) $default['hour'];
+		}
+
+		$allowed_minutes = array( '00', '15', '30', '45' );
+		if ( ! in_array( $minute, $allowed_minutes, true ) ) {
+			$minute = $default['minute'];
+		}
+
+		if ( ! in_array( $ampm, array( 'AM', 'PM' ), true ) ) {
+			$ampm = $default['ampm'];
+		}
+
+		return array(
+			'hour'   => (string) $hour_int,
+			'minute' => $minute,
+			'ampm'   => $ampm,
+		);
+	}
+
+	/**
+	 * @param array{days:array<int,string>,open:array{hour:string,minute:string,ampm:string},close:array{hour:string,minute:string,ampm:string}} $schedule
+	 */
+	private function build_hours_summary( $schedule ) {
+		$day_labels = array(
+			'mon' => 'Mon',
+			'tue' => 'Tue',
+			'wed' => 'Wed',
+			'thu' => 'Thu',
+			'fri' => 'Fri',
+			'sat' => 'Sat',
+			'sun' => 'Sun',
+		);
+
+		$days = array();
+		foreach ( $schedule['days'] as $day ) {
+			if ( isset( $day_labels[ $day ] ) ) {
+				$days[] = $day_labels[ $day ];
+			}
+		}
+
+		if ( empty( $days ) ) {
+			return '';
+		}
+
+		$open  = $schedule['open']['hour'] . ':' . $schedule['open']['minute'] . ' ' . $schedule['open']['ampm'];
+		$close = $schedule['close']['hour'] . ':' . $schedule['close']['minute'] . ' ' . $schedule['close']['ampm'];
+
+		return implode( ', ', $days ) . ' - ' . $open . ' to ' . $close;
 	}
 
 	public function modules_saved_notice() {

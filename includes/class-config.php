@@ -102,6 +102,7 @@ class Tourism_Core_Config {
 			'social_extra'    => (string) get_post_meta( $post_id, 'tourism_social_extra', true ),
 			'social_custom'   => $this->get_social_custom( $post_id ),
 			'hours'           => (string) get_post_meta( $post_id, 'tourism_agency_hours', true ),
+			'hours_schedule'  => $this->get_hours_schedule( $post_id ),
 		);
 	}
 
@@ -137,6 +138,91 @@ class Tourism_Core_Config {
 			'social_extra'    => '',
 			'social_custom'   => array(),
 			'hours'           => '',
+			'hours_schedule'  => $this->default_hours_schedule(),
+		);
+	}
+
+	/**
+	 * @return array{days:array<int,string>,open:array{hour:string,minute:string,ampm:string},close:array{hour:string,minute:string,ampm:string}}
+	 */
+	private function default_hours_schedule() {
+		return array(
+			'days'  => array(),
+			'open'  => array(
+				'hour'   => '9',
+				'minute' => '00',
+				'ampm'   => 'AM',
+			),
+			'close' => array(
+				'hour'   => '6',
+				'minute' => '00',
+				'ampm'   => 'PM',
+			),
+		);
+	}
+
+	/**
+	 * @return array{days:array<int,string>,open:array{hour:string,minute:string,ampm:string},close:array{hour:string,minute:string,ampm:string}}
+	 */
+	private function get_hours_schedule( $post_id ) {
+		$defaults = $this->default_hours_schedule();
+		$raw      = get_post_meta( $post_id, 'tourism_agency_hours_schedule', true );
+		if ( ! is_array( $raw ) ) {
+			return $defaults;
+		}
+
+		$allowed_days = array( 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun' );
+		$days         = array();
+		if ( isset( $raw['days'] ) && is_array( $raw['days'] ) ) {
+			foreach ( $raw['days'] as $day ) {
+				$day = sanitize_key( (string) $day );
+				if ( in_array( $day, $allowed_days, true ) ) {
+					$days[] = $day;
+				}
+			}
+			$days = array_values( array_unique( $days ) );
+		}
+
+		$open  = $this->sanitize_schedule_time( isset( $raw['open'] ) ? $raw['open'] : array(), $defaults['open'] );
+		$close = $this->sanitize_schedule_time( isset( $raw['close'] ) ? $raw['close'] : array(), $defaults['close'] );
+
+		return array(
+			'days'  => $days,
+			'open'  => $open,
+			'close' => $close,
+		);
+	}
+
+	/**
+	 * @param mixed $raw
+	 * @param array{hour:string,minute:string,ampm:string} $default
+	 * @return array{hour:string,minute:string,ampm:string}
+	 */
+	private function sanitize_schedule_time( $raw, $default ) {
+		$raw = is_array( $raw ) ? $raw : array();
+
+		$hour   = isset( $raw['hour'] ) ? (string) $raw['hour'] : $default['hour'];
+		$minute = isset( $raw['minute'] ) ? (string) $raw['minute'] : $default['minute'];
+		$ampm   = isset( $raw['ampm'] ) ? strtoupper( (string) $raw['ampm'] ) : $default['ampm'];
+
+		$hour_int = (int) $hour;
+		if ( $hour_int < 1 || $hour_int > 12 ) {
+			$hour_int = (int) $default['hour'];
+		}
+
+		$allowed_minutes = array( '00', '15', '30', '45' );
+		if ( ! in_array( $minute, $allowed_minutes, true ) ) {
+			$minute = $default['minute'];
+		}
+
+		if ( ! in_array( $ampm, array( 'AM', 'PM' ), true ) ) {
+			$ampm = $default['ampm'];
+		}
+
+		return array(
+			'hour'   => (string) $hour_int,
+			'minute' => $minute,
+			'ampm'   => $ampm,
 		);
 	}
 
