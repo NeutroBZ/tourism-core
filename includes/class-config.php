@@ -94,6 +94,7 @@ class Tourism_Core_Config {
 			'email'           => (string) get_post_meta( $post_id, 'tourism_agency_email', true ),
 			'address'         => (string) get_post_meta( $post_id, 'tourism_agency_address', true ),
 			'google_maps'     => (string) get_post_meta( $post_id, 'tourism_agency_google_maps', true ),
+			'agency_custom'   => $this->get_agency_custom( $post_id ),
 			'facebook'        => (string) get_post_meta( $post_id, 'tourism_social_facebook', true ),
 			'instagram'       => (string) get_post_meta( $post_id, 'tourism_social_instagram', true ),
 			'tripadvisor'     => (string) get_post_meta( $post_id, 'tourism_social_tripadvisor', true ),
@@ -128,6 +129,7 @@ class Tourism_Core_Config {
 			'email'           => '',
 			'address'         => '',
 			'google_maps'     => '',
+			'agency_custom'   => array(),
 			'facebook'        => '',
 			'instagram'       => '',
 			'tripadvisor'     => '',
@@ -136,6 +138,36 @@ class Tourism_Core_Config {
 			'social_custom'   => array(),
 			'hours'           => '',
 		);
+	}
+
+	/**
+	 * @return array<int, array{label:string,value:string}>
+	 */
+	private function get_agency_custom( $post_id ) {
+		$items = get_post_meta( $post_id, 'tourism_agency_custom', true );
+		if ( ! is_array( $items ) ) {
+			return array();
+		}
+
+		$out = array();
+		foreach ( $items as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+
+			$label = isset( $item['label'] ) ? sanitize_text_field( (string) $item['label'] ) : '';
+			$value = isset( $item['value'] ) ? sanitize_text_field( (string) $item['value'] ) : '';
+			if ( '' === $label && '' === $value ) {
+				continue;
+			}
+
+			$out[] = array(
+				'label' => $label,
+				'value' => $value,
+			);
+		}
+
+		return $out;
 	}
 
 	/**

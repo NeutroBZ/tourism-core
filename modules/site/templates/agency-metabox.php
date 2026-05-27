@@ -25,6 +25,9 @@ $tourism_core_whatsapp = isset( $tourism_core_site_agency['whatsapp'] ) ? (strin
 $tourism_core_email    = isset( $tourism_core_site_agency['email'] ) ? (string) $tourism_core_site_agency['email'] : '';
 $tourism_core_address     = isset( $tourism_core_site_agency['address'] ) ? (string) $tourism_core_site_agency['address'] : '';
 $tourism_core_google_maps = isset( $tourism_core_site_agency['google_maps'] ) ? (string) $tourism_core_site_agency['google_maps'] : '';
+$tourism_core_agency_custom = isset( $tourism_core_site_agency['agency_custom'] ) && is_array( $tourism_core_site_agency['agency_custom'] )
+	? array_values( $tourism_core_site_agency['agency_custom'] )
+	: array();
 ?>
 
 <input type="hidden" name="tourism_site_agency_metabox_present" value="1" />
@@ -86,4 +89,82 @@ $tourism_core_google_maps = isset( $tourism_core_site_agency['google_maps'] ) ? 
 		<label for="tourism_agency_google_maps"><strong><?php esc_html_e( 'Google Maps link', TOURISM_CORE_TD ); ?></strong></label>
 		<input type="url" id="tourism_agency_google_maps" name="tourism_agency_google_maps" value="<?php echo esc_attr( $tourism_core_google_maps ); ?>" class="widefat" placeholder="https://maps.google.com/..." />
 	</p>
+
+	<div style="margin:0;grid-column:1/-1;">
+		<label><strong><?php esc_html_e( 'Additional contact fields (optional)', TOURISM_CORE_TD ); ?></strong></label>
+		<p class="description" style="margin:4px 0 8px;">
+			<?php esc_html_e( 'Add custom fields such as second email, additional phone, alternate address, etc.', TOURISM_CORE_TD ); ?>
+		</p>
+
+		<div id="tourism-core-agency-custom-container" style="display:grid;grid-template-columns:1fr;gap:8px;">
+			<?php foreach ( $tourism_core_agency_custom as $tourism_core_index => $tourism_core_item ) : ?>
+				<?php
+				$tourism_core_item_label = isset( $tourism_core_item['label'] ) ? (string) $tourism_core_item['label'] : '';
+				$tourism_core_item_value = isset( $tourism_core_item['value'] ) ? (string) $tourism_core_item['value'] : '';
+				?>
+				<div class="tourism-core-agency-custom-item" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) auto;gap:8px;align-items:end;">
+					<div>
+						<label><span class="screen-reader-text"><?php esc_html_e( 'Field label', TOURISM_CORE_TD ); ?></span></label>
+						<input type="text" name="tourism_agency_custom[<?php echo esc_attr( (string) $tourism_core_index ); ?>][label]" value="<?php echo esc_attr( $tourism_core_item_label ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'Field label', TOURISM_CORE_TD ); ?>" />
+					</div>
+					<div>
+						<label><span class="screen-reader-text"><?php esc_html_e( 'Field value', TOURISM_CORE_TD ); ?></span></label>
+						<input type="text" name="tourism_agency_custom[<?php echo esc_attr( (string) $tourism_core_index ); ?>][value]" value="<?php echo esc_attr( $tourism_core_item_value ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'Field value', TOURISM_CORE_TD ); ?>" />
+					</div>
+					<button type="button" class="button-link-delete tourism-core-agency-remove" style="padding-bottom:6px;"><?php esc_html_e( 'Remove', TOURISM_CORE_TD ); ?></button>
+				</div>
+			<?php endforeach; ?>
+		</div>
+
+		<p style="margin:8px 0 0;">
+			<button type="button" id="tourism-core-agency-add" class="button"><?php esc_html_e( 'Add field', TOURISM_CORE_TD ); ?></button>
+		</p>
+	</div>
 </div>
+
+<script type="text/html" id="tourism-core-agency-custom-template">
+	<div class="tourism-core-agency-custom-item" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) auto;gap:8px;align-items:end;">
+		<div>
+			<input type="text" name="tourism_agency_custom[{{index}}][label]" value="" class="widefat" placeholder="<?php esc_attr_e( 'Field label', TOURISM_CORE_TD ); ?>" />
+		</div>
+		<div>
+			<input type="text" name="tourism_agency_custom[{{index}}][value]" value="" class="widefat" placeholder="<?php esc_attr_e( 'Field value', TOURISM_CORE_TD ); ?>" />
+		</div>
+		<button type="button" class="button-link-delete tourism-core-agency-remove" style="padding-bottom:6px;"><?php esc_html_e( 'Remove', TOURISM_CORE_TD ); ?></button>
+	</div>
+</script>
+<script>
+	(function($){
+		'use strict';
+		$(function(){
+			var $container = $('#tourism-core-agency-custom-container');
+			var template = $('#tourism-core-agency-custom-template').html() || '';
+			if (!$container.length || !template) {
+				return;
+			}
+
+			function renumber() {
+				$container.children('.tourism-core-agency-custom-item').each(function(index){
+					$(this).find('input').each(function(){
+						var name = $(this).attr('name') || '';
+						name = name.replace(/tourism_agency_custom\[\d+\]/, 'tourism_agency_custom[' + index + ']');
+						$(this).attr('name', name);
+					});
+				});
+			}
+
+			$(document).on('click', '#tourism-core-agency-add', function(e){
+				e.preventDefault();
+				var index = $container.children('.tourism-core-agency-custom-item').length;
+				var html = template.replace(/{{index}}/g, String(index));
+				$container.append(html);
+			});
+
+			$(document).on('click', '.tourism-core-agency-remove', function(e){
+				e.preventDefault();
+				$(this).closest('.tourism-core-agency-custom-item').remove();
+				renumber();
+			});
+		});
+	})(jQuery);
+</script>

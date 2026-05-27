@@ -133,6 +133,28 @@ class Tourism_Core_Site_Metaboxes {
 			update_post_meta( $post_id, 'tourism_agency_email', isset( $_POST['tourism_agency_email'] ) ? sanitize_email( wp_unslash( $_POST['tourism_agency_email'] ) ) : '' );
 			update_post_meta( $post_id, 'tourism_agency_address', isset( $_POST['tourism_agency_address'] ) ? sanitize_textarea_field( wp_unslash( $_POST['tourism_agency_address'] ) ) : '' );
 			update_post_meta( $post_id, 'tourism_agency_google_maps', isset( $_POST['tourism_agency_google_maps'] ) ? esc_url_raw( wp_unslash( $_POST['tourism_agency_google_maps'] ) ) : '' );
+
+			$custom_agency = array();
+			if ( isset( $_POST['tourism_agency_custom'] ) && is_array( $_POST['tourism_agency_custom'] ) ) {
+				foreach ( wp_unslash( $_POST['tourism_agency_custom'] ) as $item ) {
+					if ( ! is_array( $item ) ) {
+						continue;
+					}
+
+					$label = isset( $item['label'] ) ? sanitize_text_field( $item['label'] ) : '';
+					$value = isset( $item['value'] ) ? sanitize_text_field( $item['value'] ) : '';
+
+					if ( '' === $label && '' === $value ) {
+						continue;
+					}
+
+					$custom_agency[] = array(
+						'label' => $label,
+						'value' => $value,
+					);
+				}
+			}
+			update_post_meta( $post_id, 'tourism_agency_custom', $custom_agency );
 		}
 
 		if ( isset( $_POST['tourism_site_social_metabox_present'] ) ) {
