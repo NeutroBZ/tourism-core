@@ -76,7 +76,7 @@ class Tourism_Core_Config {
 	}
 
 	/**
-	 * @return array<string, string>
+	 * @return array<string, mixed>
 	 */
 	public function get_agency() {
 		$post_id = $this->get_site_post_id();
@@ -89,15 +89,18 @@ class Tourism_Core_Config {
 			'commercial_name' => (string) get_post_meta( $post_id, 'tourism_agency_commercial_name', true ),
 			'ruc'             => (string) get_post_meta( $post_id, 'tourism_agency_ruc', true ),
 			'name'            => (string) get_post_meta( $post_id, 'tourism_agency_name', true ),
-			'phone'       => (string) get_post_meta( $post_id, 'tourism_agency_phone', true ),
-			'whatsapp'    => (string) get_post_meta( $post_id, 'tourism_agency_whatsapp', true ),
-			'email'       => (string) get_post_meta( $post_id, 'tourism_agency_email', true ),
-			'address'     => (string) get_post_meta( $post_id, 'tourism_agency_address', true ),
-			'google_maps' => (string) get_post_meta( $post_id, 'tourism_agency_google_maps', true ),
-			'facebook'    => (string) get_post_meta( $post_id, 'tourism_social_facebook', true ),
-			'instagram'   => (string) get_post_meta( $post_id, 'tourism_social_instagram', true ),
-			'tiktok'      => (string) get_post_meta( $post_id, 'tourism_social_tiktok', true ),
-			'hours'       => (string) get_post_meta( $post_id, 'tourism_agency_hours', true ),
+			'phone'           => (string) get_post_meta( $post_id, 'tourism_agency_phone', true ),
+			'whatsapp'        => (string) get_post_meta( $post_id, 'tourism_agency_whatsapp', true ),
+			'email'           => (string) get_post_meta( $post_id, 'tourism_agency_email', true ),
+			'address'         => (string) get_post_meta( $post_id, 'tourism_agency_address', true ),
+			'google_maps'     => (string) get_post_meta( $post_id, 'tourism_agency_google_maps', true ),
+			'facebook'        => (string) get_post_meta( $post_id, 'tourism_social_facebook', true ),
+			'instagram'       => (string) get_post_meta( $post_id, 'tourism_social_instagram', true ),
+			'tripadvisor'     => (string) get_post_meta( $post_id, 'tourism_social_tripadvisor', true ),
+			'linkedin'        => (string) get_post_meta( $post_id, 'tourism_social_linkedin', true ),
+			'social_extra'    => (string) get_post_meta( $post_id, 'tourism_social_extra', true ),
+			'social_custom'   => $this->get_social_custom( $post_id ),
+			'hours'           => (string) get_post_meta( $post_id, 'tourism_agency_hours', true ),
 		);
 	}
 
@@ -112,7 +115,7 @@ class Tourism_Core_Config {
 	}
 
 	/**
-	 * @return array<string, string>
+	 * @return array<string, mixed>
 	 */
 	private function empty_agency() {
 		return array(
@@ -120,16 +123,49 @@ class Tourism_Core_Config {
 			'commercial_name' => '',
 			'ruc'             => '',
 			'name'            => '',
-			'phone'       => '',
-			'whatsapp'    => '',
-			'email'       => '',
-			'address'     => '',
-			'google_maps' => '',
-			'facebook'    => '',
-			'instagram'   => '',
-			'tiktok'      => '',
-			'hours'       => '',
+			'phone'           => '',
+			'whatsapp'        => '',
+			'email'           => '',
+			'address'         => '',
+			'google_maps'     => '',
+			'facebook'        => '',
+			'instagram'       => '',
+			'tripadvisor'     => '',
+			'linkedin'        => '',
+			'social_extra'    => '',
+			'social_custom'   => array(),
+			'hours'           => '',
 		);
+	}
+
+	/**
+	 * @return array<int, array{label:string,url:string}>
+	 */
+	private function get_social_custom( $post_id ) {
+		$items = get_post_meta( $post_id, 'tourism_social_custom', true );
+		if ( ! is_array( $items ) ) {
+			return array();
+		}
+
+		$out = array();
+		foreach ( $items as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+
+			$label = isset( $item['label'] ) ? sanitize_text_field( (string) $item['label'] ) : '';
+			$url   = isset( $item['url'] ) ? esc_url_raw( (string) $item['url'] ) : '';
+			if ( '' === $label && '' === $url ) {
+				continue;
+			}
+
+			$out[] = array(
+				'label' => $label,
+				'url'   => $url,
+			);
+		}
+
+		return $out;
 	}
 
 	private function resolve_site_post_id() {

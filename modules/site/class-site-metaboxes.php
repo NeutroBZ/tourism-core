@@ -138,7 +138,31 @@ class Tourism_Core_Site_Metaboxes {
 		if ( isset( $_POST['tourism_site_social_metabox_present'] ) ) {
 			update_post_meta( $post_id, 'tourism_social_facebook', isset( $_POST['tourism_social_facebook'] ) ? esc_url_raw( wp_unslash( $_POST['tourism_social_facebook'] ) ) : '' );
 			update_post_meta( $post_id, 'tourism_social_instagram', isset( $_POST['tourism_social_instagram'] ) ? esc_url_raw( wp_unslash( $_POST['tourism_social_instagram'] ) ) : '' );
-			update_post_meta( $post_id, 'tourism_social_tiktok', isset( $_POST['tourism_social_tiktok'] ) ? esc_url_raw( wp_unslash( $_POST['tourism_social_tiktok'] ) ) : '' );
+			update_post_meta( $post_id, 'tourism_social_tripadvisor', isset( $_POST['tourism_social_tripadvisor'] ) ? esc_url_raw( wp_unslash( $_POST['tourism_social_tripadvisor'] ) ) : '' );
+			update_post_meta( $post_id, 'tourism_social_linkedin', isset( $_POST['tourism_social_linkedin'] ) ? esc_url_raw( wp_unslash( $_POST['tourism_social_linkedin'] ) ) : '' );
+			update_post_meta( $post_id, 'tourism_social_extra', isset( $_POST['tourism_social_extra'] ) ? sanitize_textarea_field( wp_unslash( $_POST['tourism_social_extra'] ) ) : '' );
+
+			$custom_social = array();
+			if ( isset( $_POST['tourism_social_custom'] ) && is_array( $_POST['tourism_social_custom'] ) ) {
+				foreach ( wp_unslash( $_POST['tourism_social_custom'] ) as $item ) {
+					if ( ! is_array( $item ) ) {
+						continue;
+					}
+
+					$label = isset( $item['label'] ) ? sanitize_text_field( $item['label'] ) : '';
+					$url   = isset( $item['url'] ) ? esc_url_raw( $item['url'] ) : '';
+
+					if ( '' === $label && '' === $url ) {
+						continue;
+					}
+
+					$custom_social[] = array(
+						'label' => $label,
+						'url'   => $url,
+					);
+				}
+			}
+			update_post_meta( $post_id, 'tourism_social_custom', $custom_social );
 		}
 
 		if ( isset( $_POST['tourism_site_hours_metabox_present'] ) ) {
