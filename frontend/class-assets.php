@@ -17,6 +17,13 @@ class Tourism_Core_Frontend_Assets {
 			TOURISM_CORE_VERSION
 		);
 		wp_enqueue_style( 'tourism-core-frontend' );
+
+		if ( is_singular( 'tour' ) && function_exists( 'tourism_core_get_wetravel_button_code' ) ) {
+			$post_id = (int) get_queried_object_id();
+			if ( tourism_core_get_wetravel_button_code( $post_id ) !== '' && function_exists( 'tourism_core_enqueue_wetravel_checkout' ) ) {
+				tourism_core_enqueue_wetravel_checkout();
+			}
+		}
 	}
 }
 

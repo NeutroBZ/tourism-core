@@ -1329,22 +1329,3 @@ class Tourism_Core_Tour_Metaboxes
 		<?php
 	}
 }
-
-if (! function_exists('tourism_core_get_wetravel_button_code')) {
-	/**
-	 * Returns the saved WeTravel UUID for a tour.
-	 *
-	 * @param int|null $post_id Post ID, defaults to current post.
-	 * @return string
-	 */
-	function tourism_core_get_wetravel_button_code($post_id = null)
-	{
-		$post_id = $post_id ? (int) $post_id : (int) get_the_ID();
-		if ($post_id <= 0) {
-			return '';
-		}
-
-		$uuid = absint(get_post_meta($post_id, '_wetravel_button_code', true));
-		return $uuid > 0 ? (string) $uuid : '';
-	}
-}
