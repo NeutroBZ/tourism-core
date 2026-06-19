@@ -43,7 +43,7 @@ class Tourism_Core_Module_Tours {
 				'has_archive'  => true,
 				'show_in_rest' => true,
 				'menu_icon'    => TOURISM_CORE_URL . 'assets/ico/tours3.svg',
-				'supports'     => array( 'title', 'thumbnail' ),
+				'supports'     => array( 'title',  'thumbnail', 'revisions' ),
 				'rewrite'      => array( 'slug' => 'tours' ),
 			)
 		);
