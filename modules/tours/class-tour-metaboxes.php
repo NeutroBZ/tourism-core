@@ -557,6 +557,8 @@ class Tourism_Core_Tour_Metaboxes
 	 */
 	public function render_introduction($post)
 	{
+		wp_enqueue_editor();
+
 		$tourism_core_introduction = $this->get_tour_introduction_for_edit((int) $post->ID);
 
 		$template = TOURISM_CORE_PATH . 'modules/tours/templates/introduction-metabox.php';
@@ -665,6 +667,8 @@ class Tourism_Core_Tour_Metaboxes
 	 */
 	public function render_itinerary($post)
 	{
+		wp_enqueue_editor();
+
 		$tourism_core_itinerary_items = $this->get_tour_itinerary_for_edit((int) $post->ID);
 
 		$template = TOURISM_CORE_PATH . 'modules/tours/templates/itinerary-metabox.php';
@@ -992,7 +996,7 @@ class Tourism_Core_Tour_Metaboxes
 		// Introduction (title + description).
 		if (isset($_POST['tourism_introduction_metabox_present'])) {
 			$intro_title = isset($_POST['tourism_intro_title']) ? sanitize_text_field(wp_unslash($_POST['tourism_intro_title'])) : '';
-			$intro_description = isset($_POST['tourism_intro_description']) ? sanitize_textarea_field(wp_unslash($_POST['tourism_intro_description'])) : '';
+			$intro_description = isset($_POST['tourism_intro_description']) ? wp_kses_post(wp_unslash($_POST['tourism_intro_description'])) : '';
 
 			update_post_meta($post_id, 'tourism_intro_title', $intro_title);
 			update_post_meta($post_id, 'tourism_intro_description', $intro_description);
@@ -1074,7 +1078,7 @@ class Tourism_Core_Tour_Metaboxes
 					}
 
 					$day = isset($row['day']) ? sanitize_text_field($row['day']) : '';
-					$description = isset($row['description']) ? sanitize_textarea_field($row['description']) : '';
+					$description = isset($row['description']) ? wp_kses_post($row['description']) : '';
 					$features = array();
 
 					if (isset($row['features']) && is_array($row['features'])) {
@@ -1278,9 +1282,13 @@ class Tourism_Core_Tour_Metaboxes
 		$css_path = TOURISM_CORE_PATH . 'assets/css/tour-admin-metabox.css';
 		$js_path  = TOURISM_CORE_PATH . 'assets/js/tour-admin-metabox.js';
 		$faqs_js_path = TOURISM_CORE_PATH . 'assets/js/modules/tours/faqs-metabox.js';
+		$itinerary_js_path = TOURISM_CORE_PATH . 'assets/js/modules/tours/itinerary-metabox.js';
+		$introduction_js_path = TOURISM_CORE_PATH . 'assets/js/modules/tours/introduction-metabox.js';
 		$ver_css  = file_exists($css_path) ? (string) filemtime($css_path) : TOURISM_CORE_VERSION;
 		$ver_js   = file_exists($js_path) ? (string) filemtime($js_path) : TOURISM_CORE_VERSION;
 		$ver_faqs_js = file_exists($faqs_js_path) ? (string) filemtime($faqs_js_path) : TOURISM_CORE_VERSION;
+		$ver_itinerary_js = file_exists($itinerary_js_path) ? (string) filemtime($itinerary_js_path) : TOURISM_CORE_VERSION;
+		$ver_introduction_js = file_exists($introduction_js_path) ? (string) filemtime($introduction_js_path) : TOURISM_CORE_VERSION;
 
 		wp_enqueue_style(
 			'tourism-core-tour-admin',
@@ -1311,6 +1319,30 @@ class Tourism_Core_Tour_Metaboxes
 			array(
 				'deleteConfirm' => __( 'Are you sure you want to delete this FAQ?', TOURISM_CORE_TD ),
 			)
+		);
+
+		wp_enqueue_script(
+			'tourism-core-tour-itinerary-metabox',
+			TOURISM_CORE_URL . 'assets/js/modules/tours/itinerary-metabox.js',
+			array( 'jquery', 'jquery-ui-sortable', 'editor' ),
+			$ver_itinerary_js,
+			true
+		);
+
+		wp_localize_script(
+			'tourism-core-tour-itinerary-metabox',
+			'TourismCoreTourItinerary',
+			array(
+				'deleteConfirm' => __( 'Are you sure you want to delete this day?', TOURISM_CORE_TD ),
+			)
+		);
+
+		wp_enqueue_script(
+			'tourism-core-tour-introduction-metabox',
+			TOURISM_CORE_URL . 'assets/js/modules/tours/introduction-metabox.js',
+			array( 'jquery', 'editor' ),
+			$ver_introduction_js,
+			true
 		);
 
 		wp_localize_script(

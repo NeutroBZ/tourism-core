@@ -55,7 +55,7 @@ $tourism_core_itinerary_items = isset($tourism_core_itinerary_items) && is_array
 					<textarea
 						id="tourism_core_itinerary_description_<?php echo esc_attr((string) $tourism_core_index); ?>"
 						name="tourism_itinerary_items[<?php echo esc_attr((string) $tourism_core_index); ?>][description]"
-						class="widefat tourism-core-itinerary-description"
+						class="widefat tourism-core-itinerary-description tourism-core-wysiwyg"
 						rows="5"
 						placeholder="<?php esc_attr_e('Describe the activities for this day.', TOURISM_CORE_TD); ?>"
 					><?php echo esc_textarea($tourism_core_description); ?></textarea>
@@ -121,7 +121,7 @@ $tourism_core_itinerary_items = isset($tourism_core_itinerary_items) && is_array
 
 			<p>
 				<label for="tourism_core_itinerary_description_{{tourism_index}}"><strong><?php echo esc_html(__('Description', TOURISM_CORE_TD)); ?></strong></label>
-				<textarea id="tourism_core_itinerary_description_{{tourism_index}}" name="tourism_itinerary_items[{{tourism_index}}][description]" class="widefat tourism-core-itinerary-description" rows="5" placeholder="<?php echo esc_attr(__('Describe the activities for this day.', TOURISM_CORE_TD)); ?>"></textarea>
+				<textarea id="tourism_core_itinerary_description_{{tourism_index}}" name="tourism_itinerary_items[{{tourism_index}}][description]" class="widefat tourism-core-itinerary-description tourism-core-wysiwyg" rows="5" placeholder="<?php echo esc_attr(__('Describe the activities for this day.', TOURISM_CORE_TD)); ?>"></textarea>
 			</p>
 
 			<div class="tourism-core-itinerary-features">

@@ -195,6 +195,10 @@
 	font-weight: 600;
 }
 
+.tourism-core-introduction-fields .wp-editor-wrap {
+	max-width: 100%;
+}
+
 .tourism-core-pricing-grid {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -310,6 +314,10 @@
 
 .tourism-core-itinerary-body {
 	padding: 10px;
+}
+
+.tourism-core-itinerary-body .wp-editor-wrap {
+	max-width: 100%;
 }
 
 .tourism-core-itinerary-body > p {

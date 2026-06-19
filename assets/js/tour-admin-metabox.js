@@ -281,40 +281,6 @@
 			});
 		}
 
-		function tourismCoreRenumberItinerary() {
-			var $c = $('#tourism-core-itinerary-container');
-			if (!$c.length) {
-				return;
-			}
-			$c.children('.tourism-core-itinerary-item').each(function (i) {
-				var $item = $(this);
-				$item.attr('data-tourism-core-index', String(i));
-				$item.find('.tourism-core-item-number').text(String(i + 1));
-				$item
-					.find('.tourism-core-itinerary-day')
-					.attr('name', 'tourism_itinerary_items[' + i + '][day]')
-					.attr('id', 'tourism_core_itinerary_day_' + i);
-				$item
-					.find('.tourism-core-itinerary-description')
-					.attr('name', 'tourism_itinerary_items[' + i + '][description]')
-					.attr('id', 'tourism_core_itinerary_description_' + i);
-				$item.find('label[for^="tourism_core_itinerary_day_"]').attr('for', 'tourism_core_itinerary_day_' + i);
-				$item.find('label[for^="tourism_core_itinerary_description_"]').attr('for', 'tourism_core_itinerary_description_' + i);
-
-				$item.find('.tourism-core-itinerary-feature-row').each(function (j) {
-					var $feature = $(this);
-					$feature
-						.find('.tourism-core-itinerary-feature-label')
-						.attr('name', 'tourism_itinerary_items[' + i + '][features][' + j + '][label]')
-						.attr('id', 'tourism_core_itinerary_feature_label_' + i + '_' + j);
-					$feature
-						.find('.tourism-core-itinerary-feature-value')
-						.attr('name', 'tourism_itinerary_items[' + i + '][features][' + j + '][value]')
-						.attr('id', 'tourism_core_itinerary_feature_value_' + i + '_' + j);
-				});
-			});
-		}
-
 		function tourismCoreRenumberIncludes() {
 			var $c = $('#tourism-core-includes-container');
 			if (!$c.length) {
@@ -441,59 +407,6 @@
 			});
 
 			tourismCoreRenumberHighlights();
-		}
-
-		var $itineraryContainer = $('#tourism-core-itinerary-container');
-		if ($itineraryContainer.length) {
-			$itineraryContainer.sortable({
-				handle: '.tourism-core-handle',
-				items: '> .tourism-core-itinerary-item',
-				cancel: 'input,textarea,button,select,option',
-				update: function () {
-					tourismCoreRenumberItinerary();
-				},
-			});
-
-			$(document).on('click', '#tourism-core-add-itinerary-item', function (e) {
-				e.preventDefault();
-				var tmpl = $('#tourism-core-tmpl-itinerary-item').html();
-				if (!tmpl) {
-					return;
-				}
-				var idx = $itineraryContainer.children('.tourism-core-itinerary-item').length;
-				var html = tmpl
-					.split('{{tourism_index}}')
-					.join(String(idx))
-					.split('{{tourism_index_plus_one}}')
-					.join(String(idx + 1));
-				$itineraryContainer.append(html);
-				tourismCoreRenumberItinerary();
-			});
-
-			$(document).on('click', '.tourism-core-delete-itinerary', function (e) {
-				e.preventDefault();
-				$(this).closest('.tourism-core-itinerary-item').remove();
-				tourismCoreRenumberItinerary();
-			});
-
-			$(document).on('click', '.tourism-core-add-itinerary-feature', function (e) {
-				e.preventDefault();
-				var $item = $(this).closest('.tourism-core-itinerary-item');
-				var tmpl = $('#tourism-core-tmpl-itinerary-feature').html();
-				if (!tmpl) {
-					return;
-				}
-				$item.find('.tourism-core-itinerary-feature-list').append(tmpl);
-				tourismCoreRenumberItinerary();
-			});
-
-			$(document).on('click', '.tourism-core-delete-itinerary-feature', function (e) {
-				e.preventDefault();
-				$(this).closest('.tourism-core-itinerary-feature-row').remove();
-				tourismCoreRenumberItinerary();
-			});
-
-			tourismCoreRenumberItinerary();
 		}
 
 		function tourismCoreRenumberBring() {
