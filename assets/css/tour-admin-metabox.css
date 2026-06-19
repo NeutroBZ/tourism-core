@@ -32,6 +32,10 @@
 	padding: 10px;
 }
 
+#tourism-core-faqs-container .tourism-core-faq-content .wp-editor-wrap {
+	max-width: 100%;
+}
+
 #tourism-core-highlights-container .tourism-core-highlight-item {
 	border: 1px solid #c3c4c7;
 	background: #fff;

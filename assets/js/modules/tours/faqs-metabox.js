@@ -1,181 +1,160 @@
-jQuery(document).ready(function ($) {
+/**
+ * Tour FAQs metabox (sortable repeater + dynamic WYSIWYG answers).
+ */
+(function ($) {
+	'use strict';
 
-    let devgolang_itemCount = $('#devgolang-faqs-container .devgolang-faq-item').length;
+	var L10n =
+		typeof TourismCoreTourFaqs !== 'undefined' && TourismCoreTourFaqs
+			? TourismCoreTourFaqs
+			: {};
 
-    function devgolang_initEditor(editorId) {
+	var editorSettings = {
+		tinymce: {
+			wpautop: true,
+			plugins: 'lists link paste wordpress',
+			toolbar1: 'formatselect,bold,italic,bullist,numlist,link,unlink',
+			toolbar2: '',
+			height: 100,
+		},
+		quicktags: true,
+		mediaButtons: false,
+	};
 
-        if (typeof wp === 'undefined' || !wp.editor) {
-            return;
-        }
+	function tourismCoreFaqSaveEditors() {
+		if (typeof tinymce !== 'undefined') {
+			tinymce.triggerSave();
+		}
+	}
 
-        if (typeof tinymce !== 'undefined' && tinymce.get(editorId)) {
-            return;
-        }
+	function tourismCoreFaqInitEditor(editorId) {
+		if (!editorId || typeof wp === 'undefined' || !wp.editor || !wp.editor.initialize) {
+			return;
+		}
 
-        wp.editor.initialize(editorId, {
-            tinymce: {
-                wpautop: true,
-                plugins: 'lists link paste wordpress',
-                toolbar1: 'formatselect,bold,italic,bullist,numlist,link,unlink',
-                toolbar2: '',
-                height: 250
-            },
-            quicktags: true,
-            mediaButtons: false
-        });
-    }
+		if (typeof tinymce !== 'undefined' && tinymce.get(editorId)) {
+			return;
+		}
 
-    function devgolang_destroyEditor(editorId) {
+		wp.editor.initialize(editorId, editorSettings);
+	}
 
-        if (typeof tinymce !== 'undefined') {
+	function tourismCoreFaqDestroyEditor(editorId) {
+		if (!editorId) {
+			return;
+		}
 
-            const editor = tinymce.get(editorId);
+		if (typeof wp !== 'undefined' && wp.editor && wp.editor.remove) {
+			wp.editor.remove(editorId);
+			return;
+		}
 
-            if (editor) {
-                editor.remove();
-            }
-        }
+		if (typeof tinymce !== 'undefined') {
+			var editor = tinymce.get(editorId);
+			if (editor) {
+				editor.remove();
+			}
+		}
 
-        const quicktagToolbar = document.getElementById(
-            'qt_' + editorId + '_toolbar'
-        );
+		var quicktagToolbar = document.getElementById('qt_' + editorId + '_toolbar');
+		if (quicktagToolbar) {
+			quicktagToolbar.remove();
+		}
+	}
 
-        if (quicktagToolbar) {
-            quicktagToolbar.remove();
-        }
-    }
+	function tourismCoreFaqDestroyAllEditors($container) {
+		$container.find('.tourism-core-wysiwyg').each(function () {
+			tourismCoreFaqDestroyEditor($(this).attr('id'));
+		});
+	}
 
-    function devgolang_initComponents() {
+	function tourismCoreFaqInitAllEditors($container) {
+		$container.find('.tourism-core-wysiwyg').each(function () {
+			tourismCoreFaqInitEditor($(this).attr('id'));
+		});
+	}
 
-        devgolang_initSortableFAQs();
+	function tourismCoreRenumberFaqs($container, reinitEditors) {
+		if (!$container.length) {
+			return;
+		}
 
-        devgolang_bindEventHandlers();
+		tourismCoreFaqSaveEditors();
+		tourismCoreFaqDestroyAllEditors($container);
 
-        $('.devgolang-wysiwyg').each(function () {
-            devgolang_initEditor($(this).attr('id'));
-        });
+		$container.children('.tourism-core-faq-item').each(function (i) {
+			var $item = $(this);
 
-        devgolang_renumberItems();
-    }
+			$item.attr('data-tourism-core-index', String(i));
+			$item.find('.tourism-core-item-number').text(String(i + 1));
+			$item.find('input[name^="tourism_faqs["]').attr('name', 'tourism_faqs[' + i + '][question]');
+			$item.find('textarea[name^="tourism_faqs["]').attr('name', 'tourism_faqs[' + i + '][answer]');
+			$item.find('label[for^="tourism_core_question_"]').attr('for', 'tourism_core_question_' + i);
+			$item.find('input[id^="tourism_core_question_"]').attr('id', 'tourism_core_question_' + i);
+			$item.find('label[for^="tourism_core_answer_"]').attr('for', 'tourism_core_answer_' + i);
+			$item.find('textarea[id^="tourism_core_answer_"]').attr('id', 'tourism_core_answer_' + i);
+		});
 
-    function devgolang_initSortableFAQs() {
+		if (reinitEditors !== false) {
+			tourismCoreFaqInitAllEditors($container);
+		}
+	}
 
-        $("#devgolang-faqs-container").sortable({
-            handle: ".devgolang-handle",
-            axis: "y",
-            opacity: 0.7,
-            update: function () {
-                devgolang_renumberItems();
-            }
-        });
-    }
+	$(function () {
+		var $faqContainer = $('#tourism-core-faqs-container');
+		if (!$faqContainer.length) {
+			return;
+		}
 
-    function devgolang_bindEventHandlers() {
+		tourismCoreFaqInitAllEditors($faqContainer);
 
-        $("#devgolang-add-faq").on(
-            "click",
-            devgolang_handleAddFAQ
-        );
+		$faqContainer.sortable({
+			handle: '.tourism-core-handle',
+			items: '> .tourism-core-faq-item',
+			cancel: 'input,textarea,button,select,option,a,.wp-editor-wrap,.mce-container',
+			update: function () {
+				tourismCoreRenumberFaqs($faqContainer);
+			},
+		});
 
-        $(document).on(
-            "click",
-            ".devgolang-delete-faq",
-            devgolang_handleDeleteFAQ
-        );
+		$(document).on('click', '#tourism-core-add-faq', function (e) {
+			e.preventDefault();
 
-        $('#post').on('submit', function () {
+			var tmpl = $('#tourism-core-tmpl-faq-item').html();
+			if (!tmpl) {
+				return;
+			}
 
-            if (typeof tinyMCE !== 'undefined') {
-                tinyMCE.triggerSave();
-            }
+			var idx = $faqContainer.children('.tourism-core-faq-item').length;
+			var html = tmpl
+				.split('{{tourism_index}}')
+				.join(String(idx))
+				.split('{{tourism_index_plus_one}}')
+				.join(String(idx + 1));
 
-        });
-    }
+			$faqContainer.append(html);
+			tourismCoreFaqInitEditor('tourism_core_answer_' + idx);
+		});
 
-    function devgolang_handleAddFAQ() {
+		$(document).on('click', '.tourism-core-delete-faq', function (e) {
+			e.preventDefault();
 
-        const $devgolang_container = $("#devgolang-faqs-container");
+			var confirmMessage =
+				L10n.deleteConfirm || 'Are you sure you want to delete this FAQ?';
+			if (!window.confirm(confirmMessage)) {
+				return;
+			}
 
-        const devgolang_template = $("#devgolang-tmpl-faq-item").html()
-            .replace(/{{devgolang_index}}/g, devgolang_itemCount)
-            .replace(/{{devgolang_indexPlusOne}}/g, devgolang_itemCount + 1);
+			var $item = $(this).closest('.tourism-core-faq-item');
+			var editorId = $item.find('.tourism-core-wysiwyg').attr('id');
 
-        $devgolang_container.append(devgolang_template);
+			tourismCoreFaqDestroyEditor(editorId);
+			$item.remove();
+			tourismCoreRenumberFaqs($faqContainer);
+		});
 
-        const editorId =
-            'devgolang_answer_' + devgolang_itemCount;
-
-        devgolang_initEditor(editorId);
-
-        devgolang_itemCount++;
-
-        devgolang_renumberItems();
-    }
-
-    function devgolang_handleDeleteFAQ() {
-
-        if (!confirm("Are you sure you want to delete this FAQ?")) {
-            return;
-        }
-
-        const $item = $(this).closest(".devgolang-faq-item");
-
-        const editorId = $item
-            .find('.devgolang-wysiwyg')
-            .attr('id');
-
-        devgolang_destroyEditor(editorId);
-
-        $item.remove();
-
-        devgolang_renumberItems();
-    }
-
-    function devgolang_renumberItems() {
-
-        $("#devgolang-faqs-container .devgolang-faq-item").each(function (devgolang_index) {
-
-            $(this)
-                .find(".devgolang-item-number")
-                .text(devgolang_index + 1);
-
-            const devgolang_newIndex = devgolang_index;
-
-            $(this).attr(
-                'data-devgolang-index',
-                devgolang_newIndex
-            );
-
-            $(this)
-                .find('[name*="[question]"]')
-                .attr(
-                    'name',
-                    `devgolang_faqs[${devgolang_newIndex}][question]`
-                );
-
-            $(this)
-                .find('[name*="[answer]"]')
-                .attr(
-                    'name',
-                    `devgolang_faqs[${devgolang_newIndex}][answer]`
-                );
-        });
-
-        devgolang_itemCount =
-            $("#devgolang-faqs-container .devgolang-faq-item").length;
-    }
-
-    devgolang_initComponents();
-
-    document.addEventListener('click', function (e) {
-
-        const header = e.target.closest('.devgolang-faq-header');
-
-        if (!header) return;
-
-        const item = header.closest('.devgolang-faq-item');
-
-        item.classList.toggle('active');
-    });
-
-});
+		$('#post').on('submit', function () {
+			tourismCoreFaqSaveEditors();
+		});
+	});
+})(jQuery);

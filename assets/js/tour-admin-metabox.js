@@ -266,24 +266,6 @@
 			});
 		}
 
-		function tourismCoreRenumberFaqs() {
-			var $c = $('#tourism-core-faqs-container');
-			if (!$c.length) {
-				return;
-			}
-			$c.children('.tourism-core-faq-item').each(function (i) {
-				var $item = $(this);
-				$item.attr('data-tourism-core-index', String(i));
-				$item.find('.tourism-core-item-number').text(String(i + 1));
-				$item.find('input[name^="tourism_faqs["]').attr('name', 'tourism_faqs[' + i + '][question]');
-				$item.find('textarea[name^="tourism_faqs["]').attr('name', 'tourism_faqs[' + i + '][answer]');
-				$item.find('label[for^="tourism_core_question_"]').attr('for', 'tourism_core_question_' + i);
-				$item.find('input[id^="tourism_core_question_"]').attr('id', 'tourism_core_question_' + i);
-				$item.find('label[for^="tourism_core_answer_"]').attr('for', 'tourism_core_answer_' + i);
-				$item.find('textarea[id^="tourism_core_answer_"]').attr('id', 'tourism_core_answer_' + i);
-			});
-		}
-
 		function tourismCoreRenumberHighlights() {
 			var $c = $('#tourism-core-highlights-container');
 			if (!$c.length) {
@@ -422,39 +404,6 @@
 				e.preventDefault();
 				$(this).closest('.tourism-core-exclude-item').remove();
 				tourismCoreRenumberExcludes();
-			});
-		}
-
-		var $faqContainer = $('#tourism-core-faqs-container');
-		if ($faqContainer.length) {
-			$faqContainer.sortable({
-				handle: '.tourism-core-handle',
-				items: '> .tourism-core-faq-item',
-				update: function () {
-					tourismCoreRenumberFaqs();
-				},
-			});
-
-			$(document).on('click', '#tourism-core-add-faq', function (e) {
-				e.preventDefault();
-				var tmpl = $('#tourism-core-tmpl-faq-item').html();
-				if (!tmpl) {
-					return;
-				}
-				var idx = $faqContainer.children('.tourism-core-faq-item').length;
-				var html = tmpl
-					.split('{{tourism_index}}')
-					.join(String(idx))
-					.split('{{tourism_index_plus_one}}')
-					.join(String(idx + 1));
-				$faqContainer.append(html);
-				tourismCoreRenumberFaqs();
-			});
-
-			$(document).on('click', '.tourism-core-delete-faq', function (e) {
-				e.preventDefault();
-				$(this).closest('.tourism-core-faq-item').remove();
-				tourismCoreRenumberFaqs();
 			});
 		}
 

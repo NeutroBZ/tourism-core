@@ -832,6 +832,8 @@ class Tourism_Core_Tour_Metaboxes
 	 */
 	public function render_faqs($post)
 	{
+		wp_enqueue_editor();
+
 		$tourism_core_faqs = $this->get_tour_faqs_for_edit((int) $post->ID);
 
 		$template = TOURISM_CORE_PATH . 'modules/tours/templates/faqs-metaboxes.php';
@@ -1200,7 +1202,7 @@ class Tourism_Core_Tour_Metaboxes
 						continue;
 					}
 					$question = isset($row['question']) ? sanitize_text_field($row['question']) : '';
-					$answer   = isset($row['answer']) ? sanitize_textarea_field($row['answer']) : '';
+					$answer   = isset($row['answer']) ? wp_kses_post($row['answer']) : '';
 					if ($question === '' && $answer === '') {
 						continue;
 					}
@@ -1271,11 +1273,14 @@ class Tourism_Core_Tour_Metaboxes
 
 		wp_enqueue_media();
 		wp_enqueue_script('jquery-ui-sortable');
+		wp_enqueue_editor();
 
 		$css_path = TOURISM_CORE_PATH . 'assets/css/tour-admin-metabox.css';
 		$js_path  = TOURISM_CORE_PATH . 'assets/js/tour-admin-metabox.js';
+		$faqs_js_path = TOURISM_CORE_PATH . 'assets/js/modules/tours/faqs-metabox.js';
 		$ver_css  = file_exists($css_path) ? (string) filemtime($css_path) : TOURISM_CORE_VERSION;
 		$ver_js   = file_exists($js_path) ? (string) filemtime($js_path) : TOURISM_CORE_VERSION;
+		$ver_faqs_js = file_exists($faqs_js_path) ? (string) filemtime($faqs_js_path) : TOURISM_CORE_VERSION;
 
 		wp_enqueue_style(
 			'tourism-core-tour-admin',
@@ -1290,6 +1295,22 @@ class Tourism_Core_Tour_Metaboxes
 			array( 'jquery', 'jquery-ui-sortable', 'media-editor' ),
 			$ver_js,
 			true
+		);
+
+		wp_enqueue_script(
+			'tourism-core-tour-faqs-metabox',
+			TOURISM_CORE_URL . 'assets/js/modules/tours/faqs-metabox.js',
+			array( 'jquery', 'jquery-ui-sortable', 'editor' ),
+			$ver_faqs_js,
+			true
+		);
+
+		wp_localize_script(
+			'tourism-core-tour-faqs-metabox',
+			'TourismCoreTourFaqs',
+			array(
+				'deleteConfirm' => __( 'Are you sure you want to delete this FAQ?', TOURISM_CORE_TD ),
+			)
 		);
 
 		wp_localize_script(

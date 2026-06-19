@@ -191,7 +191,7 @@ class Tourism_Core_Module_Tours {
 							continue;
 						}
 						$question = isset( $row['question'] ) ? sanitize_text_field( (string) $row['question'] ) : '';
-						$answer   = isset( $row['answer'] ) ? sanitize_textarea_field( (string) $row['answer'] ) : '';
+						$answer   = isset( $row['answer'] ) ? wp_kses_post( (string) $row['answer'] ) : '';
 						if ( $question === '' && $answer === '' ) {
 							continue;
 						}
