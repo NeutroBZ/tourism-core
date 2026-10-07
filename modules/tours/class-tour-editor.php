@@ -7,6 +7,45 @@ class Tourism_Core_Tour_Editor {
 
 	public function register( Tourism_Core_Loader $loader ) {
 		$loader->add_action( 'edit_form_after_title', $this, 'navigation' );
+		$loader->add_action( 'admin_head-post.php', $this, 'loading_state' );
+		$loader->add_action( 'admin_head-post-new.php', $this, 'loading_state' );
+	}
+
+	/** Run before the browser paints the original metabox arrangement. */
+	public function loading_state() {
+		$screen = get_current_screen();
+		if ( ! $screen || 'tour' !== $screen->post_type ) { return; }
+		?>
+		<style>
+			#tourism-editor-loading { display: none; }
+			html.tourism-editor-loading #tourism-editor-loading { display: block; margin: 18px 0; padding: 24px; border: 1px solid #dcdcde; border-radius: 8px; background: #fff; color: #50575e; }
+			html.tourism-editor-loading #normal-sortables, html.tourism-editor-loading #advanced-sortables { visibility: hidden; pointer-events: none; }
+			html.tourism-editor-loading #tour_categorydiv, html.tourism-editor-loading #tour_typediv, html.tourism-editor-loading #postimagediv, html.tourism-editor-loading #tourism-core-tour-order { visibility: hidden; pointer-events: none; }
+			#tourism-editor-recovery { margin: 18px 0; }
+		</style>
+		<script>
+		(function () {
+			var root = document.documentElement;
+			var timer;
+			var state = window.TourismCoreEditorBoot = {
+				failed: false,
+				finish: function () { window.clearTimeout(timer); root.classList.remove('tourism-editor-loading'); },
+				fallback: function () {
+					state.failed = true;
+					state.finish();
+					var notice = document.getElementById('tourism-editor-recovery');
+					if (notice) notice.hidden = false;
+				}
+			};
+			root.classList.add('tourism-editor-loading');
+			// If assets fail or initialization stalls, leave the original form usable.
+			timer = window.setTimeout(state.fallback, 10000);
+			window.addEventListener('error', function (event) {
+				if (event.target && event.target.tagName === 'SCRIPT' && /\/tour-editor\.js(?:\?|$)/.test(event.target.src)) state.fallback();
+			}, true);
+		}());
+		</script>
+		<?php
 	}
 
 	public static function sections() {
@@ -23,6 +62,8 @@ class Tourism_Core_Tour_Editor {
 
 	public function navigation( $post ) {
 		if ( 'tour' !== $post->post_type ) { return; }
+		echo '<div id="tourism-editor-loading" role="status" aria-live="polite">Preparando el editor del tour…</div>';
+		echo '<div id="tourism-editor-recovery" class="notice notice-warning inline" hidden><p>No se pudo cargar el editor por secciones. Puedes seguir editando con el formulario original o recargar la página.</p></div>';
 		echo '<div id="tourism-tour-editor" class="tourism-tour-editor" hidden>';
 		echo '<div class="tourism-editor-heading"><div><strong>Contenido del tour</strong><p>Completa las secciones y guarda con los botones de WordPress.</p></div><span id="tourism-editor-save-state" role="status" aria-live="polite">Sin cambios pendientes</span></div>';
 		echo '<div class="tourism-editor-tabs" role="tablist" aria-label="Secciones del tour">';

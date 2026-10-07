@@ -2,10 +2,15 @@
 (function ($) {
 	'use strict';
 	$(function () {
+		var boot = window.TourismCoreEditorBoot;
+		if (boot && boot.failed) return;
 		var config = window.TourismCoreEditor;
 		var $navigation = $('#tourism-tour-editor');
 		var $normal = $('#normal-sortables');
-		if (!config || !$navigation.length || !$normal.length || !$('#tourism-core-tour-details').length) return;
+		if (!config || !$navigation.length || !$normal.length || !$('#tourism-core-tour-details').length) {
+			if (boot) boot.fallback();
+			return;
+		}
 		var $form = $('#post');
 		var $workspace = $('<div class="tourism-editor-workspace"></div>').prependTo($normal);
 		var available = [];
@@ -40,6 +45,7 @@
 				$(entry.node).removeClass('tourism-editor-box');
 			});
 			$workspace.remove();
+			if (boot) boot.fallback();
 			return;
 		}
 		if (!available.length) return;
@@ -212,5 +218,6 @@
 		try { remembered = window.sessionStorage.getItem(storageKey); } catch (error) { /* Storage is optional. */ }
 		select(remembered);
 		checklist();
+		if (boot) boot.finish();
 	});
 })(jQuery);

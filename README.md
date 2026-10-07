@@ -1,6 +1,6 @@
 # Tourism Core
 
-Plugin de WordPress para contenido turístico y checkout externo. Versión 0.4.0.
+Plugin de WordPress para contenido turístico y checkout externo. Versión 0.4.1.
 
 ## Configuración de pagos
 
@@ -98,6 +98,10 @@ Referencias: [Trip y propiedades de itinerario y etapas](https://schema.org/Trip
 ## Editor de tours (0.4.0)
 
 El formulario conserva el guardado, permisos y datos existentes de WordPress. Con JavaScript se organiza en siete secciones: Información general, Fotos, Experiencia, Itinerario, Precio y reservas, Preguntas frecuentes y Avanzado. Los metaboxes de otros plugins permanecen disponibles fuera de estas secciones; no se modifica su marcado SEO. Sin JavaScript se conserva el formulario original.
+
+Desde 0.4.1 se activa un estado de preparación antes de pintar las cajas originales, evitando que aparezcan brevemente antes del editor por secciones. La preparación termina al completar la organización del formulario. Si el archivo del editor falla o pasan diez segundos sin inicializar, se recupera el formulario original con un aviso y no se intenta cambiarlo después en esa carga.
+
+Con la misma preparación local de las pruebas del editor, `node tests/tour-editor-loading-check.cjs` verifica los primeros fotogramas con el archivo retrasado, la recuperación ante errores de carga y el acceso sin JavaScript.
 
 - Moneda, disponibilidad y vigencia están junto al precio; el lugar de salida está en información general. Se trasladan los campos originales sin duplicarlos ni cambiar sus claves.
 - La navegación admite flechas, Inicio y Fin y recuerda la sección durante la sesión para cada tour. Los botones Anterior/Siguiente no envían el formulario.
