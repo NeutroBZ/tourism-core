@@ -9,17 +9,6 @@
 			? TourismCoreTourFaqs
 			: {};
 
-	var editorSettings = {
-		tinymce: {
-			wpautop: true,
-			plugins: 'lists link paste wordpress',
-			toolbar1: 'formatselect,bold,italic,bullist,numlist,link,unlink',
-			toolbar2: '',
-			height: 100,
-		},
-		quicktags: true,
-		mediaButtons: false,
-	};
 
 	function tourismCoreFaqSaveEditors() {
 		if (typeof tinymce !== 'undefined') {
@@ -32,11 +21,11 @@
 			return;
 		}
 
-		if (typeof tinymce !== 'undefined' && tinymce.get(editorId)) {
+		if ($('#' + editorId).closest('.wp-editor-wrap').length || (typeof tinymce !== 'undefined' && tinymce.get(editorId))) {
 			return;
 		}
 
-		wp.editor.initialize(editorId, editorSettings);
+		wp.editor.initialize(editorId, window.TourismCoreRichEditorSettings());
 	}
 
 	function tourismCoreFaqDestroyEditor(editorId) {
@@ -112,9 +101,10 @@
 			handle: '.tourism-core-handle',
 			items: '> .tourism-core-faq-item',
 			cancel: 'input,textarea,button,select,option,a,.wp-editor-wrap,.mce-container',
-			update: function () {
-				tourismCoreRenumberFaqs($faqContainer);
+			start: function () {
+				tourismCoreFaqSaveEditors(); tourismCoreFaqDestroyAllEditors($faqContainer);
 			},
+			stop: function () { tourismCoreRenumberFaqs($faqContainer); $(document).trigger('tourism:content-changed'); },
 		});
 
 		$(document).on('click', '#tourism-core-add-faq', function (e) {

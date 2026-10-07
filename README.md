@@ -1,6 +1,6 @@
 # Tourism Core
 
-Plugin de WordPress para contenido turístico y checkout externo. Versión 0.4.2.
+Plugin de WordPress para contenido turístico y checkout externo. Versión 0.4.3.
 
 ## Configuración de pagos
 
@@ -121,3 +121,9 @@ Destacados, Qué esperar, Incluidos y Excluidos usan el editor completo de WordP
 Los campos existentes se crean una vez mediante `wp_editor()` y su inicialización nativa. JavaScript inicializa solamente los campos nuevos o los que se reconstruyen al reordenar, evitando los controles Visual/Code duplicados. Las cuatro listas comparten una plantilla y un controlador; conservan las claves de sus metadatos. Al eliminar o arrastrar se guardan los editores, se reconstruyen los identificadores y las asociaciones de Añadir medios y se inicializa un solo editor por campo.
 
 Prueba específica con una preparación local nueva: `node tests/tour-experience-ui-check.cjs` verifica controles únicos al cargar, añadir, eliminar, arrastrar y recargar; abre la biblioteca nativa para insertar una imagen en cada lista; comprueba el texto en la pestaña Code y el ancho móvil. Después usar `php -c <php.ini-del-sitio> tests/tour-editor-fixture.php verify-experience` para comprobar los metadatos guardados y terminar con `cleanup`. La imagen temporal referencia un icono del plugin; no se copian archivos a uploads y la entrada de medios se elimina durante la limpieza.
+
+## Editor completo en todas las secciones (0.4.3)
+
+Introducción, descripciones del itinerario, respuestas de preguntas frecuentes y detalles del precio también usan el editor completo con Añadir medios. La configuración compartida `TourismCoreRichEditorSettings()` toma las barras y plugins del editor nativo de Recomendaciones detalladas y los aplica a los campos dinámicos, incluyendo los de Experiencia. De esta forma no dependen de la barra reducida que devuelve por defecto la API de inicialización dinámica de WordPress.
+
+Las listas guardan y retiran los editores antes de arrastrar sus elementos y los reconstruyen al terminar, conservando el contenido y actualizando el editor asociado al botón de medios. Los archivos fuente y las variantes de distribución se mantienen sincronizados. `node tests/tour-all-editors-check.cjs` comprueba herramientas completas, un solo par Visual/Code y un botón de medios por editor, además de añadir/eliminar campos y abrir la biblioteca con el editor correcto en itinerario, preguntas y precio. Usa la misma preparación y limpieza local de las pruebas anteriores.

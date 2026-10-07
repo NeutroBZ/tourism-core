@@ -51,7 +51,7 @@ $tourism_core_faqs = isset($tourism_core_faqs) && is_array($tourism_core_faqs) ?
 						id="tourism_core_answer_<?php echo esc_attr((string) $tourism_core_index); ?>"
 						name="tourism_faqs[<?php echo esc_attr((string) $tourism_core_index); ?>][answer]"
 						class="tourism-core-wysiwyg widefat"
-						rows="2"
+						rows="8"
 					><?php echo esc_textarea($tourism_core_answer); ?></textarea>
 				</p>
 			</div>
@@ -79,7 +79,7 @@ $tourism_core_faqs = isset($tourism_core_faqs) && is_array($tourism_core_faqs) ?
 			</p>
 			<p>
 				<label for="tourism_core_answer_{{tourism_index}}"><?php echo esc_html(__('Respuesta:', TOURISM_CORE_TD)); ?></label>
-				<textarea id="tourism_core_answer_{{tourism_index}}" name="tourism_faqs[{{tourism_index}}][answer]" class="tourism-core-wysiwyg widefat" rows="2"></textarea>
+				<textarea id="tourism_core_answer_{{tourism_index}}" name="tourism_faqs[{{tourism_index}}][answer]" class="tourism-core-wysiwyg widefat" rows="8"></textarea>
 			</p>
 		</div>
 	</div>

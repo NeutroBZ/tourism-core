@@ -1416,7 +1416,8 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		wp_enqueue_style( 'tourism-core-tour-editor', TOURISM_CORE_URL . 'assets/css/tour-editor.css', array( 'tourism-core-tour-admin' ), (string) filemtime( TOURISM_CORE_PATH . 'assets/css/tour-editor.css' ) );
 		wp_enqueue_script( 'tourism-core-tour-editor', TOURISM_CORE_URL . 'assets/js/tour-editor.js', array( 'jquery', 'tourism-core-tour-admin' ), (string) filemtime( TOURISM_CORE_PATH . 'assets/js/tour-editor.js' ), true );
 		wp_localize_script( 'tourism-core-tour-editor', 'TourismCoreEditor', Tourism_Core_Tour_Editor::settings() );
-		wp_enqueue_script( 'tourism-core-tour-experience-editors', TOURISM_CORE_URL . 'assets/js/tour-experience-editors.js', array( 'jquery', 'jquery-ui-sortable', 'editor', 'tourism-core-tour-editor', 'media-editor' ), (string) filemtime( TOURISM_CORE_PATH . 'assets/js/tour-experience-editors.js' ), true );
+		wp_enqueue_script( 'tourism-core-tour-rich-editor', TOURISM_CORE_URL . 'assets/js/tour-rich-editor.js', array( 'editor' ), (string) filemtime( TOURISM_CORE_PATH . 'assets/js/tour-rich-editor.js' ), true );
+		wp_enqueue_script( 'tourism-core-tour-experience-editors', TOURISM_CORE_URL . 'assets/js/tour-experience-editors.js', array( 'jquery', 'jquery-ui-sortable', 'editor', 'tourism-core-tour-rich-editor', 'tourism-core-tour-editor', 'media-editor' ), (string) filemtime( TOURISM_CORE_PATH . 'assets/js/tour-experience-editors.js' ), true );
 
 		$gallery_js_path = TOURISM_CORE_PATH . 'assets/js/gallery-metabox.js';
 		$gallery_js_ver  = file_exists($gallery_js_path) ? (string) filemtime($gallery_js_path) : TOURISM_CORE_VERSION;
@@ -1464,7 +1465,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 
 			foreach ($source_files as $file) {
 				$filename = basename($file);
-				$dependencies = array( 'jquery', 'jquery-ui-sortable', 'editor' );
+				$dependencies = array( 'jquery', 'jquery-ui-sortable', 'editor', 'tourism-core-tour-rich-editor' );
 				if ( in_array( $filename, array( 'highlights-metabox.js', 'what-to-expect-metabox.js', 'whats-included-metabox.js' ), true ) ) {
 					$dependencies[] = 'tourism-core-tour-experience-editors';
 				}

@@ -16,7 +16,7 @@
 					// PHP-rendered wp_editor() already has its own bootstrap and controls.
 					// Initialize only a bare textarea created by adding or moving a row.
 					if (!$field.length || $field.closest('.wp-editor-wrap').length || (window.tinymce && tinymce.get($field.attr('id')))) return;
-					wp.editor.initialize($field.attr('id'), { tinymce: true, quicktags: true, mediaButtons: true });
+					wp.editor.initialize($field.attr('id'), window.TourismCoreRichEditorSettings());
 				}
 				function initializeAll() { fields().each(function () { initialize($(this)); }); }
 				function removeAll() {

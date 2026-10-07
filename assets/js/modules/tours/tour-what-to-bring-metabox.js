@@ -4,11 +4,6 @@
 (function ($) {
 	'use strict';
 
-	var editorSettings = {
-		tinymce: true,
-		quicktags: true,
-		mediaButtons: true,
-	};
 
 	function tourismCoreBringSaveEditors() {
 		if (typeof tinymce !== 'undefined') {
@@ -31,7 +26,7 @@
 			return;
 		}
 
-		wp.editor.initialize(editorId, editorSettings);
+		wp.editor.initialize(editorId, window.TourismCoreRichEditorSettings());
 	}
 
 	function tourismCoreBringDestroyEditor(editorId) {

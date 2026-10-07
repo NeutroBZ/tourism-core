@@ -37,7 +37,7 @@ $tourism_core_intro_description = isset($tourism_core_introduction['description'
 		<textarea
 			id="tourism_intro_description"
 			name="tourism_intro_description"
-			rows="6"
+			rows="8"
 			class="widefat tourism-core-wysiwyg"
 			placeholder="<?php esc_attr_e('Escribe una presentación breve del tour.', TOURISM_CORE_TD); ?>"
 		><?php echo esc_textarea($tourism_core_intro_description); ?></textarea>

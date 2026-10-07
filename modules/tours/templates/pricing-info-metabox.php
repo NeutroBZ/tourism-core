@@ -47,7 +47,7 @@ $tourism_core_pricing_details = isset($tourism_core_pricing_details) && is_array
 						id="tourism_pricing_info_content_<?php echo esc_attr((string) $tourism_core_index); ?>"
 						class="widefat tourism-core-wysiwyg"
 						name="tourism_pricing_info_items[<?php echo esc_attr((string) $tourism_core_index); ?>][content]"
-						rows="5"
+						rows="8"
 					><?php echo wp_kses_post($tourism_core_content); ?></textarea>
 				</p>
 			</div>
@@ -78,7 +78,7 @@ $tourism_core_pricing_details = isset($tourism_core_pricing_details) && is_array
 			</p>
 			<p>
 				<label for="tourism_pricing_info_content_{{tourism_index}}"><?php echo esc_html(__('Contenido', TOURISM_CORE_TD)); ?></label>
-				<textarea id="tourism_pricing_info_content_{{tourism_index}}" class="widefat tourism-core-wysiwyg" name="tourism_pricing_info_items[{{tourism_index}}][content]" rows="5"></textarea>
+				<textarea id="tourism_pricing_info_content_{{tourism_index}}" class="widefat tourism-core-wysiwyg" name="tourism_pricing_info_items[{{tourism_index}}][content]" rows="8"></textarea>
 			</p>
 		</div>
 	</div>

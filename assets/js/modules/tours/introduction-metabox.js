@@ -6,17 +6,6 @@
 
 	var editorId = 'tourism_intro_description';
 
-	var editorSettings = {
-		tinymce: {
-			wpautop: true,
-			plugins: 'lists link paste wordpress',
-			toolbar1: 'formatselect,bold,italic,bullist,numlist,link,unlink',
-			toolbar2: '',
-			height: 100,
-		},
-		quicktags: true,
-		mediaButtons: false,
-	};
 
 	function tourismCoreIntroductionSaveEditor() {
 		if (typeof tinymce !== 'undefined') {
@@ -33,11 +22,11 @@
 			return;
 		}
 
-		if (typeof tinymce !== 'undefined' && tinymce.get(editorId)) {
+		if ($('#' + editorId).closest('.wp-editor-wrap').length || (typeof tinymce !== 'undefined' && tinymce.get(editorId))) {
 			return;
 		}
 
-		wp.editor.initialize(editorId, editorSettings);
+		wp.editor.initialize(editorId, window.TourismCoreRichEditorSettings());
 	}
 
 	$(function () {
