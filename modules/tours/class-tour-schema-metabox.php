@@ -78,7 +78,7 @@ class Tourism_Core_Tour_Schema_Metabox {
 		echo '<p>TouristTrip y Product usan automáticamente el nombre, descripción, imágenes, precio, destinos e itinerario de las otras cajas. Completa aquí los datos adicionales reales.</p>';
 		foreach ( self::fields() as $key => $field ) {
 			$value = get_post_meta( $post->ID, $key, true );
-			echo '<p><label for="' . esc_attr( $key ) . '"><strong>' . esc_html( $field['label'] ) . '</strong></label><br />';
+			echo '<p class="tourism-schema-field" data-schema-field="' . esc_attr( $key ) . '"><label for="' . esc_attr( $key ) . '"><strong>' . esc_html( $field['label'] ) . '</strong></label><br />';
 			if ( 'select' === $field['type'] ) {
 				echo '<select name="' . esc_attr( $key ) . '" id="' . esc_attr( $key ) . '">';
 				foreach ( $field['options'] as $option => $label ) {

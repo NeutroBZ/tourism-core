@@ -13,14 +13,14 @@ class Tourism_Core_Tour_Taxonomies {
 
 		$this->register_taxonomy(
 			'tour_category',
-			__( 'Tour Categories', TOURISM_CORE_TD ),
-			__( 'Tour Category', TOURISM_CORE_TD )
+			__( 'Categorías de tours', TOURISM_CORE_TD ),
+			__( 'Categoría del tour', TOURISM_CORE_TD )
 		);
 
 		$this->register_taxonomy(
 			'tour_type',
-			__( 'Tour Types', TOURISM_CORE_TD ),
-			__( 'Tour Type', TOURISM_CORE_TD )
+			__( 'Tipos de tour', TOURISM_CORE_TD ),
+			__( 'Tipo de tour', TOURISM_CORE_TD )
 		);
 
 	}

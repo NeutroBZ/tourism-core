@@ -37,7 +37,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		// MAIN BOX
 		add_meta_box(
 			'tourism-core-tour-details',
-			__('Tour Details', TOURISM_CORE_TD),
+			__('Características del tour', TOURISM_CORE_TD),
 			array($this, 'render'),
 			'tour',
 			'normal',
@@ -47,7 +47,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		// HERO IMAGE BOX
 		add_meta_box(
 			'tourism-core-tour-hero',
-			__('Hero Image', TOURISM_CORE_TD),
+			__('Imagen de portada', TOURISM_CORE_TD),
 			array($this, 'render_hero'),
 			'tour',
 			'normal',
@@ -57,7 +57,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		// Photo gallery (modular template)
 		add_meta_box(
 			'tourism-core-tour-gallery',
-			__('Photo Gallery', TOURISM_CORE_TD),
+			__('Galería de fotos', TOURISM_CORE_TD),
 			array($this, 'render_gallery'),
 			'tour',
 			'normal',
@@ -76,7 +76,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		// What's Included / Excludes (templates/whats-included-metabox.php).
 		add_meta_box(
 			'tourism-core-whats-included',
-			__("What's Included", TOURISM_CORE_TD),
+			__("Incluidos y excluidos", TOURISM_CORE_TD),
 			array($this, 'render_whats_included'),
 			'tour',
 			'normal',
@@ -86,7 +86,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		// Introduction (title + description)
 		add_meta_box(
 			'tourism-core-tour-introduction',
-			__('Tour Introduction', TOURISM_CORE_TD),
+			__('Presentación del tour', TOURISM_CORE_TD),
 			array($this, 'render_introduction'),
 			'tour',
 			'normal',
@@ -96,7 +96,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		// Pricing (current + previous + discount)
 		add_meta_box(
 			'tourism-core-tour-pricing',
-			__('Tour Pricing', TOURISM_CORE_TD),
+			__('Precio del tour', TOURISM_CORE_TD),
 			array($this, 'render_pricing'),
 			'tour',
 			'normal',
@@ -106,7 +106,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		// Pricing Details (repeater: title + WYSIWYG content) — separate from Tour Pricing above.
 		add_meta_box(
 			'tourism-core-tour-pricing-details',
-			__('Pricing Details', TOURISM_CORE_TD),
+			__('Detalles del precio', TOURISM_CORE_TD),
 			array($this, 'render_pricing_details'),
 			'tour',
 			'normal',
@@ -116,7 +116,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		// Itinerary (days + description + dynamic features)
 		add_meta_box(
 			'tourism-core-tour-itinerary',
-			__('Tour Itinerary', TOURISM_CORE_TD),
+			__('Itinerario del tour', TOURISM_CORE_TD),
 			array($this, 'render_itinerary'),
 			'tour',
 			'normal',
@@ -127,7 +127,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		// What to Expect (repeater: title + WYSIWYG content)
 		add_meta_box(
 			'tourism-core-tour-what-to-expect',
-			__('What to Expect', TOURISM_CORE_TD),
+			__('Qué esperar', TOURISM_CORE_TD),
 			array($this, 'render_what_to_expect'),
 			'tour',
 			'normal',
@@ -137,7 +137,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		// FAQs (modular template)
 		add_meta_box(
 			'tourism-core-tour-faqs',
-			__('Tour FAQs', TOURISM_CORE_TD),
+			__('Preguntas frecuentes', TOURISM_CORE_TD),
 			array($this, 'render_faqs'),
 			'tour',
 			'normal',
@@ -147,7 +147,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		// Highlights (modular template)
 		add_meta_box(
 			'tourism-core-tour-highlights',
-			__('Tour Highlights', TOURISM_CORE_TD),
+			__('Destacados del tour', TOURISM_CORE_TD),
 			array($this, 'render_highlights'),
 			'tour',
 			'normal',
@@ -167,7 +167,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		// WeTravel booking UUID.
 		add_meta_box(
 			'tourism-core-tour-wetravel',
-			__('WeTravel — UUID del Tour', TOURISM_CORE_TD),
+			__('Reserva con WeTravel', TOURISM_CORE_TD),
 			array($this, 'render_wetravel'),
 			'tour',
 			'normal',
@@ -206,9 +206,9 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		<div class="tourism-core-details-grid">
 			<div class="tourism-core-detail-column">
 				<p>
-					<label><strong><?php esc_html_e('Duration', TOURISM_CORE_TD); ?></strong></label>
+					<label><strong><?php esc_html_e('Duración', TOURISM_CORE_TD); ?></strong></label>
 					<select name="tourism_duration" id="tourism_duration" style="width:100%;">
-						<option value=""><?php esc_html_e('Select a duration', TOURISM_CORE_TD); ?></option>
+						<option value=""><?php esc_html_e('Selecciona una duración', TOURISM_CORE_TD); ?></option>
 						<?php foreach ($duration_options as $duration_option) : ?>
 							<option value="<?php echo esc_attr($duration_option); ?>" <?php selected($duration, $duration_option); ?>>
 								<?php echo esc_html($duration_option); ?>
@@ -218,7 +218,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 				</p>
 
 				<div class="tourism-core-duration-builder">
-					<p><strong><?php esc_html_e('Duration options', TOURISM_CORE_TD); ?></strong></p>
+					<p><strong><?php esc_html_e('Opciones de duración', TOURISM_CORE_TD); ?></strong></p>
 					<div id="tourism-core-duration-options-list">
 						<?php foreach ($duration_options as $duration_index => $duration_option) : ?>
 							<div class="tourism-core-duration-option-row">
@@ -227,23 +227,23 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 									class="widefat tourism-core-duration-option-input"
 									name="tourism_duration_options[<?php echo esc_attr((string) $duration_index); ?>]"
 									value="<?php echo esc_attr($duration_option); ?>"
-									placeholder="<?php esc_attr_e('Example: Full day', TOURISM_CORE_TD); ?>"
+									placeholder="<?php esc_attr_e('Ejemplo: día completo', TOURISM_CORE_TD); ?>"
 								/>
-								<button type="button" class="button tourism-core-delete-duration-option"><?php esc_html_e('Delete', TOURISM_CORE_TD); ?></button>
+								<button type="button" class="button tourism-core-delete-duration-option"><?php esc_html_e('Eliminar', TOURISM_CORE_TD); ?></button>
 							</div>
 						<?php endforeach; ?>
 					</div>
 					<p>
-						<button type="button" id="tourism-core-add-duration-option" class="button button-secondary"><?php esc_html_e('Add option', TOURISM_CORE_TD); ?></button>
+						<button type="button" id="tourism-core-add-duration-option" class="button button-secondary"><?php esc_html_e('Añadir opción', TOURISM_CORE_TD); ?></button>
 					</p>
 				</div>
 			</div>
 
 			<div class="tourism-core-detail-column">
 				<p>
-					<label><strong><?php esc_html_e('Difficulty', TOURISM_CORE_TD); ?></strong></label>
+					<label><strong><?php esc_html_e('Dificultad', TOURISM_CORE_TD); ?></strong></label>
 					<select name="tourism_difficulty" id="tourism_difficulty" style="width:100%;">
-						<option value=""><?php esc_html_e('Select a difficulty', TOURISM_CORE_TD); ?></option>
+						<option value=""><?php esc_html_e('Selecciona una dificultad', TOURISM_CORE_TD); ?></option>
 						<?php foreach ($difficulty_options as $difficulty_option) : ?>
 							<option value="<?php echo esc_attr($difficulty_option); ?>" <?php selected($difficulty, $difficulty_option); ?>>
 								<?php echo esc_html($difficulty_option); ?>
@@ -253,7 +253,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 				</p>
 
 				<div class="tourism-core-difficulty-builder">
-					<p><strong><?php esc_html_e('Difficulty options', TOURISM_CORE_TD); ?></strong></p>
+					<p><strong><?php esc_html_e('Opciones de dificultad', TOURISM_CORE_TD); ?></strong></p>
 					<div id="tourism-core-difficulty-options-list">
 						<?php foreach ($difficulty_options as $difficulty_index => $difficulty_option) : ?>
 							<div class="tourism-core-difficulty-option-row">
@@ -262,14 +262,14 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 									class="widefat tourism-core-difficulty-option-input"
 									name="tourism_difficulty_options[<?php echo esc_attr((string) $difficulty_index); ?>]"
 									value="<?php echo esc_attr($difficulty_option); ?>"
-									placeholder="<?php esc_attr_e('Example: Moderate', TOURISM_CORE_TD); ?>"
+									placeholder="<?php esc_attr_e('Ejemplo: moderada', TOURISM_CORE_TD); ?>"
 								/>
-								<button type="button" class="button tourism-core-delete-difficulty-option"><?php esc_html_e('Delete', TOURISM_CORE_TD); ?></button>
+								<button type="button" class="button tourism-core-delete-difficulty-option"><?php esc_html_e('Eliminar', TOURISM_CORE_TD); ?></button>
 							</div>
 						<?php endforeach; ?>
 					</div>
 					<p>
-						<button type="button" id="tourism-core-add-difficulty-option" class="button button-secondary"><?php esc_html_e('Add option', TOURISM_CORE_TD); ?></button>
+						<button type="button" id="tourism-core-add-difficulty-option" class="button button-secondary"><?php esc_html_e('Añadir opción', TOURISM_CORE_TD); ?></button>
 					</p>
 				</div>
 			</div>
@@ -277,9 +277,9 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		<div class="tourism-core-details-grid">
 			<div class="tourism-core-detail-column">
 				<p>
-					<label><strong><?php esc_html_e('Group Size', TOURISM_CORE_TD); ?></strong></label>
+					<label><strong><?php esc_html_e('Tamaño del grupo', TOURISM_CORE_TD); ?></strong></label>
 					<select name="tourism_group_size" id="tourism_group_size" style="width:100%;">
-						<option value=""><?php esc_html_e('Select group size', TOURISM_CORE_TD); ?></option>
+						<option value=""><?php esc_html_e('Selecciona el tamaño del grupo', TOURISM_CORE_TD); ?></option>
 						<?php foreach ($group_size_options as $group_size_option) : ?>
 							<option value="<?php echo esc_attr($group_size_option); ?>" <?php selected($group_size, $group_size_option); ?>>
 								<?php echo esc_html($group_size_option); ?>
@@ -289,7 +289,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 				</p>
 
 				<div class="tourism-core-group-size-builder">
-					<p><strong><?php esc_html_e('Group size options', TOURISM_CORE_TD); ?></strong></p>
+					<p><strong><?php esc_html_e('Opciones de grupo', TOURISM_CORE_TD); ?></strong></p>
 					<div id="tourism-core-group-size-options-list">
 						<?php foreach ($group_size_options as $group_size_index => $group_size_option) : ?>
 							<div class="tourism-core-group-size-option-row">
@@ -298,23 +298,23 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 									class="widefat tourism-core-group-size-option-input"
 									name="tourism_group_size_options[<?php echo esc_attr((string) $group_size_index); ?>]"
 									value="<?php echo esc_attr($group_size_option); ?>"
-									placeholder="<?php esc_attr_e('Example: 2-12 people', TOURISM_CORE_TD); ?>"
+									placeholder="<?php esc_attr_e('Ejemplo: 2–12 personas', TOURISM_CORE_TD); ?>"
 								/>
-								<button type="button" class="button tourism-core-delete-group-size-option"><?php esc_html_e('Delete', TOURISM_CORE_TD); ?></button>
+								<button type="button" class="button tourism-core-delete-group-size-option"><?php esc_html_e('Eliminar', TOURISM_CORE_TD); ?></button>
 							</div>
 						<?php endforeach; ?>
 					</div>
 					<p>
-						<button type="button" id="tourism-core-add-group-size-option" class="button button-secondary"><?php esc_html_e('Add option', TOURISM_CORE_TD); ?></button>
+						<button type="button" id="tourism-core-add-group-size-option" class="button button-secondary"><?php esc_html_e('Añadir opción', TOURISM_CORE_TD); ?></button>
 					</p>
 				</div>
 			</div>
 
 			<div class="tourism-core-detail-column">
 				<p>
-					<label><strong><?php esc_html_e('Max Elevation', TOURISM_CORE_TD); ?></strong></label>
+					<label><strong><?php esc_html_e('Altitud máxima', TOURISM_CORE_TD); ?></strong></label>
 					<select name="tourism_max_elevation" id="tourism_max_elevation" style="width:100%;">
-						<option value=""><?php esc_html_e('Select max elevation', TOURISM_CORE_TD); ?></option>
+						<option value=""><?php esc_html_e('Selecciona la altitud máxima', TOURISM_CORE_TD); ?></option>
 						<?php foreach ($max_elevation_options as $max_elevation_option) : ?>
 							<option value="<?php echo esc_attr($max_elevation_option); ?>" <?php selected($max_elevation, $max_elevation_option); ?>>
 								<?php echo esc_html($max_elevation_option); ?>
@@ -324,7 +324,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 				</p>
 
 				<div class="tourism-core-max-elevation-builder">
-					<p><strong><?php esc_html_e('Max elevation options', TOURISM_CORE_TD); ?></strong></p>
+					<p><strong><?php esc_html_e('Opciones de altitud', TOURISM_CORE_TD); ?></strong></p>
 					<div id="tourism-core-max-elevation-options-list">
 						<?php foreach ($max_elevation_options as $max_elevation_index => $max_elevation_option) : ?>
 							<div class="tourism-core-max-elevation-option-row">
@@ -333,22 +333,25 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 									class="widefat tourism-core-max-elevation-option-input"
 									name="tourism_max_elevation_options[<?php echo esc_attr((string) $max_elevation_index); ?>]"
 									value="<?php echo esc_attr($max_elevation_option); ?>"
-									placeholder="<?php esc_attr_e('Example: 5,200 m', TOURISM_CORE_TD); ?>"
+									placeholder="<?php esc_attr_e('Ejemplo: 5.200 m', TOURISM_CORE_TD); ?>"
 								/>
-								<button type="button" class="button tourism-core-delete-max-elevation-option"><?php esc_html_e('Delete', TOURISM_CORE_TD); ?></button>
+								<button type="button" class="button tourism-core-delete-max-elevation-option"><?php esc_html_e('Eliminar', TOURISM_CORE_TD); ?></button>
 							</div>
 						<?php endforeach; ?>
 					</div>
 					<p>
-						<button type="button" id="tourism-core-add-max-elevation-option" class="button button-secondary"><?php esc_html_e('Add option', TOURISM_CORE_TD); ?></button>
+						<button type="button" id="tourism-core-add-max-elevation-option" class="button button-secondary"><?php esc_html_e('Añadir opción', TOURISM_CORE_TD); ?></button>
 					</p>
 				</div>
 			</div>
 		</div>
 
-		<p><strong><?php esc_html_e('Destinations', TOURISM_CORE_TD); ?></strong></p>
+		<p><strong><?php esc_html_e('Destinos', TOURISM_CORE_TD); ?></strong></p>
 
 		<div style="max-height:150px; overflow:auto; border:1px solid #ddd; padding:8px;">
+			<?php if ( empty( $destinations ) ) : ?>
+				<p class="description">No hay destinos publicados. Puedes añadirlos en la sección Destinos y después asociarlos a este tour.</p>
+			<?php endif; ?>
 			<?php foreach ($destinations as $dest) : ?>
 				<label style="display:block;">
 					<input type="checkbox"
@@ -799,7 +802,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		if (is_string($legacy) && trim($legacy) !== '') {
 			return array(
 				array(
-					'day'         => __('Day 1', TOURISM_CORE_TD),
+					'day'         => __('Día 1', TOURISM_CORE_TD),
 					'description' => $legacy,
 					'features'    => array(),
 				),
@@ -1410,6 +1413,10 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		);
 
 		// Shared gallery behaviour
+		wp_enqueue_style( 'tourism-core-tour-editor', TOURISM_CORE_URL . 'assets/css/tour-editor.css', array( 'tourism-core-tour-admin' ), (string) filemtime( TOURISM_CORE_PATH . 'assets/css/tour-editor.css' ) );
+		wp_enqueue_script( 'tourism-core-tour-editor', TOURISM_CORE_URL . 'assets/js/tour-editor.js', array( 'jquery', 'tourism-core-tour-admin' ), (string) filemtime( TOURISM_CORE_PATH . 'assets/js/tour-editor.js' ), true );
+		wp_localize_script( 'tourism-core-tour-editor', 'TourismCoreEditor', Tourism_Core_Tour_Editor::settings() );
+
 		$gallery_js_path = TOURISM_CORE_PATH . 'assets/js/gallery-metabox.js';
 		$gallery_js_ver  = file_exists($gallery_js_path) ? (string) filemtime($gallery_js_path) : TOURISM_CORE_VERSION;
 		wp_enqueue_script(
@@ -1475,11 +1482,13 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		}
 
 		// Localize solo los que necesitan traducciones
+		wp_enqueue_script( 'tourism-core-tour-repeaters', TOURISM_CORE_URL . 'assets/js/tour-repeaters.js', array( 'jquery', 'tourism-core-tour-editor', 'tourism-core-tour-faqs-metabox', 'tourism-core-tour-highlights-metabox', 'tourism-core-tour-what-to-expect-metabox' ), (string) filemtime( TOURISM_CORE_PATH . 'assets/js/tour-repeaters.js' ), true );
+
 		wp_localize_script(
 			'tourism-core-tour-faqs-metabox',
 			'TourismCoreTourFaqs',
 			array(
-				'deleteConfirm' => __( 'Are you sure you want to delete this FAQ?', TOURISM_CORE_TD ),
+				'deleteConfirm' => __( '¿Quieres eliminar esta pregunta?', TOURISM_CORE_TD ),
 			)
 		);
 
@@ -1487,7 +1496,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 			'tourism-core-tour-itinerary-metabox',
 			'TourismCoreTourItinerary',
 			array(
-				'deleteConfirm' => __( 'Are you sure you want to delete this day?', TOURISM_CORE_TD ),
+				'deleteConfirm' => __( '¿Quieres eliminar este día?', TOURISM_CORE_TD ),
 			)
 		);
 
@@ -1495,21 +1504,21 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 			'tourism-core-tour-admin',
 			'TourismCoreTourAdmin',
 			array(
-				'selectDuration'     => __( 'Select a duration', TOURISM_CORE_TD ),
-				'selectDifficulty'   => __( 'Select a difficulty', TOURISM_CORE_TD ),
-				'selectGroupSize'    => __( 'Select group size', TOURISM_CORE_TD ),
-				'selectMaxElevation' => __( 'Select max elevation', TOURISM_CORE_TD ),
-				'exampleFullDay'     => __( 'Example: Full day', TOURISM_CORE_TD ),
-				'exampleModerate'    => __( 'Example: Moderate', TOURISM_CORE_TD ),
-				'exampleGroupSize'   => __( 'Example: 2-12 people', TOURISM_CORE_TD ),
-				'exampleMaxElevation'=> __( 'Example: 5,200 m', TOURISM_CORE_TD ),
-				'deleteLabel'        => __( 'Delete', TOURISM_CORE_TD ),
-				'heroMediaTitle'     => __( 'Select Hero Image', TOURISM_CORE_TD ),
-				'heroMediaButton'    => __( 'Use image', TOURISM_CORE_TD ),
-				'galleryMediaTitle'  => __( 'Select image', TOURISM_CORE_TD ),
-				'galleryMediaButton' => __( 'Use image', TOURISM_CORE_TD ),
-				'bringMediaTitle'    => __( 'Select icon image', TOURISM_CORE_TD ),
-				'bringMediaButton'   => __( 'Use image', TOURISM_CORE_TD ),
+				'selectDuration'     => __( 'Selecciona una duración', TOURISM_CORE_TD ),
+				'selectDifficulty'   => __( 'Selecciona una dificultad', TOURISM_CORE_TD ),
+				'selectGroupSize'    => __( 'Selecciona el tamaño del grupo', TOURISM_CORE_TD ),
+				'selectMaxElevation' => __( 'Selecciona la altitud máxima', TOURISM_CORE_TD ),
+				'exampleFullDay'     => __( 'Ejemplo: día completo', TOURISM_CORE_TD ),
+				'exampleModerate'    => __( 'Ejemplo: moderada', TOURISM_CORE_TD ),
+				'exampleGroupSize'   => __( 'Ejemplo: 2–12 personas', TOURISM_CORE_TD ),
+				'exampleMaxElevation'=> __( 'Ejemplo: 5.200 m', TOURISM_CORE_TD ),
+				'deleteLabel'        => __( 'Eliminar', TOURISM_CORE_TD ),
+				'heroMediaTitle'     => __( 'Selecciona la portada', TOURISM_CORE_TD ),
+				'heroMediaButton'    => __( 'Usar imagen', TOURISM_CORE_TD ),
+				'galleryMediaTitle'  => __( 'Selecciona una imagen', TOURISM_CORE_TD ),
+				'galleryMediaButton' => __( 'Usar imagen', TOURISM_CORE_TD ),
+				'bringMediaTitle'    => __( 'Selecciona un icono', TOURISM_CORE_TD ),
+				'bringMediaButton'   => __( 'Usar imagen', TOURISM_CORE_TD ),
 			)
 		);
 	}

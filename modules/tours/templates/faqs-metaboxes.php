@@ -28,15 +28,15 @@ $tourism_core_faqs = isset($tourism_core_faqs) && is_array($tourism_core_faqs) ?
 			<div class="tourism-core-faq-header">
 				<span class="tourism-core-handle dashicons dashicons-move" aria-hidden="true"></span>
 				<h4>
-					<?php esc_html_e('FAQ', TOURISM_CORE_TD); ?>
+					<?php esc_html_e('Pregunta', TOURISM_CORE_TD); ?>
 					#<span class="tourism-core-item-number"><?php echo esc_html((string) ((int) $tourism_core_index + 1)); ?></span>
 				</h4>
-				<button type="button" class="tourism-core-delete-faq button"><?php esc_html_e('Delete', TOURISM_CORE_TD); ?></button>
+				<button type="button" class="tourism-core-delete-faq button"><?php esc_html_e('Eliminar', TOURISM_CORE_TD); ?></button>
 			</div>
 
 			<div class="tourism-core-faq-content">
 				<p>
-					<label for="tourism_core_question_<?php echo esc_attr((string) $tourism_core_index); ?>"><?php esc_html_e('Question:', TOURISM_CORE_TD); ?></label>
+					<label for="tourism_core_question_<?php echo esc_attr((string) $tourism_core_index); ?>"><?php esc_html_e('Pregunta:', TOURISM_CORE_TD); ?></label>
 					<input
 						type="text"
 						id="tourism_core_question_<?php echo esc_attr((string) $tourism_core_index); ?>"
@@ -46,7 +46,7 @@ $tourism_core_faqs = isset($tourism_core_faqs) && is_array($tourism_core_faqs) ?
 					/>
 				</p>
 				<p>
-					<label for="tourism_core_answer_<?php echo esc_attr((string) $tourism_core_index); ?>"><?php esc_html_e('Answer:', TOURISM_CORE_TD); ?></label>
+					<label for="tourism_core_answer_<?php echo esc_attr((string) $tourism_core_index); ?>"><?php esc_html_e('Respuesta:', TOURISM_CORE_TD); ?></label>
 					<textarea
 						id="tourism_core_answer_<?php echo esc_attr((string) $tourism_core_index); ?>"
 						name="tourism_faqs[<?php echo esc_attr((string) $tourism_core_index); ?>][answer]"
@@ -61,7 +61,7 @@ $tourism_core_faqs = isset($tourism_core_faqs) && is_array($tourism_core_faqs) ?
 
 <p>
 	<button type="button" id="tourism-core-add-faq" class="button button-primary">
-		<?php esc_html_e('Add FAQ', TOURISM_CORE_TD); ?>
+		<?php esc_html_e('Añadir pregunta', TOURISM_CORE_TD); ?>
 	</button>
 </p>
 
@@ -69,16 +69,16 @@ $tourism_core_faqs = isset($tourism_core_faqs) && is_array($tourism_core_faqs) ?
 	<div class="tourism-core-faq-item tourism-core-sortable-item active" data-tourism-core-index="{{tourism_index}}">
 		<div class="tourism-core-faq-header">
 			<span class="tourism-core-handle dashicons dashicons-move" aria-hidden="true"></span>
-			<h4><?php echo esc_html(__('FAQ', TOURISM_CORE_TD)); ?> #<span class="tourism-core-item-number">{{tourism_index_plus_one}}</span></h4>
-			<button type="button" class="tourism-core-delete-faq button"><?php echo esc_html(__('Delete', TOURISM_CORE_TD)); ?></button>
+			<h4><?php echo esc_html(__('Pregunta', TOURISM_CORE_TD)); ?> #<span class="tourism-core-item-number">{{tourism_index_plus_one}}</span></h4>
+			<button type="button" class="tourism-core-delete-faq button"><?php echo esc_html(__('Eliminar', TOURISM_CORE_TD)); ?></button>
 		</div>
 		<div class="tourism-core-faq-content">
 			<p>
-				<label for="tourism_core_question_{{tourism_index}}"><?php echo esc_html(__('Question:', TOURISM_CORE_TD)); ?></label>
+				<label for="tourism_core_question_{{tourism_index}}"><?php echo esc_html(__('Pregunta:', TOURISM_CORE_TD)); ?></label>
 				<input type="text" id="tourism_core_question_{{tourism_index}}" name="tourism_faqs[{{tourism_index}}][question]" value="" class="widefat" />
 			</p>
 			<p>
-				<label for="tourism_core_answer_{{tourism_index}}"><?php echo esc_html(__('Answer:', TOURISM_CORE_TD)); ?></label>
+				<label for="tourism_core_answer_{{tourism_index}}"><?php echo esc_html(__('Respuesta:', TOURISM_CORE_TD)); ?></label>
 				<textarea id="tourism_core_answer_{{tourism_index}}" name="tourism_faqs[{{tourism_index}}][answer]" class="tourism-core-wysiwyg widefat" rows="2"></textarea>
 			</p>
 		</div>

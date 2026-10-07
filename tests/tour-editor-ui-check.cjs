@@ -1,0 +1,91 @@
+/* Requires playwright-core, Chrome, and the isolated local fixture. */
+const fs = require('node:fs');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const { chromium } = require(process.env.TOURISM_PLAYWRIGHT || 'playwright-core');
+const state = JSON.parse(fs.readFileSync(process.env.TOURISM_EDITOR_STATE, 'utf8'));
+const url = `http://travel-theme.local/wp-admin/post.php?post=${state.tourId}&action=edit`;
+const screenshots = process.env.TOURISM_EDITOR_SCREENSHOTS;
+const check = (condition, label) => { assert(condition, label); console.log('PASS: ' + label); };
+async function main() {
+ const browser = await chromium.launch({ executablePath: process.env.TOURISM_CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
+ try {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  await context.addCookies(state.cookies);
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto(url, { waitUntil: 'networkidle' });
+  await page.waitForSelector('.tourism-editor-active');
+  await page.waitForFunction(() => window.tinymce && tinymce.get('tourism_core_itinerary_description_0')?.initialized);
+  check(await page.locator('.tourism-editor-tabs [role="tab"]:visible').count() === 7, 'Seven editor sections available');
+  check(await page.locator('.tourism-editor-panel:visible').count() === 1, 'Only one section visible');
+  check(await page.locator('#tourism_trip_origin').evaluate(node => node.closest('[data-section]').dataset.section) === 'general', 'Origin appears in general information');
+  check(await page.locator('#tourism_price_currency').evaluate(node => node.closest('[data-section]').dataset.section) === 'pricing', 'Currency appears beside price');
+  check(await page.locator('[name="tourism_price_currency"]').count() === 1, 'Relocated schema fields not duplicated');
+  await page.locator('#tourism_trip_origin').fill('Lima');
+  if (screenshots) { fs.mkdirSync(screenshots, { recursive: true }); await page.screenshot({ path: path.join(screenshots, 'general-desktop.png'), fullPage: true }); }
+  await page.locator('#tourism-tab-itinerary').click();
+  check(await page.locator('.tourism-core-itinerary-body:visible').count() === 1, 'Existing itinerary opens one day at a time');
+  await page.locator('.tourism-core-itinerary-item').first().locator('.tourism-itinerary-duplicate').click();
+  await page.waitForFunction(() => document.querySelectorAll('.tourism-core-itinerary-item').length === 3 && tinymce.get('tourism_core_itinerary_description_2')?.initialized);
+  await page.locator('.tourism-core-itinerary-item').nth(1).locator('.tourism-core-itinerary-day').fill('Copia del primer día');
+  check(await page.evaluate(() => tinymce.get('tourism_core_itinerary_description_1').getContent().includes('Contenido uno.')), 'Duplicating retains rich text');
+  check(await page.locator('.tourism-core-itinerary-item').nth(1).locator('.tourism-core-itinerary-feature-value').inputValue() === 'Cusco', 'Duplicating retains additional details');
+  await page.locator('.tourism-core-itinerary-item').last().locator('.tourism-itinerary-up').click();
+  await page.waitForFunction(() => tinymce.get('tourism_core_itinerary_description_2')?.initialized);
+  await page.locator('.tourism-core-itinerary-item').nth(1).locator('.tourism-itinerary-up').click();
+  await page.waitForFunction(() => tinymce.get('tourism_core_itinerary_description_2')?.initialized);
+  check(await page.locator('.tourism-core-itinerary-day').evaluateAll(nodes => JSON.stringify(nodes.map(node => node.value))) === JSON.stringify(['Segundo día', 'Primer día', 'Copia del primer día']), 'Keyboard-accessible move buttons reorder days');
+  check(await page.locator('.tourism-core-itinerary-day').nth(2).getAttribute('name') === 'tourism_itinerary_items[2][day]', 'Moving renumbers submitted field names');
+  await page.locator('#tourism-tab-pricing').click();
+  await page.locator('#tourism_price_from').fill('189.75');
+  await page.locator('#tourism_price_currency').selectOption('EUR');
+  await page.evaluate(() => { TourismCoreEditor.payments.paypal = true; TourismCoreEditor.payments.wetravel = true; TourismCoreEditor.payments.whatsapp = true; });
+  await page.locator('#tourism_wetravel_button_code').fill('123456');
+  check((await page.locator('.tourism-payment-result').textContent()).includes('WeTravel y PayPal'), 'Live summary shows both configured methods');
+  await page.locator('#tourism_wetravel_button_code').fill('');
+  check((await page.locator('.tourism-payment-result').textContent()).includes('PayPal'), 'Live summary updates to PayPal alone');
+  await page.locator('#tourism_price_currency').selectOption('PEN');
+  check((await page.locator('.tourism-payment-result').textContent()).includes('WhatsApp'), 'Unsupported PayPal currency shows WhatsApp fallback');
+  await page.locator('#tourism_price_currency').selectOption('EUR');
+  // Invalid field hidden behind another tab must become visible and receive focus.
+  await page.locator('#tourism_price_from').fill('-1');
+  await page.locator('#tourism-tab-general').click();
+  await page.evaluate(() => document.querySelector('#post').reportValidity());
+  check(await page.locator('#tourism-tab-pricing').getAttribute('aria-selected') === 'true', 'Validation opens the section containing an invalid field');
+  check(await page.locator('#tourism_price_from').getAttribute('aria-invalid') === 'true', 'Validation displays an inline field error');
+  await page.locator('#tourism_price_from').fill('189.75');
+  await page.locator('#tourism-tab-faqs').click();
+  check(await page.locator('.tourism-core-faq-content:visible').count() === 1, 'FAQ rows are compact');
+  await page.locator('.tourism-core-faq-item').nth(1).locator('.tourism-repeat-toggle').click();
+  await page.evaluate(() => tinymce.get('tourism_core_answer_1').setContent('<p>Respuesta actualizada.</p>'));
+  await page.locator('.tourism-core-faq-item').nth(1).locator('.tourism-repeat-toggle').click();
+  await page.locator('#tourism-tab-photos').click();
+  await page.locator('#tourism-tab-photos').focus();
+  await page.keyboard.press('ArrowRight');
+  check(await page.locator('#tourism-tab-experience').getAttribute('aria-selected') === 'true', 'Arrow keys navigate tabs');
+  check(await page.locator('#tourism-core-highlights-container .tourism-repeat-toggle').count() === 2, 'Highlight rows display collapsible titles');
+  await page.setViewportSize({ width: 390, height: 844 });
+  check(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'Mobile editor has no page overflow');
+  if (screenshots) await page.screenshot({ path: path.join(screenshots, 'experience-mobile.png'), fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.locator('#tourism-tab-itinerary').click();
+  if (screenshots) await page.screenshot({ path: path.join(screenshots, 'itinerary-desktop.png'), fullPage: true });
+  await page.locator('#tourism-tab-general').click();
+  await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle' }), page.locator('#save-post').click()]);
+  await page.waitForSelector('.tourism-editor-active');
+  check(await page.locator('#tourism_price_from').inputValue() === '189.75', 'Saved price reloaded while another section was active');
+  check(await page.locator('#tourism_trip_origin').inputValue() === 'Lima', 'Relocated field persists after reload');
+  check(errors.length === 0, 'No browser JavaScript errors: ' + errors.join('; '));
+  // Progressive fallback must leave every original input accessible without JavaScript.
+  const fallback = await browser.newContext({ javaScriptEnabled: false });
+  await fallback.addCookies(state.cookies);
+  const raw = await fallback.newPage();
+  await raw.goto(url);
+  check(await raw.locator('#tourism_price_currency').isVisible(), 'Original metaboxes remain available without JavaScript');
+  check(await raw.locator('#tourism-tour-editor').isHidden(), 'Inactive navigation stays hidden without JavaScript');
+  console.log('All tour editor browser checks passed.');
+ } finally { await browser.close(); }
+}
+main().catch(error => { console.error(error); process.exitCode = 1; });

@@ -30,10 +30,10 @@ $tourism_core_hero_preview = $tourism_core_hero_id ? wp_get_attachment_image($to
 
 	<p style="margin:0 0 8px;display:flex;flex-wrap:wrap;gap:6px;">
 		<button type="button" class="button tourism-upload-hero">
-			<?php esc_html_e('Select Image', TOURISM_CORE_TD); ?>
+			<?php esc_html_e('Seleccionar imagen', TOURISM_CORE_TD); ?>
 		</button>
 		<button type="button" class="button tourism-remove-hero">
-			<?php esc_html_e('Remove', TOURISM_CORE_TD); ?>
+			<?php esc_html_e('Quitar', TOURISM_CORE_TD); ?>
 		</button>
 	</p>
 </div>

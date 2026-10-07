@@ -42,25 +42,25 @@ $tourism_core_editor_settings = array(
 			<div class="tourism-core-repeater-item-header">
 				<span class="tourism-core-handle dashicons dashicons-move" aria-hidden="true"></span>
 				<span class="tourism-core-repeater-item-title">
-					<?php esc_html_e('Highlight', TOURISM_CORE_TD); ?>
+					<?php esc_html_e('Destacado', TOURISM_CORE_TD); ?>
 					#<span class="tourism-core-item-number"><?php echo esc_html((string) ((int) $tourism_core_index + 1)); ?></span>
 				</span>
-				<button type="button" class="tourism-core-delete-highlight button"><?php esc_html_e('Delete', TOURISM_CORE_TD); ?></button>
+				<button type="button" class="tourism-core-delete-highlight button"><?php esc_html_e('Eliminar', TOURISM_CORE_TD); ?></button>
 			</div>
 			<div class="tourism-core-repeater-item-body">
 				<p>
-					<label for="tourism_core_te_highlights_title_<?php echo esc_attr((string) $tourism_core_index); ?>"><?php esc_html_e('Title', TOURISM_CORE_TD); ?></label>
+					<label for="tourism_core_te_highlights_title_<?php echo esc_attr((string) $tourism_core_index); ?>"><?php esc_html_e('Título', TOURISM_CORE_TD); ?></label>
 					<input
 						type="text"
 						id="tourism_core_te_highlights_title_<?php echo esc_attr((string) $tourism_core_index); ?>"
 						class="widefat tourism-core-repeater-title"
 						name="tourism_highlights_items[<?php echo esc_attr((string) $tourism_core_index); ?>][title]"
 						value="<?php echo esc_attr($tourism_core_title); ?>"
-						placeholder="<?php esc_attr_e('Example: Panoramic Machu Picchu views', TOURISM_CORE_TD); ?>"
+						placeholder="<?php esc_attr_e('Ejemplo: vistas panorámicas de Machu Picchu', TOURISM_CORE_TD); ?>"
 					/>
 				</p>
 				<p>
-					<label for="<?php echo esc_attr($tourism_core_editor_id); ?>"><?php esc_html_e('Content', TOURISM_CORE_TD); ?></label>
+					<label for="<?php echo esc_attr($tourism_core_editor_id); ?>"><?php esc_html_e('Contenido', TOURISM_CORE_TD); ?></label>
 					<?php
 					wp_editor(
 						$tourism_core_content,
@@ -79,7 +79,7 @@ $tourism_core_editor_settings = array(
 
 <p>
 	<button type="button" id="tourism-core-add-highlight" class="button button-primary">
-		<?php esc_html_e('Add Highlight', TOURISM_CORE_TD); ?>
+		<?php esc_html_e('Añadir destacado', TOURISM_CORE_TD); ?>
 	</button>
 </p>
 
@@ -88,18 +88,18 @@ $tourism_core_editor_settings = array(
 		<div class="tourism-core-repeater-item-header">
 			<span class="tourism-core-handle dashicons dashicons-move" aria-hidden="true"></span>
 			<span class="tourism-core-repeater-item-title">
-				<?php echo esc_html(__('Highlight', TOURISM_CORE_TD)); ?>
+				<?php echo esc_html(__('Destacado', TOURISM_CORE_TD)); ?>
 				#<span class="tourism-core-item-number">{{tourism_index_plus_one}}</span>
 			</span>
-			<button type="button" class="tourism-core-delete-highlight button"><?php echo esc_html(__('Delete', TOURISM_CORE_TD)); ?></button>
+			<button type="button" class="tourism-core-delete-highlight button"><?php echo esc_html(__('Eliminar', TOURISM_CORE_TD)); ?></button>
 		</div>
 		<div class="tourism-core-repeater-item-body">
 			<p>
-				<label for="tourism_core_te_highlights_title_{{tourism_index}}"><?php echo esc_html(__('Title', TOURISM_CORE_TD)); ?></label>
-				<input type="text" id="tourism_core_te_highlights_title_{{tourism_index}}" class="widefat tourism-core-repeater-title" name="tourism_highlights_items[{{tourism_index}}][title]" value="" placeholder="<?php echo esc_attr(__('Example: Panoramic Machu Picchu views', TOURISM_CORE_TD)); ?>" />
+				<label for="tourism_core_te_highlights_title_{{tourism_index}}"><?php echo esc_html(__('Título', TOURISM_CORE_TD)); ?></label>
+				<input type="text" id="tourism_core_te_highlights_title_{{tourism_index}}" class="widefat tourism-core-repeater-title" name="tourism_highlights_items[{{tourism_index}}][title]" value="" placeholder="<?php echo esc_attr(__('Ejemplo: vistas panorámicas de Machu Picchu', TOURISM_CORE_TD)); ?>" />
 			</p>
 			<p>
-				<label for="tourism_core_te_highlights_content_{{tourism_index}}"><?php echo esc_html(__('Content', TOURISM_CORE_TD)); ?></label>
+				<label for="tourism_core_te_highlights_content_{{tourism_index}}"><?php echo esc_html(__('Contenido', TOURISM_CORE_TD)); ?></label>
 				<textarea id="tourism_core_te_highlights_content_{{tourism_index}}" name="tourism_highlights_items[{{tourism_index}}][content]" class="tourism-core-wysiwyg tourism-core-repeater-content widefat" rows="4"></textarea>
 			</p>
 		</div>

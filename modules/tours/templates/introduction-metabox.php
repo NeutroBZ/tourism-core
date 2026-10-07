@@ -21,25 +21,25 @@ $tourism_core_intro_description = isset($tourism_core_introduction['description'
 
 <div class="tourism-core-introduction-fields">
 	<p>
-		<label for="tourism_intro_title"><?php esc_html_e('Introduction title', TOURISM_CORE_TD); ?></label>
+		<label for="tourism_intro_title"><?php esc_html_e('Título de la introducción', TOURISM_CORE_TD); ?></label>
 		<input
 			type="text"
 			id="tourism_intro_title"
 			name="tourism_intro_title"
 			value="<?php echo esc_attr($tourism_core_intro_title); ?>"
 			class="widefat"
-			placeholder="<?php esc_attr_e('Example: Discover Machu Picchu', TOURISM_CORE_TD); ?>"
+			placeholder="<?php esc_attr_e('Ejemplo: descubre Machu Picchu', TOURISM_CORE_TD); ?>"
 		/>
 	</p>
 
 	<p>
-		<label for="tourism_intro_description"><?php esc_html_e('Introduction description', TOURISM_CORE_TD); ?></label>
+		<label for="tourism_intro_description"><?php esc_html_e('Descripción del tour', TOURISM_CORE_TD); ?></label>
 		<textarea
 			id="tourism_intro_description"
 			name="tourism_intro_description"
 			rows="6"
 			class="widefat tourism-core-wysiwyg"
-			placeholder="<?php esc_attr_e('Write a short introduction for the tour.', TOURISM_CORE_TD); ?>"
+			placeholder="<?php esc_attr_e('Escribe una presentación breve del tour.', TOURISM_CORE_TD); ?>"
 		><?php echo esc_textarea($tourism_core_intro_description); ?></textarea>
 	</p>
 </div>

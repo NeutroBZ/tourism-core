@@ -1,6 +1,6 @@
 # Tourism Core
 
-Plugin de WordPress para contenido turístico y checkout externo. Versión 0.3.0.
+Plugin de WordPress para contenido turístico y checkout externo. Versión 0.4.0.
 
 ## Configuración de pagos
 
@@ -62,7 +62,6 @@ El editor de tours tiene una sola caja **Qué llevar**, con una lista de equipaj
 
 ## Próximas entregas
 
-- Reorganizar las demás secciones del editor de tours.
 - Definir salidas, pasajeros, reservas y transacciones como conceptos separados.
 - Implementar un flujo completo de reserva y confirmación de pago con validación del proveedor.
 - Añadir disponibilidad, automatizaciones y estructura de distribución gratuita/Pro.
@@ -95,3 +94,18 @@ Si otro plugin genera el mismo marcado, se puede desactivar este bloque por tour
 Pruebas locales: `php -c <php.ini-del-sitio> tests/wordpress-schema-test.php` crea y elimina datos temporales; `node tests/schema-http-check.cjs` comprueba que un tour público real devuelve un solo bloque válido con los dos tipos. Los tests de JSON y mapeo no equivalen a una certificación de Google ni garantizan resultados enriquecidos.
 
 Referencias: [Trip y propiedades de itinerario y etapas](https://schema.org/Trip), [TouristTrip](https://schema.org/TouristTrip), [Product](https://schema.org/Product), [requisitos de Google para resultados de producto](https://developers.google.com/search/docs/appearance/structured-data/product-snippet).
+
+## Editor de tours (0.4.0)
+
+El formulario conserva el guardado, permisos y datos existentes de WordPress. Con JavaScript se organiza en siete secciones: Información general, Fotos, Experiencia, Itinerario, Precio y reservas, Preguntas frecuentes y Avanzado. Los metaboxes de otros plugins permanecen disponibles fuera de estas secciones; no se modifica su marcado SEO. Sin JavaScript se conserva el formulario original.
+
+- Moneda, disponibilidad y vigencia están junto al precio; el lugar de salida está en información general. Se trasladan los campos originales sin duplicarlos ni cambiar sus claves.
+- La navegación admite flechas, Inicio y Fin y recuerda la sección durante la sesión para cada tour. Los botones Anterior/Siguiente no envían el formulario.
+- Las listas de opciones se muestran bajo Personalizar opciones. Los destinos publicados se pueden buscar sin desmarcar selecciones.
+- La lista de datos básicos muestra sugerencias para nombre, introducción, imagen y precio; no impide publicar ni declara completo el SEO.
+- El resumen de reservas usa la configuración general y los valores editados para indicar WeTravel, PayPal o WhatsApp. No añade un correo PayPal por tour ni confirma pagos o cupos.
+- El itinerario ofrece títulos visibles, desplegables, duplicación y botones para mover días. Antes de duplicar o mover se sincronizan los editores para conservar el texto y los detalles anidados.
+- Preguntas, destacados y otras listas de contenido se pueden contraer y desplegar. Los campos de secciones ocultas siguen enviándose al guardar.
+- Los errores de validación HTML abren la sección correspondiente y se muestran junto al campo. Las etiquetas propias del editor se presentan en español; los controles nativos de WordPress usan el idioma del sitio.
+
+Prueba de navegador local: configurar `TOURISM_EDITOR_STATE` con una ruta temporal, preparar con `php -c <php.ini-del-sitio> tests/tour-editor-fixture.php prepare`, ejecutar `node tests/tour-editor-ui-check.cjs`, verificar lo guardado con la operación `verify` y terminar siempre con `cleanup`. Requiere `playwright-core` (o `TOURISM_PLAYWRIGHT` con su ruta) y Chrome (`TOURISM_CHROME` permite otra ruta). La prueba crea un administrador y un tour temporales solo en un entorno WordPress `local`; las cookies quedan en el archivo temporal y se eliminan con la limpieza. `TOURISM_EDITOR_SCREENSHOTS` permite guardar capturas fuera del repositorio.

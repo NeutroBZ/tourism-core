@@ -1,0 +1,76 @@
+/* Only applies after section preparation has succeeded. */
+.tourism-editor-active .tourism-tour-editor {
+	position: sticky;
+	top: 32px;
+	z-index: 90;
+	margin: 18px 0 8px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	box-shadow: 0 3px 12px rgb(0 0 0 / 5%);
+}
+.tourism-editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 18px; }
+.tourism-editor-heading strong { font-size: 16px; color: #1d2327; }
+.tourism-editor-heading p { margin: 4px 0 0; color: #646970; }
+#tourism-editor-save-state { font-size: 12px; color: #50575e; white-space: nowrap; }
+#tourism-editor-save-state.has-changes { color: #8a4b00; }
+.tourism-editor-tabs { display: flex; overflow-x: auto; padding: 0 10px; border-top: 1px solid #f0f0f1; }
+.tourism-editor-tabs button { background: transparent; border: 0; border-bottom: 3px solid transparent; padding: 14px 10px 11px; font-size: 13px; color: #50575e; cursor: pointer; white-space: nowrap; }
+.tourism-editor-tabs button[aria-selected="true"] { border-bottom-color: #2271b1; color: #135e96; font-weight: 600; background: #f0f6fc; }
+.tourism-editor-tabs button:focus-visible, .tourism-repeat-toggle:focus-visible { outline: 2px solid #2271b1; outline-offset: -2px; }
+.tourism-editor-checklist { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 18px; border-top: 1px solid #f0f0f1; font-size: 12px; }
+.tourism-editor-checklist button { border: 1px solid #dcdcde; border-radius: 4px; padding: 3px 8px; color: #135e96; background: #fff; cursor: pointer; }
+.tourism-editor-panel[hidden], .tourism-editor-active [hidden] { display: none !important; }
+.tourism-editor-workspace { min-width: 0; }
+.tourism-section-title { margin: 12px 0 6px !important; padding: 0 !important; font-size: 20px !important; }
+.tourism-section-help { margin: 0 0 18px; color: #646970; }
+.tourism-editor-active .tourism-editor-box { display: block !important; border-radius: 6px; overflow: visible; }
+.tourism-editor-box .postbox-header { background: #fafafa; border-radius: 6px 6px 0 0; }
+.tourism-editor-box .hndle { cursor: default !important; }
+.tourism-editor-box .handle-order-higher, .tourism-editor-box .handle-order-lower { display: none; }
+.tourism-editor-box .inside { padding: 10px 18px 18px; }
+.tourism-editor-box input[type="text"], .tourism-editor-box input[type="number"], .tourism-editor-box input[type="date"], .tourism-editor-box input[type="search"], .tourism-editor-box select { min-height: 36px; max-width: 100%; }
+.tourism-editor-box label { line-height: 1.7; }
+.tourism-editor-price-extra { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; border-top: 1px solid #dcdcde; margin-top: 16px; }
+.tourism-editor-price-extra select, .tourism-editor-price-extra input { width: 100%; }
+.tourism-editor-price-extra .description { grid-column: 1 / -1; }
+.tourism-editor-options { margin: 12px 0; padding: 10px; background: #f6f7f7; border-radius: 4px; }
+.tourism-editor-options summary { color: #50575e; cursor: pointer; }
+.tourism-destination-search { margin: 0 0 8px; }
+.tourism-payment-summary { border: 1px solid #b8d4ed; border-left: 4px solid #2271b1; background: #f0f6fc; padding: 14px 18px; border-radius: 4px; margin: 0 0 18px; }
+.tourism-payment-summary h3 { margin: 0 0 6px; }
+.tourism-payment-summary p { margin: 0 0 8px; }
+.tourism-payment-summary ul { margin: 6px 0; color: #50575e; }
+.tourism-payment-summary a { display: inline-block; margin-top: 6px; }
+.tourism-payment-empty { border-color: #dba617; background: #fcf9e8; }
+.tourism-editor-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0 24px; }
+.tourism-editor-position { color: #646970; }
+.tourism-field-error { display: block; margin-top: 5px; color: #b32d2e; font-size: 12px; }
+.tourism-editor-box [aria-invalid="true"] { border-color: #b32d2e; }
+.tourism-repeat-toggle, .tourism-itinerary-toggle { border: 0; background: transparent; color: #135e96; cursor: pointer; padding: 5px 8px; text-align: left; }
+.tourism-repeat-toggle { flex: 1; min-width: 0; font-weight: 600; }
+.tourism-repeat-toggle .tourism-repeat-title { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; white-space: nowrap; }
+.tourism-repeat-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 10px; }
+.tourism-core-itinerary-header { flex-wrap: wrap; }
+.tourism-core-itinerary-header h4 { min-width: 100px; }
+.tourism-itinerary-title { font-weight: 400; color: #50575e; margin-left: 8px; }
+.tourism-core-itinerary-body[hidden], .tourism-core-faq-content[hidden] { display: none; }
+.tourism-editor-active .tourism-core-itinerary-feature-row { gap: 8px; }
+@media (max-width: 1100px) {
+	.tourism-editor-tabs button { padding-left: 8px; padding-right: 8px; }
+	.tourism-editor-heading { align-items: flex-start; }
+}
+@media (max-width: 782px) {
+	.tourism-editor-active .tourism-tour-editor { top: 46px; }
+	.tourism-editor-heading { padding: 12px; flex-direction: column; gap: 6px; }
+	.tourism-editor-heading p { font-size: 12px; }
+	.tourism-editor-tabs { padding: 0 4px; }
+	.tourism-editor-checklist { padding: 8px 12px; }
+	.tourism-editor-price-extra { grid-template-columns: 1fr; }
+	.tourism-editor-box .inside { padding: 8px 12px 12px; }
+	.tourism-editor-active #tourism_wetravel_button_code { width: 100% !important; }
+	.tourism-core-itinerary-header .button { padding: 0 8px; min-height: 32px; }
+}
+@media (max-width: 600px) {
+	.tourism-editor-active .tourism-tour-editor { top: 0; }
+}

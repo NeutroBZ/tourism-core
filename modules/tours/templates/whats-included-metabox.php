@@ -11,7 +11,7 @@ $excludes = isset($excludes) && is_array($excludes) ? $excludes : array();
 	<div class="tourism-core-includes-metabox-grid">
 
 		<div class="tourism-core-includes-column">
-			<h3 class="tourism-core-includes-heading"><?php esc_html_e('Included', TOURISM_CORE_TD); ?></h3>
+			<h3 class="tourism-core-includes-heading"><?php esc_html_e('Incluido', TOURISM_CORE_TD); ?></h3>
 			<div id="tourism-includes-container" class="tourism-core-label-sortable">
 				<?php foreach ($includes as $i => $item) : ?>
 					<?php
@@ -23,22 +23,22 @@ $excludes = isset($excludes) && is_array($excludes) ? $excludes : array();
 						<div class="tourism-core-label-row-header">
 							<span class="tourism-core-handle dashicons dashicons-move" aria-hidden="true"></span>
 							<span class="tourism-core-label-item-title">
-								<?php esc_html_e('Item', TOURISM_CORE_TD); ?>
+								<?php esc_html_e('Elemento', TOURISM_CORE_TD); ?>
 								#<span class="tourism-core-label-item-num"><?php echo esc_html((string) ((int) $i + 1)); ?></span>
 							</span>
-							<button type="button" class="tourism-delete-include button"><?php esc_html_e('Delete', TOURISM_CORE_TD); ?></button>
+							<button type="button" class="tourism-delete-include button"><?php esc_html_e('Eliminar', TOURISM_CORE_TD); ?></button>
 						</div>
 						<div class="tourism-core-label-row-body">
-							<label for="tourism_includes_title_<?php echo esc_attr((string) $i); ?>"><?php esc_html_e('Title', TOURISM_CORE_TD); ?></label>
+							<label for="tourism_includes_title_<?php echo esc_attr((string) $i); ?>"><?php esc_html_e('Título', TOURISM_CORE_TD); ?></label>
 							<input
 								type="text"
 								id="tourism_includes_title_<?php echo esc_attr((string) $i); ?>"
 								class="widefat tourism-core-include-title-input"
 								name="tourism_includes[<?php echo esc_attr((string) $i); ?>][title]"
 								value="<?php echo esc_attr($title); ?>"
-								placeholder="<?php esc_attr_e('Title', TOURISM_CORE_TD); ?>"
+								placeholder="<?php esc_attr_e('Título', TOURISM_CORE_TD); ?>"
 							/>
-							<label for="tourism_includes_content_<?php echo esc_attr((string) $i); ?>"><?php esc_html_e('Content', TOURISM_CORE_TD); ?></label>
+							<label for="tourism_includes_content_<?php echo esc_attr((string) $i); ?>"><?php esc_html_e('Contenido', TOURISM_CORE_TD); ?></label>
 							<textarea
 								id="tourism_includes_content_<?php echo esc_attr((string) $i); ?>"
 								class="widefat tourism-wysiwyg"
@@ -51,13 +51,13 @@ $excludes = isset($excludes) && is_array($excludes) ? $excludes : array();
 			</div>
 			<p>
 				<button type="button" id="tourism-add-include" class="button button-secondary">
-					<?php esc_html_e('Add item', TOURISM_CORE_TD); ?>
+					<?php esc_html_e('Añadir elemento', TOURISM_CORE_TD); ?>
 				</button>
 			</p>
 		</div>
 
 		<div class="tourism-core-excludes-column">
-			<h3 class="tourism-core-includes-heading"><?php esc_html_e('Not Included', TOURISM_CORE_TD); ?></h3>
+			<h3 class="tourism-core-includes-heading"><?php esc_html_e('No incluido', TOURISM_CORE_TD); ?></h3>
 			<div id="tourism-excludes-container" class="tourism-core-label-sortable">
 				<?php foreach ($excludes as $i => $item) : ?>
 					<?php
@@ -69,22 +69,22 @@ $excludes = isset($excludes) && is_array($excludes) ? $excludes : array();
 						<div class="tourism-core-label-row-header">
 							<span class="tourism-core-handle dashicons dashicons-move" aria-hidden="true"></span>
 							<span class="tourism-core-label-item-title">
-								<?php esc_html_e('Item', TOURISM_CORE_TD); ?>
+								<?php esc_html_e('Elemento', TOURISM_CORE_TD); ?>
 								#<span class="tourism-core-label-item-num"><?php echo esc_html((string) ((int) $i + 1)); ?></span>
 							</span>
-							<button type="button" class="tourism-delete-exclude button"><?php esc_html_e('Delete', TOURISM_CORE_TD); ?></button>
+							<button type="button" class="tourism-delete-exclude button"><?php esc_html_e('Eliminar', TOURISM_CORE_TD); ?></button>
 						</div>
 						<div class="tourism-core-label-row-body">
-							<label for="tourism_excludes_title_<?php echo esc_attr((string) $i); ?>"><?php esc_html_e('Title', TOURISM_CORE_TD); ?></label>
+							<label for="tourism_excludes_title_<?php echo esc_attr((string) $i); ?>"><?php esc_html_e('Título', TOURISM_CORE_TD); ?></label>
 							<input
 								type="text"
 								id="tourism_excludes_title_<?php echo esc_attr((string) $i); ?>"
 								class="widefat tourism-core-exclude-title-input"
 								name="tourism_excludes[<?php echo esc_attr((string) $i); ?>][title]"
 								value="<?php echo esc_attr($title); ?>"
-								placeholder="<?php esc_attr_e('Title', TOURISM_CORE_TD); ?>"
+								placeholder="<?php esc_attr_e('Título', TOURISM_CORE_TD); ?>"
 							/>
-							<label for="tourism_excludes_content_<?php echo esc_attr((string) $i); ?>"><?php esc_html_e('Content', TOURISM_CORE_TD); ?></label>
+							<label for="tourism_excludes_content_<?php echo esc_attr((string) $i); ?>"><?php esc_html_e('Contenido', TOURISM_CORE_TD); ?></label>
 							<textarea
 								id="tourism_excludes_content_<?php echo esc_attr((string) $i); ?>"
 								class="widefat tourism-wysiwyg"
@@ -97,7 +97,7 @@ $excludes = isset($excludes) && is_array($excludes) ? $excludes : array();
 			</div>
 			<p>
 				<button type="button" id="tourism-add-exclude" class="button button-secondary">
-					<?php esc_html_e('Add item', TOURISM_CORE_TD); ?>
+					<?php esc_html_e('Añadir elemento', TOURISM_CORE_TD); ?>
 				</button>
 			</p>
 		</div>
@@ -110,15 +110,15 @@ $excludes = isset($excludes) && is_array($excludes) ? $excludes : array();
 		<div class="tourism-core-label-row-header">
 			<span class="tourism-core-handle dashicons dashicons-move" aria-hidden="true"></span>
 			<span class="tourism-core-label-item-title">
-				<?php echo esc_html(__('Item', TOURISM_CORE_TD)); ?>
+				<?php echo esc_html(__('Elemento', TOURISM_CORE_TD)); ?>
 				#<span class="tourism-core-label-item-num">{{num}}</span>
 			</span>
-			<button type="button" class="tourism-delete-include button"><?php echo esc_html(__('Delete', TOURISM_CORE_TD)); ?></button>
+			<button type="button" class="tourism-delete-include button"><?php echo esc_html(__('Eliminar', TOURISM_CORE_TD)); ?></button>
 		</div>
 		<div class="tourism-core-label-row-body">
-			<label for="tourism_includes_title_{{i}}"><?php echo esc_html(__('Title', TOURISM_CORE_TD)); ?></label>
-			<input type="text" id="tourism_includes_title_{{i}}" class="widefat tourism-core-include-title-input" name="tourism_includes[{{i}}][title]" value="" placeholder="<?php echo esc_attr(__('Title', TOURISM_CORE_TD)); ?>" />
-			<label for="tourism_includes_content_{{i}}"><?php echo esc_html(__('Content', TOURISM_CORE_TD)); ?></label>
+			<label for="tourism_includes_title_{{i}}"><?php echo esc_html(__('Título', TOURISM_CORE_TD)); ?></label>
+			<input type="text" id="tourism_includes_title_{{i}}" class="widefat tourism-core-include-title-input" name="tourism_includes[{{i}}][title]" value="" placeholder="<?php echo esc_attr(__('Título', TOURISM_CORE_TD)); ?>" />
+			<label for="tourism_includes_content_{{i}}"><?php echo esc_html(__('Contenido', TOURISM_CORE_TD)); ?></label>
 			<textarea id="tourism_includes_content_{{i}}" class="widefat tourism-wysiwyg" name="tourism_includes[{{i}}][content]" rows="5"></textarea>
 		</div>
 	</div>
@@ -129,15 +129,15 @@ $excludes = isset($excludes) && is_array($excludes) ? $excludes : array();
 		<div class="tourism-core-label-row-header">
 			<span class="tourism-core-handle dashicons dashicons-move" aria-hidden="true"></span>
 			<span class="tourism-core-label-item-title">
-				<?php echo esc_html(__('Item', TOURISM_CORE_TD)); ?>
+				<?php echo esc_html(__('Elemento', TOURISM_CORE_TD)); ?>
 				#<span class="tourism-core-label-item-num">{{num}}</span>
 			</span>
-			<button type="button" class="tourism-delete-exclude button"><?php echo esc_html(__('Delete', TOURISM_CORE_TD)); ?></button>
+			<button type="button" class="tourism-delete-exclude button"><?php echo esc_html(__('Eliminar', TOURISM_CORE_TD)); ?></button>
 		</div>
 		<div class="tourism-core-label-row-body">
-			<label for="tourism_excludes_title_{{i}}"><?php echo esc_html(__('Title', TOURISM_CORE_TD)); ?></label>
-			<input type="text" id="tourism_excludes_title_{{i}}" class="widefat tourism-core-exclude-title-input" name="tourism_excludes[{{i}}][title]" value="" placeholder="<?php echo esc_attr(__('Title', TOURISM_CORE_TD)); ?>" />
-			<label for="tourism_excludes_content_{{i}}"><?php echo esc_html(__('Content', TOURISM_CORE_TD)); ?></label>
+			<label for="tourism_excludes_title_{{i}}"><?php echo esc_html(__('Título', TOURISM_CORE_TD)); ?></label>
+			<input type="text" id="tourism_excludes_title_{{i}}" class="widefat tourism-core-exclude-title-input" name="tourism_excludes[{{i}}][title]" value="" placeholder="<?php echo esc_attr(__('Título', TOURISM_CORE_TD)); ?>" />
+			<label for="tourism_excludes_content_{{i}}"><?php echo esc_html(__('Contenido', TOURISM_CORE_TD)); ?></label>
 			<textarea id="tourism_excludes_content_{{i}}" class="widefat tourism-wysiwyg" name="tourism_excludes[{{i}}][content]" rows="5"></textarea>
 		</div>
 	</div>

@@ -34,17 +34,17 @@ echo '<input type="hidden" name="tourism_what_to_bring_metabox_present" value="1
                 <div class="postbox-header">
                     <span class="tourism-core-handle dashicons dashicons-move" aria-hidden="true"></span>
                     <span class="tourism-core-what-to-bring-item-title-text">
-                        <?php esc_html_e('Section', TOURISM_CORE_TD); ?>
+                        <?php esc_html_e('Sección', TOURISM_CORE_TD); ?>
                         #<span class="tourism-core-what-to-bring-item-num"><?php echo esc_html((string) ((int) $tourism_core_index + 1)); ?></span>
                     </span>
                     <button type="button" class="button tourism-core-delete-what-to-bring">
-                        <?php esc_html_e('Delete', TOURISM_CORE_TD); ?>
+                        <?php esc_html_e('Eliminar', TOURISM_CORE_TD); ?>
                     </button>
                 </div>
                 <div class="inside">
                     <p>
                         <label for="tourism_what_to_bring_title_<?php echo esc_attr((string) $tourism_core_index); ?>">
-                            <strong><?php esc_html_e('Section Title', TOURISM_CORE_TD); ?></strong>
+                            <strong><?php esc_html_e('Título de la sección', TOURISM_CORE_TD); ?></strong>
                         </label>
                         <input
                             type="text"
@@ -57,7 +57,7 @@ echo '<input type="hidden" name="tourism_what_to_bring_metabox_present" value="1
                     </p>
                     <p>
                         <label for="<?php echo esc_attr($editor_id); ?>">
-                            <strong><?php esc_html_e('Content', TOURISM_CORE_TD); ?></strong>
+                            <strong><?php esc_html_e('Contenido', TOURISM_CORE_TD); ?></strong>
                         </label>
                     </p>
                     <?php
@@ -80,7 +80,7 @@ echo '<input type="hidden" name="tourism_what_to_bring_metabox_present" value="1
 
     <p>
         <button type="button" id="tourism-core-add-what-to-bring" class="button button-secondary">
-            <?php esc_html_e('Add Section', TOURISM_CORE_TD); ?>
+            <?php esc_html_e('Añadir sección', TOURISM_CORE_TD); ?>
         </button>
     </p>
 </div>
@@ -91,17 +91,17 @@ echo '<input type="hidden" name="tourism_what_to_bring_metabox_present" value="1
         <div class="postbox-header">
             <span class="tourism-core-handle dashicons dashicons-move" aria-hidden="true"></span>
             <span class="tourism-core-what-to-bring-item-title-text">
-                <?php echo esc_html(__('Section', TOURISM_CORE_TD)); ?>
+                <?php echo esc_html(__('Sección', TOURISM_CORE_TD)); ?>
                 #<span class="tourism-core-what-to-bring-item-num">{{tourism_index_plus_one}}</span>
             </span>
             <button type="button" class="button tourism-core-delete-what-to-bring">
-                <?php echo esc_html(__('Delete', TOURISM_CORE_TD)); ?>
+                <?php echo esc_html(__('Eliminar', TOURISM_CORE_TD)); ?>
             </button>
         </div>
         <div class="inside">
             <p>
                 <label>
-                    <strong><?php echo esc_html(__('Section Title', TOURISM_CORE_TD)); ?></strong>
+                    <strong><?php echo esc_html(__('Título de la sección', TOURISM_CORE_TD)); ?></strong>
                 </label>
                 <input
                     type="text"
@@ -113,7 +113,7 @@ echo '<input type="hidden" name="tourism_what_to_bring_metabox_present" value="1
             </p>
             <p>
                 <label>
-                    <strong><?php echo esc_html(__('Content', TOURISM_CORE_TD)); ?></strong>
+                    <strong><?php echo esc_html(__('Contenido', TOURISM_CORE_TD)); ?></strong>
                 </label>
             </p>
             <textarea

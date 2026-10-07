@@ -22,12 +22,12 @@ $tourism_core_discount_percent = isset($tourism_core_pricing['discount_percent']
 
 <div class="tourism-core-pricing-fields">
 	<p>
-		<em><?php esc_html_e('Enter the current price and, if you want, choose a discount percentage to calculate the previous price automatically.', TOURISM_CORE_TD); ?></em>
+		<em><?php esc_html_e('Indica el precio actual. Si aplicas un descuento, el precio anterior se calculará automáticamente.', TOURISM_CORE_TD); ?></em>
 	</p>
 
 	<div class="tourism-core-pricing-grid">
 		<p>
-			<label for="tourism_price_from"><?php esc_html_e('Price now', TOURISM_CORE_TD); ?></label>
+			<label for="tourism_price_from"><?php esc_html_e('Precio actual', TOURISM_CORE_TD); ?></label>
 			<input
 				type="number"
 				step="0.01"
@@ -41,7 +41,7 @@ $tourism_core_discount_percent = isset($tourism_core_pricing['discount_percent']
 		</p>
 
 		<p>
-			<label for="tourism_price_discount_percent"><?php esc_html_e('Discount %', TOURISM_CORE_TD); ?></label>
+			<label for="tourism_price_discount_percent"><?php esc_html_e('Descuento % (opcional)', TOURISM_CORE_TD); ?></label>
 			<input
 				type="number"
 				step="0.01"
@@ -56,7 +56,7 @@ $tourism_core_discount_percent = isset($tourism_core_pricing['discount_percent']
 		</p>
 
 		<p>
-			<label for="tourism_price_before"><?php esc_html_e('Price before', TOURISM_CORE_TD); ?></label>
+			<label for="tourism_price_before"><?php esc_html_e('Precio anterior', TOURISM_CORE_TD); ?></label>
 			<input
 				type="number"
 				step="0.01"
@@ -72,11 +72,11 @@ $tourism_core_discount_percent = isset($tourism_core_pricing['discount_percent']
 
 	<p>
 		<button type="button" id="tourism-core-calc-price-before" class="button button-secondary">
-			<?php esc_html_e('Calculate previous price', TOURISM_CORE_TD); ?>
+			<?php esc_html_e('Calcular precio anterior', TOURISM_CORE_TD); ?>
 		</button>
 	</p>
 
 	<p class="tourism-core-pricing-help">
-		<?php esc_html_e('Example: if the current price is 80 and the discount is 20%, the previous price will be calculated automatically.', TOURISM_CORE_TD); ?>
+		<?php esc_html_e('Ejemplo: un precio actual de 80 con un descuento del 20 % corresponde a un precio anterior de 100.', TOURISM_CORE_TD); ?>
 	</p>
 </div>

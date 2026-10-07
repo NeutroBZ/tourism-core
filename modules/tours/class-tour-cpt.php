@@ -9,6 +9,7 @@ require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-taxonomies.php';
 require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-metaboxes.php';
 require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-schema.php';
 require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-schema-metabox.php';
+require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-editor.php';
 
 class Tourism_Core_Module_Tours {
 	public function register( Tourism_Core_Loader $loader ) {
@@ -25,20 +26,22 @@ class Tourism_Core_Module_Tours {
 		$schema->register( $loader );
 		$schema_meta = new Tourism_Core_Tour_Schema_Metabox();
 		$schema_meta->register( $loader );
+		$editor = new Tourism_Core_Tour_Editor();
+		$editor->register( $loader );
 	}
 
 	public function register_cpt() {
 		$labels = array(
 			'name'               => __( 'Tours', TOURISM_CORE_TD ),
 			'singular_name'      => __( 'Tour', TOURISM_CORE_TD ),
-			'add_new'            => __( 'Add New', TOURISM_CORE_TD ),
-			'add_new_item'       => __( 'Add New Tour', TOURISM_CORE_TD ),
-			'edit_item'          => __( 'Edit Tour', TOURISM_CORE_TD ),
-			'new_item'           => __( 'New Tour', TOURISM_CORE_TD ),
-			'view_item'          => __( 'View Tour', TOURISM_CORE_TD ),
-			'search_items'       => __( 'Search Tours', TOURISM_CORE_TD ),
-			'not_found'          => __( 'No tours found', TOURISM_CORE_TD ),
-			'not_found_in_trash' => __( 'No tours found in Trash', TOURISM_CORE_TD ),
+			'add_new'            => __( 'Añadir nuevo', TOURISM_CORE_TD ),
+			'add_new_item'       => __( 'Añadir tour', TOURISM_CORE_TD ),
+			'edit_item'          => __( 'Editar tour', TOURISM_CORE_TD ),
+			'new_item'           => __( 'Nuevo tour', TOURISM_CORE_TD ),
+			'view_item'          => __( 'Ver tour', TOURISM_CORE_TD ),
+			'search_items'       => __( 'Buscar tours', TOURISM_CORE_TD ),
+			'not_found'          => __( 'No se encontraron tours', TOURISM_CORE_TD ),
+			'not_found_in_trash' => __( 'No hay tours en la papelera', TOURISM_CORE_TD ),
 			'menu_name'          => __( 'Tours', TOURISM_CORE_TD ),
 		);
 
