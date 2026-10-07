@@ -18,9 +18,11 @@ if ( 'prepare' === $action ) {
 	if ( is_wp_error( $user ) ) { throw new RuntimeException( $user->get_error_message() ); }
 	wp_set_current_user( $user );
 	$id = wp_insert_post( array( 'post_type' => 'tour', 'post_status' => 'draft', 'post_title' => 'Tourism Core browser fixture' ) );
+	$attachment = wp_insert_attachment( array( 'post_title' => 'Tourism Core media fixture', 'post_mime_type' => 'image/png', 'post_status' => 'inherit', 'guid' => home_url( '/wp-content/plugins/tourism-core/assets/ico/tours.png' ) ), false, $id );
+	wp_update_attachment_metadata( $attachment, array( 'width' => 32, 'height' => 32, 'sizes' => array() ) );
 	$expiry = time() + 3600;
 	$token = WP_Session_Tokens::get_instance( $user )->create( $expiry );
-	$state = array( 'userId' => $user, 'tourId' => $id, 'cookies' => array(
+	$state = array( 'userId' => $user, 'tourId' => $id, 'attachmentId' => $attachment, 'cookies' => array(
 		array( 'name' => AUTH_COOKIE, 'value' => wp_generate_auth_cookie( $user, $expiry, 'auth', $token ), 'domain' => 'travel-theme.local', 'path' => '/', 'httpOnly' => true, 'sameSite' => 'Lax' ),
 		array( 'name' => LOGGED_IN_COOKIE, 'value' => wp_generate_auth_cookie( $user, $expiry, 'logged_in', $token ), 'domain' => 'travel-theme.local', 'path' => '/', 'httpOnly' => true, 'sameSite' => 'Lax' ),
 	) );
@@ -37,6 +39,9 @@ if ( 'prepare' === $action ) {
 	) );
 	update_post_meta( $id, 'tourism_faqs', array( array( 'question' => 'Primera pregunta', 'answer' => '<p>Primera respuesta.</p>' ), array( 'question' => 'Segunda pregunta', 'answer' => '<p>Segunda respuesta.</p>' ) ) );
 	update_post_meta( $id, 'tourism_highlights', array( array( 'title' => 'Primer destacado', 'content' => '<p>Detalles uno.</p>' ), array( 'title' => 'Segundo destacado', 'content' => '<p>Detalles dos.</p>' ) ) );
+	update_post_meta( $id, 'tourism_what_to_expect', array( array( 'title' => 'Primera experiencia', 'content' => '<p>Expectativa uno.</p>' ), array( 'title' => 'Segunda experiencia', 'content' => '<p>Expectativa dos.</p>' ) ) );
+	update_post_meta( $id, 'tourism_includes_new', array( array( 'title' => 'Primer incluido', 'content' => '<p>Incluido uno.</p>' ), array( 'title' => 'Segundo incluido', 'content' => '<p>Incluido dos.</p>' ) ) );
+	update_post_meta( $id, 'tourism_excludes_new', array( array( 'title' => 'Primer excluido', 'content' => '<p>Excluido uno.</p>' ), array( 'title' => 'Segundo excluido', 'content' => '<p>Excluido dos.</p>' ) ) );
 	echo "Fixture prepared; credentials saved locally without printing them.\n";
 } elseif ( 'verify' === $action ) {
 	$state = json_decode( file_get_contents( $state_path ), true );
@@ -54,9 +59,19 @@ if ( 'prepare' === $action ) {
 		'Collapsed highlights preserved' => 2 === count( get_post_meta( $id, 'tourism_highlights', true ) ),
 	);
 	foreach ( $checks as $label => $ok ) { if ( ! $ok ) { throw new RuntimeException( $label ); } echo "PASS: $label\n"; }
+} elseif ( 'verify-experience' === $action ) {
+	$state = json_decode( file_get_contents( $state_path ), true );
+	foreach ( array( 'tourism_highlights', 'tourism_what_to_expect', 'tourism_includes_new', 'tourism_excludes_new' ) as $key ) {
+		$rows = get_post_meta( $state['tourId'], $key, true );
+		if ( 2 !== count( $rows ) || 'Nuevo ' . $key !== $rows[0]['title'] || 'Texto en código ' . $key !== trim( wp_strip_all_tags( $rows[0]['content'] ) ) || false === strpos( $rows[1]['content'], 'tourism-media-check' ) ) {
+			throw new RuntimeException( 'Experience content, ordering or inserted image lost: ' . $key );
+		}
+		echo "PASS: Saved Experience text, order and media: $key\n";
+	}
 } elseif ( 'cleanup' === $action ) {
 	if ( ! file_exists( $state_path ) ) { exit; }
 	$state = json_decode( file_get_contents( $state_path ), true );
+	if ( ! empty( $state['attachmentId'] ) ) { wp_delete_attachment( $state['attachmentId'], true ); }
 	wp_delete_post( $state['tourId'], true );
 	wp_delete_user( $state['userId'] );
 	unlink( $state_path );

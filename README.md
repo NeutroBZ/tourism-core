@@ -1,6 +1,6 @@
 # Tourism Core
 
-Plugin de WordPress para contenido turístico y checkout externo. Versión 0.4.1.
+Plugin de WordPress para contenido turístico y checkout externo. Versión 0.4.2.
 
 ## Configuración de pagos
 
@@ -113,3 +113,11 @@ Con la misma preparación local de las pruebas del editor, `node tests/tour-edit
 - Los errores de validación HTML abren la sección correspondiente y se muestran junto al campo. Las etiquetas propias del editor se presentan en español; los controles nativos de WordPress usan el idioma del sitio.
 
 Prueba de navegador local: configurar `TOURISM_EDITOR_STATE` con una ruta temporal, preparar con `php -c <php.ini-del-sitio> tests/tour-editor-fixture.php prepare`, ejecutar `node tests/tour-editor-ui-check.cjs`, verificar lo guardado con la operación `verify` y terminar siempre con `cleanup`. Requiere `playwright-core` (o `TOURISM_PLAYWRIGHT` con su ruta) y Chrome (`TOURISM_CHROME` permite otra ruta). La prueba crea un administrador y un tour temporales solo en un entorno WordPress `local`; las cookies quedan en el archivo temporal y se eliminan con la limpieza. `TOURISM_EDITOR_SCREENSHOTS` permite guardar capturas fuera del repositorio.
+
+## Editores de Experiencia (0.4.2)
+
+Destacados, Qué esperar, Incluidos y Excluidos usan el editor completo de WordPress, con la misma configuración de Recomendaciones detalladas: ocho filas iniciales, herramientas completas, Visual/Code y Añadir medios. Incluidos y Excluidos se muestran en bloques verticales para dejar espacio a las herramientas y las imágenes. El cambio se limita a la sección Experiencia.
+
+Los campos existentes se crean una vez mediante `wp_editor()` y su inicialización nativa. JavaScript inicializa solamente los campos nuevos o los que se reconstruyen al reordenar, evitando los controles Visual/Code duplicados. Las cuatro listas comparten una plantilla y un controlador; conservan las claves de sus metadatos. Al eliminar o arrastrar se guardan los editores, se reconstruyen los identificadores y las asociaciones de Añadir medios y se inicializa un solo editor por campo.
+
+Prueba específica con una preparación local nueva: `node tests/tour-experience-ui-check.cjs` verifica controles únicos al cargar, añadir, eliminar, arrastrar y recargar; abre la biblioteca nativa para insertar una imagen en cada lista; comprueba el texto en la pestaña Code y el ancho móvil. Después usar `php -c <php.ini-del-sitio> tests/tour-editor-fixture.php verify-experience` para comprobar los metadatos guardados y terminar con `cleanup`. La imagen temporal referencia un icono del plugin; no se copian archivos a uploads y la entrada de medios se elimina durante la limpieza.

@@ -55,6 +55,13 @@
 .tourism-core-itinerary-header h4 { min-width: 100px; }
 .tourism-itinerary-title { font-weight: 400; color: #50575e; margin-left: 8px; }
 .tourism-core-itinerary-body[hidden], .tourism-core-faq-content[hidden] { display: none; }
+.tourism-experience-item { margin-bottom: 16px; }
+.tourism-experience-item > .postbox-header { display: flex; align-items: center; gap: 8px; padding: 10px; }
+.tourism-experience-item > .inside { padding: 10px; margin: 0; }
+.tourism-experience-item > .inside > p:first-child { margin-top: 0; }
+.tourism-experience-item .wp-editor-wrap { margin: 8px 0 0; }
+.tourism-experience-item .wp-editor-tools { padding-top: 0; }
+.tourism-experience-inclusions > div + div { margin-top: 24px; padding-top: 10px; border-top: 1px solid #dcdcde; }
 .tourism-editor-active .tourism-core-itinerary-feature-row { gap: 8px; }
 @media (max-width: 1100px) {
 	.tourism-editor-tabs button { padding-left: 8px; padding-right: 8px; }
