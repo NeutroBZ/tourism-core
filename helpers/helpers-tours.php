@@ -4,6 +4,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+function tourism_core_tour_currencies() {
+	return array( 'USD' => 'USD — Dólares estadounidenses', 'EUR' => 'EUR — Euros', 'PEN' => 'PEN — Soles peruanos' );
+}
+
+/** One currency shared by the public price, schema, and PayPal checkout. */
+function tourism_core_get_tour_currency( $post_id ) {
+	$currency = get_post_meta( $post_id, 'tourism_price_currency', true );
+	if ( '' === $currency ) {
+		$settings = Tourism_Core_Payment_Providers::settings();
+		$currency = $settings['paypal_currency'];
+	}
+	return is_string( $currency ) && isset( tourism_core_tour_currencies()[ $currency ] ) ? $currency : '';
+}
+
 function tourism_core_get_tour_destinations( $tour_id ) {
 	$tour_id = (int) $tour_id;
 	if ( $tour_id <= 0 ) {
@@ -61,6 +75,12 @@ function tourism_core_query_tours( $args = array() ) {
 
 	if ( $destination_id > 0 ) {
 		$q_args['meta_query'] = array(
+			'relation' => 'OR',
+			array(
+				'key'     => 'tourism_destinations',
+				'value'   => '^a:[0-9]+:[{](i:[0-9]+;(i:[0-9]+;|s:[0-9]+:"[0-9]+";))*i:[0-9]+;i:' . $destination_id . ';',
+				'compare' => 'REGEXP',
+			),
 			array(
 				'key'     => 'tourism_destinations',
 				'value'   => '"' . $destination_id . '"',
@@ -78,7 +98,8 @@ function tourism_core_query_tours( $args = array() ) {
  * @return string
  */
 function tourism_core_get_wetravel_uid() {
-	$uid = apply_filters( 'tourism_core_wetravel_uid', '1685394' );
+	$settings = Tourism_Core_Payment_Providers::settings();
+	$uid = apply_filters( 'tourism_core_wetravel_uid', $settings['wetravel_uid'] );
 	$uid = absint( $uid );
 	return $uid > 0 ? (string) $uid : '';
 }

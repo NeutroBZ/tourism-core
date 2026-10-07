@@ -33,7 +33,8 @@ class Tourism_Core_Booking_CPT {
 				'show_in_menu'       => true,
 				'menu_icon'          => TOURISM_CORE_URL . 'assets/ico/bookings3.svg',
 				'supports'           => array( 'title' ),
-				'capability_type'    => 'post',
+				'capability_type'    => array( 'tourism_booking', 'tourism_bookings' ),
+				'capabilities'       => Tourism_Core_Booking_Permissions::capabilities(),
 				'map_meta_cap'       => true,
 				'exclude_from_search'=> true,
 				'show_in_rest'       => false,
@@ -43,15 +44,15 @@ class Tourism_Core_Booking_CPT {
 
 	public function register_meta() {
 		$this->meta_string( 'booking', 'tourism_customer_name' );
-		$this->meta_string( 'booking', 'tourism_customer_email' );
+		$this->meta_string( 'booking', 'tourism_customer_email', 'sanitize_email' );
 		$this->meta_string( 'booking', 'tourism_customer_phone' );
-		$this->meta_string( 'booking', 'tourism_message' );
+		$this->meta_string( 'booking', 'tourism_message', 'sanitize_textarea_field' );
 		$this->meta_int( 'booking', 'tourism_tour_id' );
 		$this->meta_int( 'booking', 'tourism_people' );
 		$this->meta_string( 'booking', 'tourism_date' ); // YYYY-MM-DD (simple MVP)
 	}
 
-	private function meta_string( $post_type, $key ) {
+	private function meta_string( $post_type, $key, $sanitize = 'sanitize_text_field' ) {
 		register_post_meta(
 			(string) $post_type,
 			(string) $key,
@@ -59,9 +60,9 @@ class Tourism_Core_Booking_CPT {
 				'type'              => 'string',
 				'single'            => true,
 				'show_in_rest'      => false,
-				'sanitize_callback' => 'sanitize_text_field',
-				'auth_callback'     => static function () {
-					return current_user_can( 'edit_posts' );
+				'sanitize_callback' => $sanitize,
+				'auth_callback'     => static function ( $allowed, $meta_key, $post_id ) {
+					return current_user_can( 'manage_tourism_bookings' ) && current_user_can( 'edit_post', $post_id );
 				},
 			)
 		);
@@ -78,8 +79,8 @@ class Tourism_Core_Booking_CPT {
 				'sanitize_callback' => static function ( $value ) {
 					return is_numeric( $value ) ? (int) $value : null;
 				},
-				'auth_callback'     => static function () {
-					return current_user_can( 'edit_posts' );
+				'auth_callback'     => static function ( $allowed, $meta_key, $post_id ) {
+					return current_user_can( 'manage_tourism_bookings' ) && current_user_can( 'edit_post', $post_id );
 				},
 			)
 		);

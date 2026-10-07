@@ -10,11 +10,19 @@ class Tourism_Core_Tour_Taxonomies {
 	}
 
 	public function register_taxonomies() {
+
+		$this->register_taxonomy(
+			'tour_category',
+			__( 'Tour Categories', TOURISM_CORE_TD ),
+			__( 'Tour Category', TOURISM_CORE_TD )
+		);
+
 		$this->register_taxonomy(
 			'tour_type',
 			__( 'Tour Types', TOURISM_CORE_TD ),
 			__( 'Tour Type', TOURISM_CORE_TD )
 		);
+
 	}
 
 	private function register_taxonomy( $taxonomy, $plural, $singular ) {

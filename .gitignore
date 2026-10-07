@@ -1,0 +1,22 @@
+# Local credentials and environment configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencies and local development tools
+node_modules/
+vendor/
+.idea/
+.vscode/
+.codex/
+.agents/
+
+# Generated archives, database backups and logs
+*.zip
+*.sql
+*.sql.gz
+*.log
+.DS_Store
+Thumbs.db

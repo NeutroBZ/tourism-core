@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Tourism Core
  * Description: Core functionality (CPTs, shortcodes, templates) for tourism agency themes.
- * Version: 0.1.2
- * Author: Tourism Core
+ * Version: 0.3.0
+ * Author: jcortez
  * Text Domain: tourism-core
  * Domain Path: /languages
  */
@@ -13,6 +13,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once __DIR__ . '/config/constants.php';
+require_once TOURISM_CORE_PATH . 'includes/class-metabox-helper.php';
+require_once TOURISM_CORE_PATH . 'includes/trait-order-column.php';
+require_once TOURISM_CORE_PATH . 'includes/class-metabox-base.php';
 
 require_once TOURISM_CORE_PATH . 'core/class-loader.php';
 require_once TOURISM_CORE_PATH . 'core/class-activator.php';

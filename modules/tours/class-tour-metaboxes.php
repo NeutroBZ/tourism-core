@@ -4,87 +4,32 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
-class Tourism_Core_Tour_Metaboxes
+require_once TOURISM_CORE_PATH . 'includes/class-metabox-helper.php';
+require_once TOURISM_CORE_PATH . 'includes/class-metabox-base.php';
+
+use Tourism_Core_Metabox_Helper as Metabox_Helper;
+
+class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 {
+	use Tourism_Core_Order_Column;
+
+	protected function order_column_config()
+	{
+		return array(
+			'post_type'         => 'tour',
+			'meta_key'          => 'tourism_tour_order',
+			'quickedit_field'   => 'tourism_tour_order',
+			'quickedit_nonce'   => 'tourism_core_tour_quickedit_nonce',
+			'quickedit_action'  => 'tourism_core_quickedit_tour',
+		);
+	}
+
 	public function register(Tourism_Core_Loader $loader)
 	{
 		$loader->add_action('add_meta_boxes', $this, 'add_meta_boxes');
 		$loader->add_action('save_post_tour', $this, 'save', 10, 2);
 		$loader->add_action('admin_enqueue_scripts', $this, 'enqueue_admin_assets');
-
-		// Admin list table column for manual ordering.
-		$loader->add_filter('manage_tour_posts_columns', $this, 'add_order_column');
-		$loader->add_action('manage_tour_posts_custom_column', $this, 'render_order_column', 10, 2);
-		$loader->add_filter('manage_edit-tour_sortable_columns', $this, 'make_order_column_sortable');
-		$loader->add_action('pre_get_posts', $this, 'apply_admin_order_sorting');
-
-		// Quick edit support for manual ordering.
-		$loader->add_action('quick_edit_custom_box', $this, 'render_quick_edit_order_field', 10, 2);
-	}
-
-	public function add_order_column($columns)
-	{
-		if (! is_array($columns)) {
-			return $columns;
-		}
-
-		$new_columns = array();
-		foreach ($columns as $key => $label) {
-			$new_columns[$key] = $label;
-			if ($key === 'title') {
-				$new_columns['tourism_tour_order'] = __('Order', TOURISM_CORE_TD);
-			}
-		}
-
-		if (! isset($new_columns['tourism_tour_order'])) {
-			$new_columns['tourism_tour_order'] = __('Order', TOURISM_CORE_TD);
-		}
-
-		return $new_columns;
-	}
-
-	public function render_order_column($column, $post_id)
-	{
-		if ($column !== 'tourism_tour_order') {
-			return;
-		}
-
-		$value = (int) get_post_meta((int) $post_id, 'tourism_tour_order', true);
-		echo esc_html((string) $value);
-	}
-
-	public function make_order_column_sortable($columns)
-	{
-		if (! is_array($columns)) {
-			return $columns;
-		}
-
-		$columns['tourism_tour_order'] = 'tourism_tour_order';
-		return $columns;
-	}
-
-	public function apply_admin_order_sorting($query)
-	{
-		if (! $query instanceof WP_Query) {
-			return;
-		}
-
-		if (! is_admin() || ! $query->is_main_query()) {
-			return;
-		}
-
-		$screen_post_type = isset($_GET['post_type']) ? sanitize_key(wp_unslash($_GET['post_type'])) : '';
-		if ($screen_post_type !== 'tour') {
-			return;
-		}
-
-		$orderby = $query->get('orderby');
-		if ($orderby !== 'tourism_tour_order') {
-			return;
-		}
-
-		$query->set('meta_key', 'tourism_tour_order');
-		$query->set('orderby', 'meta_value_num');
+		$this->register_order_column($loader);
 	}
 
 	public function add_meta_boxes()
@@ -119,11 +64,20 @@ class Tourism_Core_Tour_Metaboxes
 			'default'
 		);
 
-		// Includes / not included (modular template)
+		// What to bring (template de texto)
 		add_meta_box(
-			'tourism-core-tour-includes',
-			__('Included & not included', TOURISM_CORE_TD),
-			array($this, 'render_includes'),
+			'tourism-core-tour-what-to-bring',
+			__('Qué llevar', TOURISM_CORE_TD),
+			array($this, 'render_packing'),
+			'tour',
+			'normal',
+			'default'
+		);
+		// What's Included / Excludes (templates/whats-included-metabox.php).
+		add_meta_box(
+			'tourism-core-whats-included',
+			__("What's Included", TOURISM_CORE_TD),
+			array($this, 'render_whats_included'),
 			'tour',
 			'normal',
 			'default'
@@ -149,6 +103,16 @@ class Tourism_Core_Tour_Metaboxes
 			'default'
 		);
 
+		// Pricing Details (repeater: title + WYSIWYG content) — separate from Tour Pricing above.
+		add_meta_box(
+			'tourism-core-tour-pricing-details',
+			__('Pricing Details', TOURISM_CORE_TD),
+			array($this, 'render_pricing_details'),
+			'tour',
+			'normal',
+			'default'
+		);
+
 		// Itinerary (days + description + dynamic features)
 		add_meta_box(
 			'tourism-core-tour-itinerary',
@@ -159,11 +123,12 @@ class Tourism_Core_Tour_Metaboxes
 			'default'
 		);
 
-		// What to bring (icon + title + short description)
+
+		// What to Expect (repeater: title + WYSIWYG content)
 		add_meta_box(
-			'tourism-core-tour-bring',
-			__('What to bring', TOURISM_CORE_TD),
-			array($this, 'render_bring'),
+			'tourism-core-tour-what-to-expect',
+			__('What to Expect', TOURISM_CORE_TD),
+			array($this, 'render_what_to_expect'),
 			'tour',
 			'normal',
 			'default'
@@ -221,6 +186,10 @@ class Tourism_Core_Tour_Metaboxes
 		$duration_options = $this->get_tour_duration_options_for_edit((int) $post->ID, $duration);
 		$difficulty = get_post_meta($post->ID, 'tourism_difficulty', true);
 		$difficulty_options = $this->get_tour_difficulty_options_for_edit((int) $post->ID, $difficulty);
+		$group_size = get_post_meta($post->ID, 'tourism_group_size', true);
+		$group_size_options = $this->get_tour_group_size_options_for_edit((int) $post->ID, $group_size);
+		$max_elevation = get_post_meta($post->ID, 'tourism_max_elevation', true);
+		$max_elevation_options = $this->get_tour_max_elevation_options_for_edit((int) $post->ID, $max_elevation);
 		$dest_ids = (array) get_post_meta($post->ID, 'tourism_destinations', true);
 		$dest_ids = array_map('intval', $dest_ids);
 
@@ -305,6 +274,77 @@ class Tourism_Core_Tour_Metaboxes
 				</div>
 			</div>
 		</div>
+		<div class="tourism-core-details-grid">
+			<div class="tourism-core-detail-column">
+				<p>
+					<label><strong><?php esc_html_e('Group Size', TOURISM_CORE_TD); ?></strong></label>
+					<select name="tourism_group_size" id="tourism_group_size" style="width:100%;">
+						<option value=""><?php esc_html_e('Select group size', TOURISM_CORE_TD); ?></option>
+						<?php foreach ($group_size_options as $group_size_option) : ?>
+							<option value="<?php echo esc_attr($group_size_option); ?>" <?php selected($group_size, $group_size_option); ?>>
+								<?php echo esc_html($group_size_option); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+				</p>
+
+				<div class="tourism-core-group-size-builder">
+					<p><strong><?php esc_html_e('Group size options', TOURISM_CORE_TD); ?></strong></p>
+					<div id="tourism-core-group-size-options-list">
+						<?php foreach ($group_size_options as $group_size_index => $group_size_option) : ?>
+							<div class="tourism-core-group-size-option-row">
+								<input
+									type="text"
+									class="widefat tourism-core-group-size-option-input"
+									name="tourism_group_size_options[<?php echo esc_attr((string) $group_size_index); ?>]"
+									value="<?php echo esc_attr($group_size_option); ?>"
+									placeholder="<?php esc_attr_e('Example: 2-12 people', TOURISM_CORE_TD); ?>"
+								/>
+								<button type="button" class="button tourism-core-delete-group-size-option"><?php esc_html_e('Delete', TOURISM_CORE_TD); ?></button>
+							</div>
+						<?php endforeach; ?>
+					</div>
+					<p>
+						<button type="button" id="tourism-core-add-group-size-option" class="button button-secondary"><?php esc_html_e('Add option', TOURISM_CORE_TD); ?></button>
+					</p>
+				</div>
+			</div>
+
+			<div class="tourism-core-detail-column">
+				<p>
+					<label><strong><?php esc_html_e('Max Elevation', TOURISM_CORE_TD); ?></strong></label>
+					<select name="tourism_max_elevation" id="tourism_max_elevation" style="width:100%;">
+						<option value=""><?php esc_html_e('Select max elevation', TOURISM_CORE_TD); ?></option>
+						<?php foreach ($max_elevation_options as $max_elevation_option) : ?>
+							<option value="<?php echo esc_attr($max_elevation_option); ?>" <?php selected($max_elevation, $max_elevation_option); ?>>
+								<?php echo esc_html($max_elevation_option); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+				</p>
+
+				<div class="tourism-core-max-elevation-builder">
+					<p><strong><?php esc_html_e('Max elevation options', TOURISM_CORE_TD); ?></strong></p>
+					<div id="tourism-core-max-elevation-options-list">
+						<?php foreach ($max_elevation_options as $max_elevation_index => $max_elevation_option) : ?>
+							<div class="tourism-core-max-elevation-option-row">
+								<input
+									type="text"
+									class="widefat tourism-core-max-elevation-option-input"
+									name="tourism_max_elevation_options[<?php echo esc_attr((string) $max_elevation_index); ?>]"
+									value="<?php echo esc_attr($max_elevation_option); ?>"
+									placeholder="<?php esc_attr_e('Example: 5,200 m', TOURISM_CORE_TD); ?>"
+								/>
+								<button type="button" class="button tourism-core-delete-max-elevation-option"><?php esc_html_e('Delete', TOURISM_CORE_TD); ?></button>
+							</div>
+						<?php endforeach; ?>
+					</div>
+					<p>
+						<button type="button" id="tourism-core-add-max-elevation-option" class="button button-secondary"><?php esc_html_e('Add option', TOURISM_CORE_TD); ?></button>
+					</p>
+				</div>
+			</div>
+		</div>
 
 		<p><strong><?php esc_html_e('Destinations', TOURISM_CORE_TD); ?></strong></p>
 
@@ -332,36 +372,16 @@ class Tourism_Core_Tour_Metaboxes
 	 */
 	private function get_tour_duration_options_for_edit($post_id, $selected_duration = '')
 	{
-		$defaults = array(
-			'Full day',
-			'Half day',
-			'2 Days',
+		return Metabox_Helper::normalize_select_options(
+			(int) $post_id,
+			'tourism_duration_options',
+			array(
+				'Full day',
+				'Half day',
+				'2 Days',
+			),
+			$selected_duration
 		);
-
-		$stored = get_post_meta($post_id, 'tourism_duration_options', true);
-		$options = array();
-
-		if (is_array($stored)) {
-			foreach ($stored as $option) {
-				if (! is_string($option)) {
-					continue;
-				}
-				$option = trim($option);
-				if ($option !== '') {
-					$options[] = $option;
-				}
-			}
-		}
-
-		if ($options === array()) {
-			$options = $defaults;
-		}
-
-		if (is_string($selected_duration) && trim($selected_duration) !== '' && ! in_array(trim($selected_duration), $options, true)) {
-			$options[] = trim($selected_duration);
-		}
-
-		return array_values(array_unique($options));
 	}
 
 	/**
@@ -373,36 +393,57 @@ class Tourism_Core_Tour_Metaboxes
 	 */
 	private function get_tour_difficulty_options_for_edit($post_id, $selected_difficulty = '')
 	{
-		$defaults = array(
-			'Easy',
-			'Moderate',
-			'Challenging',
+		return Metabox_Helper::normalize_select_options(
+			(int) $post_id,
+			'tourism_difficulty_options',
+			array(
+				'Easy',
+				'Moderate',
+				'Challenging',
+			),
+			$selected_difficulty
 		);
+	}
+	/**
+	 * Group size options for the editor.
+	 *
+	 * @param int    $post_id           Post ID.
+	 * @param string $selected_group_size Current selected group size.
+	 * @return array<int, string>
+	 */
+	private function get_tour_group_size_options_for_edit($post_id, $selected_group_size = '')
+	{
+		return Metabox_Helper::normalize_select_options(
+			(int) $post_id,
+			'tourism_group_size_options',
+			array(
+				'2-6 people',
+				'2-12 people',
+				'4-16 people',
+			),
+			$selected_group_size
+		);
+	}
 
-		$stored = get_post_meta($post_id, 'tourism_difficulty_options', true);
-		$options = array();
-
-		if (is_array($stored)) {
-			foreach ($stored as $option) {
-				if (! is_string($option)) {
-					continue;
-				}
-				$option = trim($option);
-				if ($option !== '') {
-					$options[] = $option;
-				}
-			}
-		}
-
-		if ($options === array()) {
-			$options = $defaults;
-		}
-
-		if (is_string($selected_difficulty) && trim($selected_difficulty) !== '' && ! in_array(trim($selected_difficulty), $options, true)) {
-			$options[] = trim($selected_difficulty);
-		}
-
-		return array_values(array_unique($options));
+	/**
+	 * Max elevation options for the editor.
+	 *
+	 * @param int    $post_id               Post ID.
+	 * @param string $selected_max_elevation Current selected max elevation.
+	 * @return array<int, string>
+	 */
+	private function get_tour_max_elevation_options_for_edit($post_id, $selected_max_elevation = '')
+	{
+		return Metabox_Helper::normalize_select_options(
+			(int) $post_id,
+			'tourism_max_elevation_options',
+			array(
+				'3,000 m',
+				'4,000 m',
+				'5,000 m',
+			),
+			$selected_max_elevation
+		);
 	}
 
 	/**
@@ -442,98 +483,208 @@ class Tourism_Core_Tour_Metaboxes
 	}
 
 	/**
-	 * Normalize Highlights meta for the editor (array of description rows).
+	 * Normalize a "title + WYSIWYG content" repeater meta for the editor.
+	 *
+	 * Shared by: Includes, Excludes, Highlights, Pricing Details, What to Expect.
+	 * Also understands the legacy shapes that predate this format:
+	 *   - plain string rows                -> becomes { title: <string>, content: '' }
+	 *   - { label: <string> } rows         -> becomes { title: <label>, content: '' }
+	 *   - { description: <string> } rows   -> becomes { title: '', content: <description> }
+	 *
+	 * @param int    $post_id  Post ID.
+	 * @param string $meta_key Meta key to read.
+	 * @return array<int, array{title: string, content: string}>
+	 */
+	private function get_tour_title_content_items_for_edit($post_id, $meta_key)
+	{
+		$raw = get_post_meta($post_id, $meta_key, true);
+		$out = array();
+
+		if (! is_array($raw)) {
+			return $out;
+		}
+
+		foreach ($raw as $row) {
+			$title = '';
+			$content = '';
+
+			if (is_string($row)) {
+				// Legacy: plain label string (old includes/excludes format).
+				$title = trim($row);
+			} elseif (is_array($row)) {
+				if (isset($row['title'])) {
+					$title = (string) $row['title'];
+				}
+				if (isset($row['content'])) {
+					$content = (string) $row['content'];
+				}
+				// Legacy: includes/excludes rows stored as { label: ... }.
+				if ($title === '' && isset($row['label'])) {
+					$title = (string) $row['label'];
+				}
+				// Legacy: highlight rows stored as { description: ... }.
+				if ($content === '' && isset($row['description'])) {
+					$content = (string) $row['description'];
+				}
+			} else {
+				continue;
+			}
+
+			$title = trim($title);
+			if ($title === '' && trim(wp_strip_all_tags($content)) === '') {
+				continue;
+			}
+
+			$out[] = array(
+				'title'   => $title,
+				'content' => $content,
+			);
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Sanitize a "title + WYSIWYG content" repeater array coming from $_POST.
+	 * Shared by: Includes, Excludes, Highlights, Pricing Details, What to Expect.
+	 *
+	 * @param mixed $items Unslashed $_POST array (or anything else, defensively).
+	 * @return array<int, array{title: string, content: string}>
+	 */
+	private function sanitize_title_content_items($items)
+	{
+		return Metabox_Helper::sanitize_title_content_items($items);
+	}
+
+	/**
+	 * Normalize Highlights meta for the editor (array of title/content rows).
 	 *
 	 * @param int $post_id Post ID.
-	 * @return array<int, array{description: string}>
+	 * @return array<int, array{title: string, content: string}>
 	 */
 	private function get_tour_highlights_for_edit($post_id)
 	{
-		$raw = get_post_meta($post_id, 'tourism_highlights', true);
+		return $this->get_tour_title_content_items_for_edit($post_id, 'tourism_highlights');
+	}
 
-		if (is_array($raw)) {
+	/**
+	 * Normalize Pricing Details meta for the editor (array of title/content rows).
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array<int, array{title: string, content: string}>
+	 */
+	private function get_tour_pricing_details_for_edit($post_id)
+	{
+		return $this->get_tour_title_content_items_for_edit($post_id, 'tourism_pricing_details');
+	}
+
+	/**
+	 * Normalize What to Expect meta for the editor (array of title/content rows).
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array<int, array{title: string, content: string}>
+	 */
+	private function get_tour_what_to_expect_for_edit($post_id)
+	{
+		return $this->get_tour_title_content_items_for_edit($post_id, 'tourism_what_to_expect');
+	}
+
+	/**
+	 * What's Included / Excludes metabox (templates/whats-included-metabox.php).
+	 * Saves tourism_includes_new / tourism_excludes_new (read by the theme).
+	 *
+	 * @param \WP_Post $post Post object.
+	 */
+	public function render_whats_included($post)
+	{
+		$includes = get_post_meta($post->ID, 'tourism_includes_new', true);
+		$excludes = get_post_meta($post->ID, 'tourism_excludes_new', true);
+		if (!is_array($includes)) $includes = array();
+		if (!is_array($excludes)) $excludes = array();
+
+		Metabox_Helper::include_template('modules/tours/templates/whats-included-metabox.php', array(
+			'includes' => $includes,
+			'excludes' => $excludes,
+		));
+	}
+
+
+	/**
+	 * Pricing Details metabox (templates/pricing-info-metabox.php).
+	 * Separate from the "Tour Pricing" metabox (price now/before/discount).
+	 *
+	 * @param \WP_Post $post Post object.
+	 */
+	public function render_pricing_details($post)
+	{
+		wp_enqueue_editor();
+
+		$tourism_core_pricing_details = $this->get_tour_pricing_details_for_edit((int) $post->ID);
+
+		Metabox_Helper::include_template('modules/tours/templates/pricing-info-metabox.php', array(
+			'tourism_core_pricing_details' => $tourism_core_pricing_details,
+		));
+	}
+
+	/**
+	 * What to Expect metabox (templates/what-to-expect-metabox.php).
+	 *
+	 * @param \WP_Post $post Post object.
+	 */
+	public function render_what_to_expect($post)
+	{
+		wp_enqueue_editor();
+
+		$tourism_core_what_to_expect = $this->get_tour_what_to_expect_for_edit((int) $post->ID);
+
+		Metabox_Helper::include_template('modules/tours/templates/what-to-expect-metabox.php', array(
+			'tourism_core_what_to_expect' => $tourism_core_what_to_expect,
+		));
+	}
+
+	/**
+	 * Normalize what-to-bring items for the editor.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array<int, array{title: string, content: string}>
+	 */
+	private function get_tour_what_to_bring_for_edit($post_id)
+	{
+		// Intentar obtener el nuevo formato (repeater)
+		$raw = get_post_meta($post_id, 'tourism_what_to_bring_items', true);
+
+		if (is_array($raw) && !empty($raw)) {
 			$out = array();
 			foreach ($raw as $row) {
-				if (! is_array($row)) {
+				if (!is_array($row)) {
 					continue;
 				}
 				$out[] = array(
-					'description' => isset($row['description']) ? (string) $row['description'] : '',
+					'title'   => isset($row['title']) ? (string) $row['title'] : '',
+					'content' => isset($row['content']) ? (string) $row['content'] : '',
 				);
 			}
 			return $out;
 		}
 
-		if (is_string($raw) && trim($raw) !== '') {
+		// Legacy fallback: texto plano en tourism_what_to_bring
+		$legacy = get_post_meta($post_id, 'tourism_what_to_bring', true);
+		if (is_string($legacy) && trim($legacy) !== '') {
 			return array(
 				array(
-					'description' => $raw,
+					'title'   => '',
+					'content' => $legacy,
 				),
 			);
 		}
 
-		return array();
-	}
-
-	/**
-	 * Normalize a list meta for the editor: array of label strings, or legacy textarea (by lines).
-	 *
-	 * @param int    $post_id  Post ID.
-	 * @param string $meta_key tourism_includes | tourism_excludes.
-	 * @return array<int, string>
-	 */
-	private function get_tour_label_list_for_edit($post_id, $meta_key)
-	{
-		$raw = get_post_meta($post_id, $meta_key, true);
-
-		if (is_array($raw)) {
-			$out = array();
-			foreach ($raw as $x) {
-				if (is_string($x)) {
-					$t = trim($x);
-					if ($t !== '') {
-						$out[] = $t;
-					}
-				} elseif (is_array($x) && isset($x['label'])) {
-					$t = trim((string) $x['label']);
-					if ($t !== '') {
-						$out[] = $t;
-					}
-				}
-			}
-			return $out;
-		}
-
-		if (is_string($raw) && $raw !== '') {
-			$lines = preg_split('/\r\n|\r|\n/', $raw);
-			$out = array();
-			foreach ($lines as $line) {
-				$line = trim($line);
-				if ($line !== '') {
-					$out[] = $line;
-				}
-			}
-			return $out;
-		}
-
-		return array();
-	}
-
-	/**
-	 * Includes / excludes metabox (templates/includes-metabox.php).
-	 *
-	 * @param \WP_Post $post Post object.
-	 */
-	public function render_includes($post)
-	{
-		$post_id = (int) $post->ID;
-		$tourism_core_includes_list = $this->get_tour_label_list_for_edit($post_id, 'tourism_includes');
-		$tourism_core_excludes_list = $this->get_tour_label_list_for_edit($post_id, 'tourism_excludes');
-
-		$template = TOURISM_CORE_PATH . 'modules/tours/templates/includes-metabox.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		// Vacío: iniciar con un item
+		return array(
+			array(
+				'title'   => '',
+				'content' => '',
+			),
+		);
 	}
 
 	/**
@@ -561,10 +712,9 @@ class Tourism_Core_Tour_Metaboxes
 
 		$tourism_core_introduction = $this->get_tour_introduction_for_edit((int) $post->ID);
 
-		$template = TOURISM_CORE_PATH . 'modules/tours/templates/introduction-metabox.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		Metabox_Helper::include_template('modules/tours/templates/introduction-metabox.php', array(
+			'tourism_core_introduction' => $tourism_core_introduction,
+		));
 	}
 
 	/**
@@ -595,10 +745,9 @@ class Tourism_Core_Tour_Metaboxes
 	{
 		$tourism_core_pricing = $this->get_tour_pricing_for_edit((int) $post->ID);
 
-		$template = TOURISM_CORE_PATH . 'modules/tours/templates/pricing-metabox.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		Metabox_Helper::include_template('modules/tours/templates/pricing-metabox.php', array(
+			'tourism_core_pricing' => $tourism_core_pricing,
+		));
 	}
 
 	/**
@@ -671,10 +820,9 @@ class Tourism_Core_Tour_Metaboxes
 
 		$tourism_core_itinerary_items = $this->get_tour_itinerary_for_edit((int) $post->ID);
 
-		$template = TOURISM_CORE_PATH . 'modules/tours/templates/itinerary-metabox.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		Metabox_Helper::include_template('modules/tours/templates/itinerary-metabox.php', array(
+			'tourism_core_itinerary_items' => $tourism_core_itinerary_items,
+		));
 	}
 
 	/**
@@ -744,10 +892,9 @@ class Tourism_Core_Tour_Metaboxes
 	{
 		$tourism_core_bring_items = $this->get_tour_bring_items_for_edit((int) $post->ID);
 
-		$template = TOURISM_CORE_PATH . 'modules/tours/templates/bring-metabox.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		Metabox_Helper::include_template('modules/tours/templates/bring-metabox.php', array(
+			'tourism_core_bring_items' => $tourism_core_bring_items,
+		));
 	}
 
 	/**
@@ -815,7 +962,7 @@ class Tourism_Core_Tour_Metaboxes
 	}
 
 	/**
-	 * Gallery metabox (markup in templates/gallery-metabox.php).
+	 * Gallery metabox (shared markup in includes/templates/gallery-metabox.php).
 	 *
 	 * @param \WP_Post $post Post object.
 	 */
@@ -823,10 +970,50 @@ class Tourism_Core_Tour_Metaboxes
 	{
 		$tourism_core_gallery_images = $this->get_tour_gallery_images_for_edit((int) $post->ID);
 
-		$template = TOURISM_CORE_PATH . 'modules/tours/templates/gallery-metabox.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		Metabox_Helper::include_template('includes/templates/gallery-metabox.php', array(
+			'gc_images' => $tourism_core_gallery_images,
+			'gc_config' => array(
+				'present_key'     => 'tourism_gallery_metabox_present',
+				'post_key'        => 'tourism_gallery_images',
+				'wrapper_class'   => 'tourism-core-gallery-metabox-container',
+				'container_class' => 'tourism-core-gallery-images-container',
+				'item_class'      => 'tourism-core-gallery-image-item',
+				'field_id_class'  => 'tourism-core-gallery-field-id',
+				'field_url_class' => 'tourism-core-gallery-field-url',
+				'preview_class'   => 'tourism-core-image-preview',
+				'no_image_class'  => 'tourism-core-no-image',
+				'actions_class'   => 'tourism-core-image-actions',
+				'details_class'   => 'tourism-core-image-details',
+				'replace_class'   => 'tourism-core-replace-image',
+				'remove_class'    => 'tourism-core-remove-gallery-image',
+				'add_id'          => 'tourism-core-add-gallery-image',
+				'template_id'     => 'tourism-core-gallery-image-template',
+			),
+		));
+	}
+
+	/**
+	 * What to bring metabox (template what-to-bring.php).
+	 *
+	 * @param \WP_Post $post Post object.
+	 */
+	public function render_packing($post)
+	{
+		echo '<h3>' . esc_html__('Lista de equipaje con iconos', TOURISM_CORE_TD) . '</h3>';
+		$this->render_bring($post);
+		echo '<h3>' . esc_html__('Recomendaciones detalladas', TOURISM_CORE_TD) . '</h3>';
+		$this->render_what_to_bring($post);
+	}
+
+	public function render_what_to_bring($post)
+	{
+		wp_enqueue_editor();
+
+		$tourism_core_what_to_bring_items = $this->get_tour_what_to_bring_for_edit((int) $post->ID);
+
+		Metabox_Helper::include_template('modules/tours/templates/what-to-bring.php', array(
+			'tourism_core_what_to_bring_items' => $tourism_core_what_to_bring_items,
+		));
 	}
 
 	/**
@@ -840,10 +1027,9 @@ class Tourism_Core_Tour_Metaboxes
 
 		$tourism_core_faqs = $this->get_tour_faqs_for_edit((int) $post->ID);
 
-		$template = TOURISM_CORE_PATH . 'modules/tours/templates/faqs-metaboxes.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		Metabox_Helper::include_template('modules/tours/templates/faqs-metaboxes.php', array(
+			'tourism_core_faqs' => $tourism_core_faqs,
+		));
 	}
 
 	/**
@@ -853,12 +1039,13 @@ class Tourism_Core_Tour_Metaboxes
 	 */
 	public function render_highlights($post)
 	{
+		wp_enqueue_editor();
+
 		$tourism_core_highlights = $this->get_tour_highlights_for_edit((int) $post->ID);
 
-		$template = TOURISM_CORE_PATH . 'modules/tours/templates/highlights-metabox.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		Metabox_Helper::include_template('modules/tours/templates/highlights-metabox.php', array(
+			'tourism_core_highlights' => $tourism_core_highlights,
+		));
 	}
 
 	/* =========================
@@ -870,10 +1057,9 @@ class Tourism_Core_Tour_Metaboxes
 			'hero_id' => (int) get_post_meta($post->ID, '_tour_hero_image', true),
 		);
 
-		$template = TOURISM_CORE_PATH . 'modules/tours/templates/hero-metabox.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		Metabox_Helper::include_template('modules/tours/templates/hero-metabox.php', array(
+			'tourism_core_tour_hero' => $tourism_core_tour_hero,
+		));
 	}
 
 	/**
@@ -897,10 +1083,9 @@ class Tourism_Core_Tour_Metaboxes
 	{
 		$tourism_core_tour_order = $this->get_tour_order_for_edit((int) $post->ID);
 
-		$template = TOURISM_CORE_PATH . 'modules/tours/templates/order-tour-metabox.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		Metabox_Helper::include_template('modules/tours/templates/order-tour-metabox.php', array(
+			'tourism_core_tour_order' => $tourism_core_tour_order,
+		));
 	}
 
 	/**
@@ -924,10 +1109,9 @@ class Tourism_Core_Tour_Metaboxes
 	{
 		$tourism_core_wetravel_uuid = $this->get_tour_wetravel_uuid_for_edit((int) $post->ID);
 
-		$template = TOURISM_CORE_PATH . 'modules/tours/templates/wetravel-metabox.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		Metabox_Helper::include_template('modules/tours/templates/wetravel-metabox.php', array(
+			'tourism_core_wetravel_uuid' => $tourism_core_wetravel_uuid,
+		));
 	}
 
 	/* =========================
@@ -936,65 +1120,40 @@ class Tourism_Core_Tour_Metaboxes
 	public function save($post_id, $post)
 	{
 		// 1) Quick Edit: allow saving only the manual order field with its own nonce.
-		if (isset($_POST['tourism_core_tour_quickedit_nonce']) &&
-			wp_verify_nonce(
-				sanitize_text_field(wp_unslash($_POST['tourism_core_tour_quickedit_nonce'])),
-				'tourism_core_quickedit_tour'
-			)
-		) {
-			if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
-			if (! current_user_can('edit_post', $post_id)) return;
-
-			if (isset($_POST['tourism_tour_order'])) {
-				$order = (int) wp_unslash($_POST['tourism_tour_order']);
-				if ($order < 0) {
-					$order = 0;
-				}
-				update_post_meta($post_id, 'tourism_tour_order', $order);
-			}
+		if ($this->maybe_save_quick_edit_order($post_id)) {
 			return;
 		}
 
-		if (! isset($_POST['tourism_core_tour_nonce']) ||
-			! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['tourism_core_tour_nonce'])), 'tourism_core_save_tour')) {
+		if (! Metabox_Helper::verify_nonce('tourism_core_tour_nonce', 'tourism_core_save_tour')) {
 			return;
 		}
 
-		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
-		if (! current_user_can('edit_post', $post_id)) return;
+		if (! Metabox_Helper::can_save($post_id)) return;
 
-		// DURATION
-		if (isset($_POST['tourism_duration'])) {
-			update_post_meta($post_id, 'tourism_duration', sanitize_text_field(wp_unslash($_POST['tourism_duration'])));
-		}
-		if (isset($_POST['tourism_duration_options']) && is_array($_POST['tourism_duration_options'])) {
-			$duration_options = array();
-			foreach (wp_unslash($_POST['tourism_duration_options']) as $option) {
-				$option = sanitize_text_field((string) $option);
-				if ($option !== '') {
-					$duration_options[] = $option;
-				}
+		// SELECT FIELDS + THEIR EDITABLE OPTION LISTS
+		$select_fields = array(
+			'duration',
+			'difficulty',
+			'group_size',
+			'max_elevation',
+		);
+		foreach ($select_fields as $key) {
+			$field = 'tourism_' . $key;
+			if (isset($_POST[$field])) {
+				update_post_meta($post_id, $field, sanitize_text_field(wp_unslash($_POST[$field])));
 			}
-			update_post_meta($post_id, 'tourism_duration_options', array_values(array_unique($duration_options)));
-		}
-
-		// DIFFICULTY
-		if (isset($_POST['tourism_difficulty'])) {
-			update_post_meta($post_id, 'tourism_difficulty', sanitize_text_field(wp_unslash($_POST['tourism_difficulty'])));
-		}
-		if (isset($_POST['tourism_difficulty_options']) && is_array($_POST['tourism_difficulty_options'])) {
-			$difficulty_options = array();
-			foreach (wp_unslash($_POST['tourism_difficulty_options']) as $option) {
-				$option = sanitize_text_field((string) $option);
-				if ($option !== '') {
-					$difficulty_options[] = $option;
-				}
+			$options_field = $field . '_options';
+			if (isset($_POST[$options_field]) && is_array($_POST[$options_field])) {
+				update_post_meta(
+					$post_id,
+					$options_field,
+					Metabox_Helper::sanitize_options_array(wp_unslash($_POST[$options_field]))
+				);
 			}
-			update_post_meta($post_id, 'tourism_difficulty_options', array_values(array_unique($difficulty_options)));
 		}
 
 		// Introduction (title + description).
-		if (isset($_POST['tourism_introduction_metabox_present'])) {
+		if (Metabox_Helper::metabox_present('tourism_introduction_metabox_present')) {
 			$intro_title = isset($_POST['tourism_intro_title']) ? sanitize_text_field(wp_unslash($_POST['tourism_intro_title'])) : '';
 			$intro_description = isset($_POST['tourism_intro_description']) ? wp_kses_post(wp_unslash($_POST['tourism_intro_description'])) : '';
 
@@ -1003,7 +1162,7 @@ class Tourism_Core_Tour_Metaboxes
 		}
 
 		// Pricing (current price + previous price + discount percent).
-		if (isset($_POST['tourism_pricing_metabox_present'])) {
+		if (Metabox_Helper::metabox_present('tourism_pricing_metabox_present')) {
 			$price_now_raw = isset($_POST['tourism_price_from']) ? sanitize_text_field(wp_unslash($_POST['tourism_price_from'])) : '';
 			$price_before_raw = isset($_POST['tourism_price_before']) ? sanitize_text_field(wp_unslash($_POST['tourism_price_before'])) : '';
 			$discount_raw = isset($_POST['tourism_price_discount_percent']) ? sanitize_text_field(wp_unslash($_POST['tourism_price_discount_percent'])) : '';
@@ -1024,6 +1183,18 @@ class Tourism_Core_Tour_Metaboxes
 			update_post_meta($post_id, 'tourism_price_discount_percent', $discount);
 		}
 
+		// Pricing Details (repeater: title + WYSIWYG content).
+		if (Metabox_Helper::metabox_present('tourism_pricing_details_metabox_present')) {
+			$pricing_details_items = isset($_POST['tourism_pricing_info_items']) ? wp_unslash($_POST['tourism_pricing_info_items']) : array();
+			update_post_meta($post_id, 'tourism_pricing_details', $this->sanitize_title_content_items($pricing_details_items));
+		}
+
+		// What to Expect (repeater: title + WYSIWYG content).
+		if (Metabox_Helper::metabox_present('tourism_what_to_expect_metabox_present')) {
+			$what_to_expect_items = isset($_POST['tourism_what_to_expect_items']) ? wp_unslash($_POST['tourism_what_to_expect_items']) : array();
+			update_post_meta($post_id, 'tourism_what_to_expect', $this->sanitize_title_content_items($what_to_expect_items));
+		}
+
 		// DESTINATIONS
 		if (isset($_POST['tourism_destinations'])) {
 			$ids = array_map('intval', (array) wp_unslash($_POST['tourism_destinations']));
@@ -1033,41 +1204,13 @@ class Tourism_Core_Tour_Metaboxes
 		}
 
 		// Gallery (repeater + legacy ID list for themes still using tourism_gallery_ids).
-		if (isset($_POST['tourism_gallery_metabox_present'])) {
-			$gallery_rows = array();
-			$sync_ids = array();
-			if (isset($_POST['tourism_gallery_images']) && is_array($_POST['tourism_gallery_images'])) {
-				foreach (wp_unslash($_POST['tourism_gallery_images']) as $row) {
-					if (! is_array($row)) {
-						continue;
-					}
-					$gid = isset($row['id']) ? (int) $row['id'] : 0;
-					$gurl = isset($row['url']) ? esc_url_raw($row['url']) : '';
-					$gtitle = isset($row['title']) ? sanitize_text_field($row['title']) : '';
-					$gcaption = isset($row['caption']) ? sanitize_textarea_field($row['caption']) : '';
-					if ($gid <= 0 && $gurl === '') {
-						continue;
-					}
-					if ($gid > 0) {
-						$att_url = wp_get_attachment_url($gid);
-						if ($att_url) {
-							$gurl = $att_url;
-						}
-						$sync_ids[] = $gid;
-					}
-					$gallery_rows[] = array(
-						'id'      => $gid,
-						'url'     => $gurl,
-						'title'   => $gtitle,
-						'caption' => $gcaption,
-					);
-				}
-			}
-			update_post_meta($post_id, 'tourism_gallery_images', $gallery_rows);
-			update_post_meta($post_id, 'tourism_gallery_ids', array_values(array_unique(array_filter($sync_ids))));
+		if (Metabox_Helper::metabox_present('tourism_gallery_metabox_present')) {
+			$gallery = Metabox_Helper::sanitize_gallery_post_rows('tourism_gallery_images');
+			update_post_meta($post_id, 'tourism_gallery_images', $gallery['rows']);
+			update_post_meta($post_id, 'tourism_gallery_ids', $gallery['ids']);
 		}
 
-		if (isset($_POST['tourism_itinerary_metabox_present'])) {
+		if (Metabox_Helper::metabox_present('tourism_itinerary_metabox_present')) {
 			$itinerary_items = array();
 			$legacy_sections = array();
 
@@ -1131,115 +1274,79 @@ class Tourism_Core_Tour_Metaboxes
 			update_post_meta($post_id, 'tourism_itinerary', implode("\n\n", $legacy_sections));
 		}
 
-		// Includes / excludes (repeaters; only when metabox is visible).
-		if (isset($_POST['tourism_includes_excludes_metabox_present'])) {
-			$includes_out = array();
-			if (isset($_POST['tourism_includes_list']) && is_array($_POST['tourism_includes_list'])) {
-				foreach (wp_unslash($_POST['tourism_includes_list']) as $row) {
-					if (! is_array($row)) {
-						continue;
-					}
-					$label = isset($row['label']) ? sanitize_text_field($row['label']) : '';
-					if ($label !== '') {
-						$includes_out[] = $label;
-					}
+		// What to bring (repeater: title + content).
+		if (Metabox_Helper::metabox_present('tourism_what_to_bring_metabox_present')) {
+			$what_to_bring_items = Metabox_Helper::sanitize_title_content_items(
+				isset($_POST['tourism_what_to_bring_items']) ? wp_unslash($_POST['tourism_what_to_bring_items']) : array()
+			);
+
+			$legacy_text = '';
+			foreach ($what_to_bring_items as $row) {
+				if (! empty($row['title'])) {
+					$legacy_text .= '<h3>' . $row['title'] . '</h3>' . "\n";
+				}
+				if (! empty($row['content'])) {
+					$legacy_text .= $row['content'] . "\n";
 				}
 			}
-			$excludes_out = array();
-			if (isset($_POST['tourism_excludes_list']) && is_array($_POST['tourism_excludes_list'])) {
-				foreach (wp_unslash($_POST['tourism_excludes_list']) as $row) {
-					if (! is_array($row)) {
-						continue;
-					}
-					$label = isset($row['label']) ? sanitize_text_field($row['label']) : '';
-					if ($label !== '') {
-						$excludes_out[] = $label;
-					}
-				}
-			}
-			update_post_meta($post_id, 'tourism_includes', $includes_out);
-			update_post_meta($post_id, 'tourism_excludes', $excludes_out);
+
+			update_post_meta($post_id, 'tourism_what_to_bring_items', $what_to_bring_items);
+			update_post_meta($post_id, 'tourism_what_to_bring', trim($legacy_text));
+		}
+		// Includes / excludes
+		if (Metabox_Helper::metabox_present('tourism_whats_included_metabox_present')) {
+			$includes = isset($_POST['tourism_includes']) ? wp_unslash($_POST['tourism_includes']) : array();
+			$excludes = isset($_POST['tourism_excludes']) ? wp_unslash($_POST['tourism_excludes']) : array();
+
+			update_post_meta($post_id, 'tourism_includes_new', $this->sanitize_title_content_items($includes));
+			update_post_meta($post_id, 'tourism_excludes_new', $this->sanitize_title_content_items($excludes));
 		}
 
 		// Bring items (icon image + title + short description).
-		if (isset($_POST['tourism_bring_metabox_present'])) {
-			$bring_rows = array();
+		if (Metabox_Helper::metabox_present('tourism_bring_metabox_present')) {
+			$bring_rows = Metabox_Helper::sanitize_rows(
+				isset($_POST['tourism_bring_items']) ? wp_unslash($_POST['tourism_bring_items']) : array(),
+				array(
+					'id'          => 'absint',
+					'url'         => 'esc_url_raw',
+					'title'       => 'sanitize_text_field',
+					'description' => 'sanitize_textarea_field',
+				)
+			);
 			$legacy_lines = array();
-			if (isset($_POST['tourism_bring_items']) && is_array($_POST['tourism_bring_items'])) {
-				foreach (wp_unslash($_POST['tourism_bring_items']) as $row) {
-					if (! is_array($row)) {
-						continue;
+			foreach ($bring_rows as $i => $row) {
+				if (! empty($row['id'])) {
+					$att_url = wp_get_attachment_url((int) $row['id']);
+					if ($att_url) {
+						$bring_rows[$i]['url'] = $att_url;
 					}
-					$bid = isset($row['id']) ? (int) $row['id'] : 0;
-					$burl = isset($row['url']) ? esc_url_raw($row['url']) : '';
-					$btitle = isset($row['title']) ? sanitize_text_field($row['title']) : '';
-					$bdesc = isset($row['description']) ? sanitize_textarea_field($row['description']) : '';
-					if ($bid <= 0 && $burl === '' && $btitle === '' && $bdesc === '') {
-						continue;
-					}
-					if ($bid > 0) {
-						$att_url = wp_get_attachment_url($bid);
-						if ($att_url) {
-							$burl = $att_url;
-						}
-					}
-					$bring_rows[] = array(
-						'id'          => $bid,
-						'url'         => $burl,
-						'title'       => $btitle,
-						'description' => $bdesc,
-					);
-					if ($btitle !== '') {
-						$legacy_lines[] = $btitle;
-					}
+				}
+				if (! empty($row['title'])) {
+					$legacy_lines[] = $row['title'];
 				}
 			}
 			update_post_meta($post_id, 'tourism_bring_items', $bring_rows);
 			update_post_meta($post_id, 'tourism_things_to_carry', implode("\n", $legacy_lines));
 		}
 		// FAQs (repeater: only when metabox is on the screen — avoids wiping if hidden in Screen Options).
-		if (isset($_POST['tourism_faqs_metabox_present'])) {
-			$faq_items = array();
-			if (isset($_POST['tourism_faqs']) && is_array($_POST['tourism_faqs'])) {
-				foreach (wp_unslash($_POST['tourism_faqs']) as $row) {
-					if (! is_array($row)) {
-						continue;
-					}
-					$question = isset($row['question']) ? sanitize_text_field($row['question']) : '';
-					$answer   = isset($row['answer']) ? wp_kses_post($row['answer']) : '';
-					if ($question === '' && $answer === '') {
-						continue;
-					}
-					$faq_items[] = array(
-						'question' => $question,
-						'answer'   => $answer,
-					);
-				}
-			}
+		if (Metabox_Helper::metabox_present('tourism_faqs_metabox_present')) {
+			$faq_items = Metabox_Helper::sanitize_rows(
+				isset($_POST['tourism_faqs']) ? wp_unslash($_POST['tourism_faqs']) : array(),
+				array(
+					'question' => 'sanitize_text_field',
+					'answer'   => 'wp_kses_post',
+				)
+			);
 			update_post_meta($post_id, 'tourism_faqs', $faq_items);
 		}
 
-		// Highlights (repeater: only when metabox is on the screen — avoids wiping if hidden in Screen Options).
-		if (isset($_POST['tourism_highlights_metabox_present'])) {
-			$highlight_items = array();
-			if (isset($_POST['tourism_highlights']) && is_array($_POST['tourism_highlights'])) {
-				foreach (wp_unslash($_POST['tourism_highlights']) as $row) {
-					if (! is_array($row)) {
-						continue;
-					}
-					$description = isset($row['description']) ? sanitize_textarea_field($row['description']) : '';
-					if ($description === '') {
-						continue;
-					}
-					$highlight_items[] = array(
-						'description' => $description,
-					);
-				}
-			}
-			update_post_meta($post_id, 'tourism_highlights', $highlight_items);
+		// Highlights (repeater: title + WYSIWYG content; only when metabox is on the screen).
+		if (Metabox_Helper::metabox_present('tourism_highlights_metabox_present')) {
+			$highlights_items = isset($_POST['tourism_highlights_items']) ? wp_unslash($_POST['tourism_highlights_items']) : array();
+			update_post_meta($post_id, 'tourism_highlights', $this->sanitize_title_content_items($highlights_items));
 		}
 		// HERO IMAGE (only when metabox is on the screen — avoids wiping if hidden in Screen Options).
-		if (isset($_POST['tourism_tour_hero_metabox_present'])) {
+		if (Metabox_Helper::metabox_present('tourism_tour_hero_metabox_present')) {
 			$hero_id = isset($_POST['tour_hero_image']) ? (int) wp_unslash($_POST['tour_hero_image']) : 0;
 			if ($hero_id < 0) {
 				$hero_id = 0;
@@ -1248,7 +1355,7 @@ class Tourism_Core_Tour_Metaboxes
 		}
 
 		// Manual order (only when metabox is on the screen — avoids wiping if hidden in Screen Options).
-		if (isset($_POST['tourism_tour_order_metabox_present'])) {
+		if (Metabox_Helper::metabox_present('tourism_tour_order_metabox_present')) {
 			$order = isset($_POST['tourism_tour_order']) ? (int) wp_unslash($_POST['tourism_tour_order']) : 0;
 			if ($order < 0) {
 				$order = 0;
@@ -1257,7 +1364,7 @@ class Tourism_Core_Tour_Metaboxes
 		}
 
 		// WeTravel UUID (only when metabox is on the screen — avoids wiping if hidden in Screen Options).
-		if (isset($_POST['tourism_wetravel_metabox_present'])) {
+		if (Metabox_Helper::metabox_present('tourism_wetravel_metabox_present')) {
 			$uuid = isset($_POST['tourism_wetravel_button_code']) ? absint(wp_unslash($_POST['tourism_wetravel_button_code'])) : 0;
 			if ($uuid > 0) {
 				update_post_meta($post_id, '_wetravel_button_code', $uuid);
@@ -1279,16 +1386,9 @@ class Tourism_Core_Tour_Metaboxes
 		wp_enqueue_script('jquery-ui-sortable');
 		wp_enqueue_editor();
 
+		// CSS
 		$css_path = TOURISM_CORE_PATH . 'assets/css/tour-admin-metabox.css';
-		$js_path  = TOURISM_CORE_PATH . 'assets/js/tour-admin-metabox.js';
-		$faqs_js_path = TOURISM_CORE_PATH . 'assets/js/modules/tours/faqs-metabox.js';
-		$itinerary_js_path = TOURISM_CORE_PATH . 'assets/js/modules/tours/itinerary-metabox.js';
-		$introduction_js_path = TOURISM_CORE_PATH . 'assets/js/modules/tours/introduction-metabox.js';
 		$ver_css  = file_exists($css_path) ? (string) filemtime($css_path) : TOURISM_CORE_VERSION;
-		$ver_js   = file_exists($js_path) ? (string) filemtime($js_path) : TOURISM_CORE_VERSION;
-		$ver_faqs_js = file_exists($faqs_js_path) ? (string) filemtime($faqs_js_path) : TOURISM_CORE_VERSION;
-		$ver_itinerary_js = file_exists($itinerary_js_path) ? (string) filemtime($itinerary_js_path) : TOURISM_CORE_VERSION;
-		$ver_introduction_js = file_exists($introduction_js_path) ? (string) filemtime($introduction_js_path) : TOURISM_CORE_VERSION;
 
 		wp_enqueue_style(
 			'tourism-core-tour-admin',
@@ -1296,6 +1396,10 @@ class Tourism_Core_Tour_Metaboxes
 			array(),
 			$ver_css
 		);
+
+		// JS principal
+		$js_path = TOURISM_CORE_PATH . 'assets/js/tour-admin-metabox.js';
+		$ver_js  = file_exists($js_path) ? (string) filemtime($js_path) : TOURISM_CORE_VERSION;
 
 		wp_enqueue_script(
 			'tourism-core-tour-admin',
@@ -1305,28 +1409,78 @@ class Tourism_Core_Tour_Metaboxes
 			true
 		);
 
+		// Shared gallery behaviour
+		$gallery_js_path = TOURISM_CORE_PATH . 'assets/js/gallery-metabox.js';
+		$gallery_js_ver  = file_exists($gallery_js_path) ? (string) filemtime($gallery_js_path) : TOURISM_CORE_VERSION;
 		wp_enqueue_script(
-			'tourism-core-tour-faqs-metabox',
-			TOURISM_CORE_URL . 'assets/js/modules/tours/faqs-metabox.js',
-			array( 'jquery', 'jquery-ui-sortable', 'editor' ),
-			$ver_faqs_js,
+			'tourism-core-gallery-metabox',
+			TOURISM_CORE_URL . 'assets/js/gallery-metabox.js',
+			array('jquery', 'jquery-ui-sortable', 'media-editor'),
+			$gallery_js_ver,
 			true
 		);
+		wp_localize_script(
+			'tourism-core-gallery-metabox',
+			'TourismCoreGalleries',
+			array(
+				array(
+					'containerId'   => 'tourism-core-gallery-images-container',
+					'itemClass'     => 'tourism-core-gallery-image-item',
+					'fieldIdClass'  => 'tourism-core-gallery-field-id',
+					'fieldUrlClass' => 'tourism-core-gallery-field-url',
+					'detailsClass'  => 'tourism-core-image-details',
+					'previewClass'  => 'tourism-core-image-preview',
+					'noImageClass'  => 'tourism-core-no-image',
+					'postKey'       => 'tourism_gallery_images',
+					'addId'         => 'tourism-core-add-gallery-image',
+					'templateId'    => 'tourism-core-gallery-image-template',
+					'removeClass'   => 'tourism-core-remove-gallery-image',
+					'replaceClass'  => 'tourism-core-replace-image',
+				),
+			)
+		);
 
+		// Cargar automáticamente todos los JS de la carpeta modules/tours/
+		// IMPORTANTE: se excluyen los *.min.js del listado base para no
+		// enqueue-arlos dos veces (una vez el .js y otra vez el .min.js).
+		// Si existe un .min.js y NO estamos en modo debug, se usa ese en
+		// su lugar bajo el MISMO handle que el archivo fuente.
+		$modules_dir = TOURISM_CORE_PATH . 'assets/js/modules/tours/';
+		if (is_dir($modules_dir)) {
+			$all_js_files = glob($modules_dir . '*.js');
+			$source_files = array_filter((array) $all_js_files, static function ($file) {
+				return substr($file, -7) !== '.min.js';
+			});
+
+			$use_minified = !(defined('SCRIPT_DEBUG') && SCRIPT_DEBUG);
+
+			foreach ($source_files as $file) {
+				$filename = basename($file);
+				$handle = 'tourism-core-tour-' . sanitize_title(str_replace('.js', '', $filename));
+
+				$min_file = substr($file, 0, -3) . '.min.js';
+				$file_to_enqueue = ($use_minified && file_exists($min_file)) ? $min_file : $file;
+				$filename_to_enqueue = basename($file_to_enqueue);
+
+				$ver = file_exists($file_to_enqueue) ? (string) filemtime($file_to_enqueue) : TOURISM_CORE_VERSION;
+
+				wp_enqueue_script(
+					$handle,
+					TOURISM_CORE_URL . 'assets/js/modules/tours/' . $filename_to_enqueue,
+					array( 'jquery', 'jquery-ui-sortable', 'editor' ),
+					$ver,
+					true
+				);
+			}
+		}
+
+		// Localize solo los que necesitan traducciones
 		wp_localize_script(
 			'tourism-core-tour-faqs-metabox',
 			'TourismCoreTourFaqs',
 			array(
 				'deleteConfirm' => __( 'Are you sure you want to delete this FAQ?', TOURISM_CORE_TD ),
 			)
-		);
-
-		wp_enqueue_script(
-			'tourism-core-tour-itinerary-metabox',
-			TOURISM_CORE_URL . 'assets/js/modules/tours/itinerary-metabox.js',
-			array( 'jquery', 'jquery-ui-sortable', 'editor' ),
-			$ver_itinerary_js,
-			true
 		);
 
 		wp_localize_script(
@@ -1337,22 +1491,18 @@ class Tourism_Core_Tour_Metaboxes
 			)
 		);
 
-		wp_enqueue_script(
-			'tourism-core-tour-introduction-metabox',
-			TOURISM_CORE_URL . 'assets/js/modules/tours/introduction-metabox.js',
-			array( 'jquery', 'editor' ),
-			$ver_introduction_js,
-			true
-		);
-
 		wp_localize_script(
 			'tourism-core-tour-admin',
 			'TourismCoreTourAdmin',
 			array(
 				'selectDuration'     => __( 'Select a duration', TOURISM_CORE_TD ),
 				'selectDifficulty'   => __( 'Select a difficulty', TOURISM_CORE_TD ),
+				'selectGroupSize'    => __( 'Select group size', TOURISM_CORE_TD ),
+				'selectMaxElevation' => __( 'Select max elevation', TOURISM_CORE_TD ),
 				'exampleFullDay'     => __( 'Example: Full day', TOURISM_CORE_TD ),
 				'exampleModerate'    => __( 'Example: Moderate', TOURISM_CORE_TD ),
+				'exampleGroupSize'   => __( 'Example: 2-12 people', TOURISM_CORE_TD ),
+				'exampleMaxElevation'=> __( 'Example: 5,200 m', TOURISM_CORE_TD ),
 				'deleteLabel'        => __( 'Delete', TOURISM_CORE_TD ),
 				'heroMediaTitle'     => __( 'Select Hero Image', TOURISM_CORE_TD ),
 				'heroMediaButton'    => __( 'Use image', TOURISM_CORE_TD ),
@@ -1364,21 +1514,4 @@ class Tourism_Core_Tour_Metaboxes
 		);
 	}
 
-	public function render_quick_edit_order_field($column_name, $post_type)
-	{
-		if ($post_type !== 'tour' || $column_name !== 'tourism_tour_order') {
-			return;
-		}
-		?>
-		<fieldset class="inline-edit-col-right">
-			<div class="inline-edit-col">
-				<?php wp_nonce_field('tourism_core_quickedit_tour', 'tourism_core_tour_quickedit_nonce'); ?>
-				<label class="inline-edit-group">
-					<span class="title"><?php esc_html_e('Orden', TOURISM_CORE_TD); ?></span>
-					<input type="number" min="0" step="1" name="tourism_tour_order" value="" />
-				</label>
-			</div>
-		</fieldset>
-		<?php
-	}
 }

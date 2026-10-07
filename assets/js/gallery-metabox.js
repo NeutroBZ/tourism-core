@@ -1,0 +1,86 @@
+/**
+ * Shared gallery metabox behaviour (sortable images + WP media replace).
+ * Configured via window.TourismCoreGalleries array of config objects.
+ */
+(function ($) {
+	'use strict';
+
+	function renumber(config) {
+		var $c = $('#' + config.containerId);
+		if (!$c.length) {
+			return;
+		}
+		$c.children('.' + config.itemClass).each(function (i) {
+			var $item = $(this);
+			$item.find('.' + config.fieldIdClass).attr('name', config.postKey + '[' + i + '][id]');
+			$item.find('.' + config.fieldUrlClass).attr('name', config.postKey + '[' + i + '][url]');
+			$item.find('.' + config.detailsClass + ' input[type="text"]').attr('name', config.postKey + '[' + i + '][title]');
+			$item.find('.' + config.detailsClass + ' textarea').attr('name', config.postKey + '[' + i + '][caption]');
+		});
+	}
+
+	function bindGallery(config) {
+		var $c = $('#' + config.containerId);
+		if (!$c.length) {
+			return;
+		}
+
+		$c.sortable({
+			items: '> .' + config.itemClass,
+			cancel: 'input,textarea,button,select,option',
+			update: function () {
+				renumber(config);
+			}
+		});
+
+		$(document).on('click', '#' + config.addId, function (e) {
+			e.preventDefault();
+			var $tpl = $('#' + config.templateId).children('.' + config.itemClass).first();
+			if (!$tpl.length) {
+				return;
+			}
+			$c.append($tpl.clone(true, true));
+			renumber(config);
+		});
+
+		$(document).on('click', '.' + config.removeClass, function (e) {
+			e.preventDefault();
+			$(this).closest('.' + config.itemClass).remove();
+			renumber(config);
+		});
+
+		$(document).on('click', '.' + config.replaceClass, function (e) {
+			e.preventDefault();
+			var $item = $(this).closest('.' + config.itemClass);
+			var media = wp.media({
+				title: 'Select image',
+				button: { text: 'Use image' },
+				multiple: false
+			});
+			media.on('select', function () {
+				var att = media.state().get('selection').first().toJSON();
+				var url = att.sizes && att.sizes.medium && att.sizes.medium.url ? att.sizes.medium.url : att.url;
+				$item.find('.' + config.fieldIdClass).val(String(att.id));
+				$item.find('.' + config.fieldUrlClass).val(att.url);
+				$item.find('.' + config.previewClass + ' .' + config.noImageClass).remove();
+				$item.find('.' + config.previewClass + ' img').remove();
+				$item.find('.' + config.previewClass).prepend('<img src="' + url + '" alt="" />');
+			});
+			media.open();
+		});
+
+		renumber(config);
+	}
+
+	$(function () {
+		var configs = window.TourismCoreGalleries || [];
+		if (!Array.isArray(configs)) {
+			configs = configs ? [configs] : [];
+		}
+		$.each(configs, function (_, config) {
+			if (config && config.containerId) {
+				bindGallery(config);
+			}
+		});
+	});
+})(jQuery);

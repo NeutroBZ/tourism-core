@@ -25,7 +25,7 @@ $duration = get_post_meta( $post_id, 'tourism_duration', true );
 		<?php endif; ?>
 		<?php if ( '' !== $price && null !== $price ) : ?>
 			<div class="tourism-core-card__price">
-				<?php echo esc_html( $price ); ?>
+				<?php echo esc_html( tourism_core_get_tour_currency( $post_id ) . ' ' . $price ); ?>
 			</div>
 		<?php endif; ?>
 	</a>

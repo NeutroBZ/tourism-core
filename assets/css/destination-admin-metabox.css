@@ -1,0 +1,40 @@
+.tourism-core-destination-gallery-metabox-container{margin-top:4px;}
+#tourism-core-destination-gallery-images-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:12px;}
+.tourism-core-destination-gallery-image-item{border:1px solid #c3c4c7;background:#fff;padding:10px;}
+.tourism-core-destination-image-preview{position:relative;aspect-ratio:4/3;background:#f0f0f1;border:1px solid #dcdcde;margin-bottom:10px;overflow:hidden;}
+.tourism-core-destination-image-preview img{display:block;width:100%;height:100%;object-fit:cover;}
+.tourism-core-destination-no-image{display:flex;align-items:center;justify-content:center;height:100%;min-height:120px;color:#646970;font-size:12px;text-align:center;padding:8px;}
+.tourism-core-destination-image-actions{position:absolute;right:6px;top:6px;z-index:2;display:flex;gap:4px;}
+.tourism-core-destination-image-actions .button{min-width:32px;padding:0 6px;}
+.tourism-core-destination-image-details label{display:block;margin:6px 0 2px;font-weight:600;}
+.tourism-core-destination-image-details input,.tourism-core-destination-image-details textarea{width:100%;}
+.tourism-core-destination-hero-text-fields label{display:block;margin:0 0 4px;}
+.tourism-core-destination-hero-preview-wrap{
+	display:flex;
+	justify-content:center;
+	align-items:center;
+	min-height:72px;
+	max-height:220px;
+	border:1px solid #dcdcde;
+	background:#f0f0f1;
+	padding:8px;
+	box-sizing:border-box;
+}
+.tourism-core-destination-hero-preview-wrap img{
+	max-width:100%;
+	max-height:200px;
+	width:auto;
+	height:auto;
+	object-fit:contain;
+	display:block;
+}
+#tourism-core-destination-highlights-container .tourism-core-destination-highlight-item{border:1px solid #c3c4c7;background:#fff;margin-bottom:10px;}
+#tourism-core-destination-highlights-container .tourism-core-destination-highlight-header{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #c3c4c7;background:#f6f7f7;}
+#tourism-core-destination-highlights-container .tourism-core-destination-highlight-header h4{margin:0;flex:1;font-size:13px;}
+#tourism-core-destination-highlights-container .tourism-core-handle{cursor:move;color:#787c82;}
+#tourism-core-destination-highlights-container .tourism-core-destination-highlight-content{padding:10px;}
+.tourism-core-season-best-months-heading{margin-bottom:6px;}
+.tourism-core-season-months-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px 12px;margin-top:10px;max-width:720px;}
+.tourism-core-season-month-label{display:flex;align-items:center;gap:6px;font-size:13px;}
+.tourism-core-season-month-label input{margin:0;}
+@media (max-width:782px){.tourism-core-season-months-grid{grid-template-columns:1fr 1fr;}}

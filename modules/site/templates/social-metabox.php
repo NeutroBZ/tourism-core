@@ -108,38 +108,3 @@ if ( empty( $tourism_core_custom ) && '' !== trim( $tourism_core_extra ) ) {
 		<button type="button" class="button-link-delete tourism-core-social-remove" style="padding-bottom:6px;"><?php esc_html_e( 'Remove', TOURISM_CORE_TD ); ?></button>
 	</div>
 </script>
-<script>
-	(function($){
-		'use strict';
-		$(function(){
-			var $container = $('#tourism-core-social-custom-container');
-			var template = $('#tourism-core-social-custom-template').html() || '';
-			if (!$container.length || !template) {
-				return;
-			}
-
-			function renumber() {
-				$container.children('.tourism-core-social-custom-item').each(function(index){
-					$(this).find('input').each(function(){
-						var name = $(this).attr('name') || '';
-						name = name.replace(/tourism_social_custom\[\d+\]/, 'tourism_social_custom[' + index + ']');
-						$(this).attr('name', name);
-					});
-				});
-			}
-
-			$(document).on('click', '#tourism-core-social-add', function(e){
-				e.preventDefault();
-				var index = $container.children('.tourism-core-social-custom-item').length;
-				var html = template.replace(/{{index}}/g, String(index));
-				$container.append(html);
-			});
-
-			$(document).on('click', '.tourism-core-social-remove', function(e){
-				e.preventDefault();
-				$(this).closest('.tourism-core-social-custom-item').remove();
-				renumber();
-			});
-		});
-	})(jQuery);
-</script>

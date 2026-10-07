@@ -4,11 +4,39 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Tourism_Core_Site_Metaboxes {
+require_once TOURISM_CORE_PATH . 'includes/class-metabox-helper.php';
+require_once TOURISM_CORE_PATH . 'includes/class-metabox-base.php';
+
+use Tourism_Core_Metabox_Helper as Metabox_Helper;
+
+class Tourism_Core_Site_Metaboxes extends Tourism_Core_Metabox_Base {
 	public function register( Tourism_Core_Loader $loader ) {
 		$loader->add_action( 'add_meta_boxes', $this, 'add_meta_boxes' );
 		$loader->add_action( 'save_post_tourism_site', $this, 'save', 10, 2 );
 		$loader->add_action( 'admin_notices', $this, 'modules_saved_notice' );
+		$loader->add_action( 'admin_enqueue_scripts', $this, 'enqueue_admin_assets' );
+	}
+
+	public function enqueue_admin_assets( $hook ) {
+		global $post_type;
+		if ( 'tourism_site' !== $post_type ) {
+			return;
+		}
+
+		$use_min = ! ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG );
+		$js_rel  = ( $use_min && file_exists( TOURISM_CORE_PATH . 'assets/js/site-admin-metabox.min.js' ) )
+			? 'site-admin-metabox.min.js'
+			: 'site-admin-metabox.js';
+		$js_path = TOURISM_CORE_PATH . 'assets/js/' . $js_rel;
+		$ver     = file_exists( $js_path ) ? (string) filemtime( $js_path ) : TOURISM_CORE_VERSION;
+
+		wp_enqueue_script(
+			'tourism-core-site-admin',
+			TOURISM_CORE_URL . 'assets/js/' . $js_rel,
+			array( 'jquery' ),
+			$ver,
+			true
+		);
 	}
 
 	public function add_meta_boxes() {
@@ -52,15 +80,13 @@ class Tourism_Core_Site_Metaboxes {
 	public function render_modules( $post ) {
 		wp_nonce_field( 'tourism_core_save_site', 'tourism_core_site_nonce' );
 
-		$modules = Tourism_Core_Config::instance()->get_modules();
-		$registry = Tourism_Core_Module_Registry::all();
+		$tourism_core_site_modules = Tourism_Core_Config::instance()->get_modules();
+		$tourism_core_module_registry = Tourism_Core_Module_Registry::all();
 
-		$template = TOURISM_CORE_PATH . 'modules/site/templates/modules-metabox.php';
-		if ( is_readable( $template ) ) {
-			$tourism_core_site_modules = $modules;
-			$tourism_core_module_registry = $registry;
-			include $template;
-		}
+		Metabox_Helper::include_template( 'modules/site/templates/modules-metabox.php', array(
+			'tourism_core_site_modules'  => $tourism_core_site_modules,
+			'tourism_core_module_registry' => $tourism_core_module_registry,
+		) );
 	}
 
 	public function render_agency( $post ) {
@@ -68,10 +94,9 @@ class Tourism_Core_Site_Metaboxes {
 
 		$tourism_core_site_agency = Tourism_Core_Config::instance()->get_agency();
 
-		$template = TOURISM_CORE_PATH . 'modules/site/templates/agency-metabox.php';
-		if ( is_readable( $template ) ) {
-			include $template;
-		}
+		Metabox_Helper::include_template( 'modules/site/templates/agency-metabox.php', array(
+			'tourism_core_site_agency' => $tourism_core_site_agency,
+		) );
 	}
 
 	public function render_social( $post ) {
@@ -79,10 +104,9 @@ class Tourism_Core_Site_Metaboxes {
 
 		$tourism_core_site_agency = Tourism_Core_Config::instance()->get_agency();
 
-		$template = TOURISM_CORE_PATH . 'modules/site/templates/social-metabox.php';
-		if ( is_readable( $template ) ) {
-			include $template;
-		}
+		Metabox_Helper::include_template( 'modules/site/templates/social-metabox.php', array(
+			'tourism_core_site_agency' => $tourism_core_site_agency,
+		) );
 	}
 
 	public function render_hours( $post ) {
@@ -90,10 +114,9 @@ class Tourism_Core_Site_Metaboxes {
 
 		$tourism_core_site_agency = Tourism_Core_Config::instance()->get_agency();
 
-		$template = TOURISM_CORE_PATH . 'modules/site/templates/hours-metabox.php';
-		if ( is_readable( $template ) ) {
-			include $template;
-		}
+		Metabox_Helper::include_template( 'modules/site/templates/hours-metabox.php', array(
+			'tourism_core_site_agency' => $tourism_core_site_agency,
+		) );
 	}
 
 	/**
@@ -101,16 +124,11 @@ class Tourism_Core_Site_Metaboxes {
 	 * @param WP_Post $post
 	 */
 	public function save( $post_id, $post ) {
-		if ( ! isset( $_POST['tourism_core_site_nonce'] ) ||
-			! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tourism_core_site_nonce'] ) ), 'tourism_core_save_site' ) ) {
+		if ( ! Metabox_Helper::verify_nonce( 'tourism_core_site_nonce', 'tourism_core_save_site' ) ) {
 			return;
 		}
 
-		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-			return;
-		}
-
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! Metabox_Helper::can_save( $post_id, 'manage_options' ) ) {
 			return;
 		}
 
@@ -123,7 +141,7 @@ class Tourism_Core_Site_Metaboxes {
 			return;
 		}
 
-		if ( isset( $_POST['tourism_site_agency_metabox_present'] ) ) {
+		if ( Metabox_Helper::metabox_present( 'tourism_site_agency_metabox_present' ) ) {
 			update_post_meta( $post_id, 'tourism_agency_company_name', isset( $_POST['tourism_agency_company_name'] ) ? sanitize_text_field( wp_unslash( $_POST['tourism_agency_company_name'] ) ) : '' );
 			update_post_meta( $post_id, 'tourism_agency_commercial_name', isset( $_POST['tourism_agency_commercial_name'] ) ? sanitize_text_field( wp_unslash( $_POST['tourism_agency_commercial_name'] ) ) : '' );
 			update_post_meta( $post_id, 'tourism_agency_ruc', isset( $_POST['tourism_agency_ruc'] ) ? $this->sanitize_ruc( wp_unslash( $_POST['tourism_agency_ruc'] ) ) : '' );
@@ -157,7 +175,7 @@ class Tourism_Core_Site_Metaboxes {
 			update_post_meta( $post_id, 'tourism_agency_custom', $custom_agency );
 		}
 
-		if ( isset( $_POST['tourism_site_social_metabox_present'] ) ) {
+		if ( Metabox_Helper::metabox_present( 'tourism_site_social_metabox_present' ) ) {
 			update_post_meta( $post_id, 'tourism_social_facebook', isset( $_POST['tourism_social_facebook'] ) ? esc_url_raw( wp_unslash( $_POST['tourism_social_facebook'] ) ) : '' );
 			update_post_meta( $post_id, 'tourism_social_instagram', isset( $_POST['tourism_social_instagram'] ) ? esc_url_raw( wp_unslash( $_POST['tourism_social_instagram'] ) ) : '' );
 			update_post_meta( $post_id, 'tourism_social_tripadvisor', isset( $_POST['tourism_social_tripadvisor'] ) ? esc_url_raw( wp_unslash( $_POST['tourism_social_tripadvisor'] ) ) : '' );
@@ -187,7 +205,7 @@ class Tourism_Core_Site_Metaboxes {
 			update_post_meta( $post_id, 'tourism_social_custom', $custom_social );
 		}
 
-		if ( isset( $_POST['tourism_site_hours_metabox_present'] ) ) {
+		if ( Metabox_Helper::metabox_present( 'tourism_site_hours_metabox_present' ) ) {
 			$allowed_days = array( 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun' );
 			$days_raw     = isset( $_POST['tourism_agency_hours_days'] ) && is_array( $_POST['tourism_agency_hours_days'] )
 				? wp_unslash( $_POST['tourism_agency_hours_days'] )
@@ -219,7 +237,7 @@ class Tourism_Core_Site_Metaboxes {
 			update_post_meta( $post_id, 'tourism_agency_hours', $hours_text );
 		}
 
-		if ( isset( $_POST['tourism_site_modules_metabox_present'] ) ) {
+		if ( Metabox_Helper::metabox_present( 'tourism_site_modules_metabox_present' ) ) {
 			$raw     = isset( $_POST['tourism_core_modules'] ) && is_array( $_POST['tourism_core_modules'] )
 				? wp_unslash( $_POST['tourism_core_modules'] )
 				: array();

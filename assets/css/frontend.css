@@ -4,6 +4,47 @@
 	gap: 16px;
 }
 
+.tourism-core-payment-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.tourism-core-tour-facts {
+	font-size: 14px;
+	margin: 0 0 20px;
+}
+
+.tourism-core-tour-facts > div {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 5px 0;
+}
+
+.tourism-core-tour-facts dt { font-weight: 600; }
+.tourism-core-tour-facts dd { margin: 0; text-align: right; }
+
+.tourism-core-booking__trap {
+	position: absolute;
+	left: -10000px;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+}
+
+.tourism-core-payment-button {
+	display: block;
+	padding: 12px 20px;
+	border: 0;
+	border-radius: 8px;
+	background: #111;
+	color: #fff;
+	text-align: center;
+	text-decoration: none;
+	cursor: pointer;
+}
+
 .tourism-core-card {
 	border: 1px solid rgba(0,0,0,.12);
 	border-radius: 12px;

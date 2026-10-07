@@ -115,27 +115,3 @@ $tourism_core_days = array(
 		<textarea id="tourism_agency_hours" name="tourism_agency_hours" class="widefat" rows="3" placeholder="<?php esc_attr_e( 'Optional: special holiday notes, exceptions, etc.', TOURISM_CORE_TD ); ?>"><?php echo esc_textarea( $tourism_core_hours ); ?></textarea>
 	</p>
 </div>
-
-<script>
-	(function($){
-		'use strict';
-		$(function(){
-			var $items = $('.tourism-core-hours-day-item');
-			function repaint(){
-				$items.each(function(){
-					var $item = $(this);
-					var checked = $item.find('input[type="checkbox"]').is(':checked');
-					$item.css({
-						borderColor: checked ? '#f38a38' : '#d0d4d9',
-						background: checked ? '#fff7ef' : '#fff'
-					});
-					$item.find('span').css({
-						color: checked ? '#f38a38' : '#606a73'
-					});
-				});
-			}
-			$(document).on('change', '.tourism-core-hours-day-item input[type="checkbox"]', repaint);
-			repaint();
-		});
-	})(jQuery);
-</script>

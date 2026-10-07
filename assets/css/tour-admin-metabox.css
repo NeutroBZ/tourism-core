@@ -36,36 +36,6 @@
 	max-width: 100%;
 }
 
-#tourism-core-highlights-container .tourism-core-highlight-item {
-	border: 1px solid #c3c4c7;
-	background: #fff;
-	margin-bottom: 10px;
-}
-
-#tourism-core-highlights-container .tourism-core-highlight-header {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 8px 10px;
-	border-bottom: 1px solid #c3c4c7;
-	background: #f6f7f7;
-}
-
-#tourism-core-highlights-container .tourism-core-highlight-header h4 {
-	margin: 0;
-	flex: 1;
-	font-size: 13px;
-}
-
-#tourism-core-highlights-container .tourism-core-handle {
-	cursor: move;
-	color: #787c82;
-}
-
-#tourism-core-highlights-container .tourism-core-highlight-content {
-	padding: 10px;
-}
-
 .tourism-core-gallery-metabox-container {
 	margin-top: 4px;
 }
@@ -280,6 +250,51 @@
 		grid-template-columns: 1fr;
 	}
 }
+.tourism-core-group-size-builder {
+	margin: 10px 0 14px;
+}
+
+#tourism-core-group-size-options-list {
+	display: grid;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.tourism-core-group-size-option-row {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 8px;
+	align-items: center;
+}
+
+@media (max-width: 782px) {
+	.tourism-core-group-size-option-row {
+		grid-template-columns: 1fr;
+	}
+}
+
+.tourism-core-max-elevation-builder {
+	margin: 10px 0 14px;
+}
+
+#tourism-core-max-elevation-options-list {
+	display: grid;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.tourism-core-max-elevation-option-row {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 8px;
+	align-items: center;
+}
+
+@media (max-width: 782px) {
+	.tourism-core-max-elevation-option-row {
+		grid-template-columns: 1fr;
+	}
+}
 
 #tourism-core-itinerary-container {
 	display: grid;
@@ -414,4 +429,59 @@
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
+}
+
+/* =========================================================
+   Shared "title + WYSIWYG content" repeater (generic engine)
+   Used by: Includes, Excludes, Highlights, Pricing Details,
+   What to Expect (see repeater-editor-metabox.js).
+========================================================= */
+
+.tourism-core-editor-repeater {
+	display: grid;
+	gap: 10px;
+	margin-bottom: 12px;
+}
+
+.tourism-core-editor-repeater .tourism-core-repeater-item {
+	border: 1px solid #c3c4c7;
+	background: #fff;
+}
+
+.tourism-core-editor-repeater .tourism-core-repeater-item-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border-bottom: 1px solid #c3c4c7;
+	background: #f6f7f7;
+}
+
+.tourism-core-editor-repeater .tourism-core-repeater-item-header .tourism-core-handle {
+	cursor: move;
+	color: #787c82;
+}
+
+.tourism-core-editor-repeater .tourism-core-repeater-item-title {
+	flex: 1;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.tourism-core-editor-repeater .tourism-core-repeater-item-body {
+	padding: 10px;
+}
+
+.tourism-core-editor-repeater .tourism-core-repeater-item-body label {
+	display: block;
+	margin: 0 0 4px;
+	font-weight: 600;
+}
+
+.tourism-core-editor-repeater .tourism-core-repeater-item-body .wp-editor-wrap {
+	max-width: 100%;
+}
+
+.tourism-core-editor-repeater .tourism-core-repeater-item-body p:first-child {
+	margin-top: 0;
 }

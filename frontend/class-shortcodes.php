@@ -72,7 +72,7 @@ class Tourism_Core_Frontend_Shortcodes {
 			$tour_id = get_the_ID();
 		}
 
-		if ( $tour_id <= 0 || 'tour' !== get_post_type( $tour_id ) ) {
+		if ( $tour_id <= 0 || 'tour' !== get_post_type( $tour_id ) || 'publish' !== get_post_status( $tour_id ) ) {
 			return '';
 		}
 

@@ -12,6 +12,9 @@
 	$(function () {
 		var frame;
 
+		// ════════════════════════════════════════════
+		// HERO IMAGE
+		// ════════════════════════════════════════════
 		$('.tourism-upload-hero').on('click', function (e) {
 			e.preventDefault();
 
@@ -46,6 +49,9 @@
 			$('#tour-hero-preview').html('');
 		});
 
+		// ════════════════════════════════════════════
+		// PRICING SYNC
+		// ════════════════════════════════════════════
 		function tourismCoreSyncPricingBeforePrice() {
 			var $priceNow = $('#tourism_price_from');
 			var $discount = $('#tourism_price_discount_percent');
@@ -79,6 +85,9 @@
 			tourismCoreSyncPricingBeforePrice();
 		});
 
+		// ════════════════════════════════════════════
+		// DURATION BUILDER
+		// ════════════════════════════════════════════
 		function tourismCoreRefreshDurationSelect() {
 			var $select = $('#tourism_duration');
 			var $rows = $('#tourism-core-duration-options-list .tourism-core-duration-option-input');
@@ -114,6 +123,36 @@
 			tourismCoreRefreshDurationSelect();
 		}
 
+		$(document).on('click', '#tourism-core-add-duration-option', function (e) {
+			e.preventDefault();
+			$('#tourism-core-duration-options-list').append(
+				'<div class="tourism-core-duration-option-row">' +
+					'<input type="text" class="widefat tourism-core-duration-option-input" value="" placeholder="' +
+					$('<div>').text(L10n.exampleFullDay || '').html() +
+					'" />' +
+					'<button type="button" class="button tourism-core-delete-duration-option">' +
+					$('<div>').text(L10n.deleteLabel || '').html() +
+					'</button>' +
+					'</div>'
+			);
+			tourismCoreRenumberDurationOptions();
+		});
+
+		$(document).on('click', '.tourism-core-delete-duration-option', function (e) {
+			e.preventDefault();
+			$(this).closest('.tourism-core-duration-option-row').remove();
+			tourismCoreRenumberDurationOptions();
+		});
+
+		$(document).on('input change', '.tourism-core-duration-option-input', function () {
+			tourismCoreRefreshDurationSelect();
+		});
+
+		tourismCoreRenumberDurationOptions();
+
+		// ════════════════════════════════════════════
+		// DIFFICULTY BUILDER
+		// ════════════════════════════════════════════
 		function tourismCoreRefreshDifficultySelect() {
 			var $select = $('#tourism_difficulty');
 			var $rows = $('#tourism-core-difficulty-options-list .tourism-core-difficulty-option-input');
@@ -149,33 +188,6 @@
 			tourismCoreRefreshDifficultySelect();
 		}
 
-		$(document).on('click', '#tourism-core-add-duration-option', function (e) {
-			e.preventDefault();
-			$('#tourism-core-duration-options-list').append(
-				'<div class="tourism-core-duration-option-row">' +
-					'<input type="text" class="widefat tourism-core-duration-option-input" value="" placeholder="' +
-					$('<div>').text(L10n.exampleFullDay || '').html() +
-					'" />' +
-					'<button type="button" class="button tourism-core-delete-duration-option">' +
-					$('<div>').text(L10n.deleteLabel || '').html() +
-					'</button>' +
-					'</div>'
-			);
-			tourismCoreRenumberDurationOptions();
-		});
-
-		$(document).on('click', '.tourism-core-delete-duration-option', function (e) {
-			e.preventDefault();
-			$(this).closest('.tourism-core-duration-option-row').remove();
-			tourismCoreRenumberDurationOptions();
-		});
-
-		$(document).on('input change', '.tourism-core-duration-option-input', function () {
-			tourismCoreRefreshDurationSelect();
-		});
-
-		tourismCoreRenumberDurationOptions();
-
 		$(document).on('click', '#tourism-core-add-difficulty-option', function (e) {
 			e.preventDefault();
 			$('#tourism-core-difficulty-options-list').append(
@@ -203,212 +215,143 @@
 
 		tourismCoreRenumberDifficultyOptions();
 
-		function tourismCoreRenumberGallery() {
-			var $g = $('#tourism-core-gallery-images-container');
-			if (!$g.length) {
+		// ════════════════════════════════════════════
+		// GROUP SIZE BUILDER
+		// ════════════════════════════════════════════
+		function tourismCoreRefreshGroupSizeSelect() {
+			var $select = $('#tourism_group_size');
+			var $rows = $('#tourism-core-group-size-options-list .tourism-core-group-size-option-input');
+			if (!$select.length) {
 				return;
 			}
-			$g.children('.tourism-core-gallery-image-item').each(function (i) {
-				var $item = $(this);
-				$item.find('.tourism-core-gallery-field-id').attr('name', 'tourism_gallery_images[' + i + '][id]');
-				$item.find('.tourism-core-gallery-field-url').attr('name', 'tourism_gallery_images[' + i + '][url]');
-				$item.find('.tourism-core-image-details input[type="text"]').attr('name', 'tourism_gallery_images[' + i + '][title]');
-				$item.find('.tourism-core-image-details textarea').attr('name', 'tourism_gallery_images[' + i + '][caption]');
-			});
-		}
 
-		var $galleryContainer = $('#tourism-core-gallery-images-container');
-		if ($galleryContainer.length) {
-			$galleryContainer.sortable({
-				items: '> .tourism-core-gallery-image-item',
-				cancel: 'input,textarea,button,select,option',
-				update: function () {
-					tourismCoreRenumberGallery();
-				},
-			});
+			var currentValue = $select.val();
+			var optionsHtml =
+				'<option value="">' + (L10n.selectGroupSize || '') + '</option>';
 
-			$(document).on('click', '#tourism-core-add-gallery-image', function (e) {
-				e.preventDefault();
-				var $tpl = $('#tourism-core-gallery-image-template').children('.tourism-core-gallery-image-item').first();
-				if (!$tpl.length) {
+			$rows.each(function () {
+				var value = $.trim($(this).val());
+				if (!value) {
 					return;
 				}
-				var $clone = $tpl.clone(true, true);
-				$galleryContainer.append($clone);
-				tourismCoreRenumberGallery();
+				var safeValue = $('<div>').text(value).html();
+				var selected = value === currentValue ? ' selected' : '';
+				optionsHtml += '<option value="' + safeValue + '"' + selected + '>' + safeValue + '</option>';
 			});
 
-			$(document).on('click', '.tourism-core-remove-gallery-image', function (e) {
-				e.preventDefault();
-				$(this).closest('.tourism-core-gallery-image-item').remove();
-				tourismCoreRenumberGallery();
-			});
+			$select.html(optionsHtml);
 
-			$(document).on('click', '.tourism-core-replace-image', function (e) {
-				e.preventDefault();
-				var $item = $(this).closest('.tourism-core-gallery-image-item');
-				var media = wp.media({
-					title: L10n.galleryMediaTitle || 'Select image',
-					button: { text: L10n.galleryMediaButton || 'Use image' },
-					multiple: false,
-				});
-				media.on('select', function () {
-					var att = media.state().get('selection').first().toJSON();
-					var url =
-						att.sizes && att.sizes.medium && att.sizes.medium.url ? att.sizes.medium.url : att.url;
-					$item.find('.tourism-core-gallery-field-id').val(String(att.id));
-					$item.find('.tourism-core-gallery-field-url').val(att.url);
-					$item.find('.tourism-core-image-preview .tourism-core-no-image').remove();
-					$item.find('.tourism-core-image-preview img').remove();
-					$item.find('.tourism-core-image-preview').prepend('<img src="' + url + '" alt="" />');
-				});
-				media.open();
-			});
+			if (currentValue) {
+				$select.val(currentValue);
+			}
 		}
 
-		function tourismCoreRenumberHighlights() {
-			var $c = $('#tourism-core-highlights-container');
-			if (!$c.length) {
+		function tourismCoreRenumberGroupSizeOptions() {
+			$('#tourism-core-group-size-options-list .tourism-core-group-size-option-row').each(function (i) {
+				$(this).find('.tourism-core-group-size-option-input').attr('name', 'tourism_group_size_options[' + i + ']');
+			});
+			tourismCoreRefreshGroupSizeSelect();
+		}
+
+		$(document).on('click', '#tourism-core-add-group-size-option', function (e) {
+			e.preventDefault();
+			$('#tourism-core-group-size-options-list').append(
+				'<div class="tourism-core-group-size-option-row">' +
+					'<input type="text" class="widefat tourism-core-group-size-option-input" value="" placeholder="' +
+					$('<div>').text(L10n.exampleGroupSize || '').html() +
+					'" />' +
+					'<button type="button" class="button tourism-core-delete-group-size-option">' +
+					$('<div>').text(L10n.deleteLabel || '').html() +
+					'</button>' +
+					'</div>'
+			);
+			tourismCoreRenumberGroupSizeOptions();
+		});
+
+		$(document).on('click', '.tourism-core-delete-group-size-option', function (e) {
+			e.preventDefault();
+			$(this).closest('.tourism-core-group-size-option-row').remove();
+			tourismCoreRenumberGroupSizeOptions();
+		});
+
+		$(document).on('input change', '.tourism-core-group-size-option-input', function () {
+			tourismCoreRefreshGroupSizeSelect();
+		});
+
+		tourismCoreRenumberGroupSizeOptions();
+
+		// ════════════════════════════════════════════
+		// MAX ELEVATION BUILDER
+		// ════════════════════════════════════════════
+		function tourismCoreRefreshMaxElevationSelect() {
+			var $select = $('#tourism_max_elevation');
+			var $rows = $('#tourism-core-max-elevation-options-list .tourism-core-max-elevation-option-input');
+			if (!$select.length) {
 				return;
 			}
-			$c.children('.tourism-core-highlight-item').each(function (i) {
-				var $item = $(this);
-				$item.attr('data-tourism-core-index', String(i));
-				$item.find('.tourism-core-item-number').text(String(i + 1));
-				$item.find('textarea[name^="tourism_highlights["]').attr('name', 'tourism_highlights[' + i + '][description]');
-				$item.find('label[for^="tourism_core_highlight_description_"]').attr('for', 'tourism_core_highlight_description_' + i);
-				$item.find('textarea[id^="tourism_core_highlight_description_"]').attr('id', 'tourism_core_highlight_description_' + i);
-			});
-		}
 
-		function tourismCoreRenumberIncludes() {
-			var $c = $('#tourism-core-includes-container');
-			if (!$c.length) {
-				return;
+			var currentValue = $select.val();
+			var optionsHtml =
+				'<option value="">' + (L10n.selectMaxElevation || '') + '</option>';
+
+			$rows.each(function () {
+				var value = $.trim($(this).val());
+				if (!value) {
+					return;
+				}
+				var safeValue = $('<div>').text(value).html();
+				var selected = value === currentValue ? ' selected' : '';
+				optionsHtml += '<option value="' + safeValue + '"' + selected + '>' + safeValue + '</option>';
+			});
+
+			$select.html(optionsHtml);
+
+			if (currentValue) {
+				$select.val(currentValue);
 			}
-			$c.children('.tourism-core-include-item').each(function (i) {
-				var $item = $(this);
-				$item.find('.tourism-core-label-item-num').text(String(i + 1));
-				$item.find('.tourism-core-include-label-input').attr('name', 'tourism_includes_list[' + i + '][label]');
-				$item.find('label[for^="tourism_include_label_"]').attr('for', 'tourism_include_label_' + i);
-				$item.find('input.tourism-core-include-label-input').attr('id', 'tourism_include_label_' + i);
-			});
 		}
 
-		function tourismCoreRenumberExcludes() {
-			var $c = $('#tourism-core-excludes-container');
-			if (!$c.length) {
-				return;
-			}
-			$c.children('.tourism-core-exclude-item').each(function (i) {
-				var $item = $(this);
-				$item.find('.tourism-core-label-item-num').text(String(i + 1));
-				$item.find('.tourism-core-exclude-label-input').attr('name', 'tourism_excludes_list[' + i + '][label]');
-				$item.find('label[for^="tourism_exclude_label_"]').attr('for', 'tourism_exclude_label_' + i);
-				$item.find('input.tourism-core-exclude-label-input').attr('id', 'tourism_exclude_label_' + i);
+		function tourismCoreRenumberMaxElevationOptions() {
+			$('#tourism-core-max-elevation-options-list .tourism-core-max-elevation-option-row').each(function (i) {
+				$(this).find('.tourism-core-max-elevation-option-input').attr('name', 'tourism_max_elevation_options[' + i + ']');
 			});
+			tourismCoreRefreshMaxElevationSelect();
 		}
 
-		var $incContainer = $('#tourism-core-includes-container');
-		if ($incContainer.length) {
-			$incContainer.sortable({
-				handle: '.tourism-core-handle',
-				items: '> .tourism-core-include-item',
-				cancel: 'input,textarea,button,select,option',
-				update: function () {
-					tourismCoreRenumberIncludes();
-				},
-			});
-			$(document).on('click', '#tourism-core-add-include', function (e) {
-				e.preventDefault();
-				var tmpl = $('#tourism-core-tmpl-include-item').html();
-				if (!tmpl) {
-					return;
-				}
-				var idx = $incContainer.children('.tourism-core-include-item').length;
-				var html = tmpl
-					.split('{{tourism_index}}')
-					.join(String(idx))
-					.split('{{tourism_index_plus_one}}')
-					.join(String(idx + 1));
-				$incContainer.append(html);
-				tourismCoreRenumberIncludes();
-			});
-			$(document).on('click', '.tourism-core-delete-include', function (e) {
-				e.preventDefault();
-				$(this).closest('.tourism-core-include-item').remove();
-				tourismCoreRenumberIncludes();
-			});
-		}
+		$(document).on('click', '#tourism-core-add-max-elevation-option', function (e) {
+			e.preventDefault();
+			$('#tourism-core-max-elevation-options-list').append(
+				'<div class="tourism-core-max-elevation-option-row">' +
+					'<input type="text" class="widefat tourism-core-max-elevation-option-input" value="" placeholder="' +
+					$('<div>').text(L10n.exampleMaxElevation || '').html() +
+					'" />' +
+					'<button type="button" class="button tourism-core-delete-max-elevation-option">' +
+					$('<div>').text(L10n.deleteLabel || '').html() +
+					'</button>' +
+					'</div>'
+			);
+			tourismCoreRenumberMaxElevationOptions();
+		});
 
-		var $excContainer = $('#tourism-core-excludes-container');
-		if ($excContainer.length) {
-			$excContainer.sortable({
-				handle: '.tourism-core-handle',
-				items: '> .tourism-core-exclude-item',
-				cancel: 'input,textarea,button,select,option',
-				update: function () {
-					tourismCoreRenumberExcludes();
-				},
-			});
-			$(document).on('click', '#tourism-core-add-exclude', function (e) {
-				e.preventDefault();
-				var tmpl = $('#tourism-core-tmpl-exclude-item').html();
-				if (!tmpl) {
-					return;
-				}
-				var idx = $excContainer.children('.tourism-core-exclude-item').length;
-				var html = tmpl
-					.split('{{tourism_index}}')
-					.join(String(idx))
-					.split('{{tourism_index_plus_one}}')
-					.join(String(idx + 1));
-				$excContainer.append(html);
-				tourismCoreRenumberExcludes();
-			});
-			$(document).on('click', '.tourism-core-delete-exclude', function (e) {
-				e.preventDefault();
-				$(this).closest('.tourism-core-exclude-item').remove();
-				tourismCoreRenumberExcludes();
-			});
-		}
+		$(document).on('click', '.tourism-core-delete-max-elevation-option', function (e) {
+			e.preventDefault();
+			$(this).closest('.tourism-core-max-elevation-option-row').remove();
+			tourismCoreRenumberMaxElevationOptions();
+		});
 
-		var $highlightsContainer = $('#tourism-core-highlights-container');
-		if ($highlightsContainer.length) {
-			$highlightsContainer.sortable({
-				handle: '.tourism-core-handle',
-				items: '> .tourism-core-highlight-item',
-				cancel: 'input,textarea,button,select,option',
-				update: function () {
-					tourismCoreRenumberHighlights();
-				},
-			});
+		$(document).on('input change', '.tourism-core-max-elevation-option-input', function () {
+			tourismCoreRefreshMaxElevationSelect();
+		});
 
-			$(document).on('click', '#tourism-core-add-highlight', function (e) {
-				e.preventDefault();
-				var tmpl = $('#tourism-core-tmpl-highlight-item').html();
-				if (!tmpl) {
-					return;
-				}
-				var idx = $highlightsContainer.children('.tourism-core-highlight-item').length;
-				var html = tmpl
-					.split('{{tourism_index}}')
-					.join(String(idx))
-					.split('{{tourism_index_plus_one}}')
-					.join(String(idx + 1));
-				$highlightsContainer.append(html);
-				tourismCoreRenumberHighlights();
-			});
+		tourismCoreRenumberMaxElevationOptions();
 
-			$(document).on('click', '.tourism-core-delete-highlight', function (e) {
-				e.preventDefault();
-				$(this).closest('.tourism-core-highlight-item').remove();
-				tourismCoreRenumberHighlights();
-			});
+		// ════════════════════════════════════════════
+		// GALLERY (handled by assets/js/gallery-metabox.js)
+		// ════════════════════════════════════════════
 
-			tourismCoreRenumberHighlights();
-		}
-
+		// ════════════════════════════════════════════
+		// BRING ITEMS
+		// ════════════════════════════════════════════
 		function tourismCoreRenumberBring() {
 			var $c = $('#tourism-core-bring-items-container');
 			if (!$c.length) {
@@ -483,6 +426,9 @@
 			});
 		}
 
+		// ════════════════════════════════════════════
+		// QUICK EDIT ORDER
+		// ════════════════════════════════════════════
 		if (typeof inlineEditPost !== 'undefined') {
 			var originalEdit = inlineEditPost.edit;
 			inlineEditPost.edit = function (id) {

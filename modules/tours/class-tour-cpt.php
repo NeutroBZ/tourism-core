@@ -7,6 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once TOURISM_CORE_PATH . 'helpers/class-template.php';
 require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-taxonomies.php';
 require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-metaboxes.php';
+require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-schema.php';
+require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-schema-metabox.php';
 
 class Tourism_Core_Module_Tours {
 	public function register( Tourism_Core_Loader $loader ) {
@@ -18,6 +20,11 @@ class Tourism_Core_Module_Tours {
 
 		$meta = new Tourism_Core_Tour_Metaboxes();
 		$meta->register( $loader );
+
+		$schema = new Tourism_Core_Tour_Schema();
+		$schema->register( $loader );
+		$schema_meta = new Tourism_Core_Tour_Schema_Metabox();
+		$schema_meta->register( $loader );
 	}
 
 	public function register_cpt() {
@@ -45,6 +52,7 @@ class Tourism_Core_Module_Tours {
 				'menu_icon'    => TOURISM_CORE_URL . 'assets/ico/tours3.svg',
 				'supports'     => array( 'title',  'thumbnail', 'revisions' ),
 				'rewrite'      => array( 'slug' => 'tours' ),
+				'taxonomies' => array( 'tour_category' ),
 			)
 		);
 	}

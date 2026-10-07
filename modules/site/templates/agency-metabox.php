@@ -133,38 +133,3 @@ $tourism_core_agency_custom = isset( $tourism_core_site_agency['agency_custom'] 
 		<button type="button" class="button-link-delete tourism-core-agency-remove" style="padding-bottom:6px;"><?php esc_html_e( 'Remove', TOURISM_CORE_TD ); ?></button>
 	</div>
 </script>
-<script>
-	(function($){
-		'use strict';
-		$(function(){
-			var $container = $('#tourism-core-agency-custom-container');
-			var template = $('#tourism-core-agency-custom-template').html() || '';
-			if (!$container.length || !template) {
-				return;
-			}
-
-			function renumber() {
-				$container.children('.tourism-core-agency-custom-item').each(function(index){
-					$(this).find('input').each(function(){
-						var name = $(this).attr('name') || '';
-						name = name.replace(/tourism_agency_custom\[\d+\]/, 'tourism_agency_custom[' + index + ']');
-						$(this).attr('name', name);
-					});
-				});
-			}
-
-			$(document).on('click', '#tourism-core-agency-add', function(e){
-				e.preventDefault();
-				var index = $container.children('.tourism-core-agency-custom-item').length;
-				var html = template.replace(/{{index}}/g, String(index));
-				$container.append(html);
-			});
-
-			$(document).on('click', '.tourism-core-agency-remove', function(e){
-				e.preventDefault();
-				$(this).closest('.tourism-core-agency-custom-item').remove();
-				renumber();
-			});
-		});
-	})(jQuery);
-</script>

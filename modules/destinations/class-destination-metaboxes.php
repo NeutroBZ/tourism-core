@@ -4,87 +4,32 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
-class Tourism_Core_Destination_Metaboxes
+require_once TOURISM_CORE_PATH . 'includes/class-metabox-helper.php';
+require_once TOURISM_CORE_PATH . 'includes/class-metabox-base.php';
+
+use Tourism_Core_Metabox_Helper as Metabox_Helper;
+
+class Tourism_Core_Destination_Metaboxes extends Tourism_Core_Metabox_Base
 {
+	use Tourism_Core_Order_Column;
+
+	protected function order_column_config()
+	{
+		return array(
+			'post_type'         => 'destination',
+			'meta_key'          => 'tourism_destination_order',
+			'quickedit_field'   => 'tourism_destination_order',
+			'quickedit_nonce'   => 'tourism_core_destination_quickedit_nonce',
+			'quickedit_action'  => 'tourism_core_quickedit_destination',
+		);
+	}
+
 	public function register(Tourism_Core_Loader $loader)
 	{
 		$loader->add_action('add_meta_boxes', $this, 'add_meta_boxes');
 		$loader->add_action('save_post_destination', $this, 'save', 10, 2);
 		$loader->add_action('admin_enqueue_scripts', $this, 'enqueue_admin_assets');
-
-		// Admin list table column for manual ordering.
-		$loader->add_filter('manage_destination_posts_columns', $this, 'add_order_column');
-		$loader->add_action('manage_destination_posts_custom_column', $this, 'render_order_column', 10, 2);
-		$loader->add_filter('manage_edit-destination_sortable_columns', $this, 'make_order_column_sortable');
-		$loader->add_action('pre_get_posts', $this, 'apply_admin_order_sorting');
-
-		// Quick edit support for manual ordering.
-		$loader->add_action('quick_edit_custom_box', $this, 'render_quick_edit_order_field', 10, 2);
-	}
-
-	public function add_order_column($columns)
-	{
-		if (! is_array($columns)) {
-			return $columns;
-		}
-
-		$new_columns = array();
-		foreach ($columns as $key => $label) {
-			$new_columns[$key] = $label;
-			if ($key === 'title') {
-				$new_columns['tourism_destination_order'] = __('Order', TOURISM_CORE_TD);
-			}
-		}
-
-		if (! isset($new_columns['tourism_destination_order'])) {
-			$new_columns['tourism_destination_order'] = __('Order', TOURISM_CORE_TD);
-		}
-
-		return $new_columns;
-	}
-
-	public function render_order_column($column, $post_id)
-	{
-		if ($column !== 'tourism_destination_order') {
-			return;
-		}
-
-		$value = (int) get_post_meta((int) $post_id, 'tourism_destination_order', true);
-		echo esc_html((string) $value);
-	}
-
-	public function make_order_column_sortable($columns)
-	{
-		if (! is_array($columns)) {
-			return $columns;
-		}
-
-		$columns['tourism_destination_order'] = 'tourism_destination_order';
-		return $columns;
-	}
-
-	public function apply_admin_order_sorting($query)
-	{
-		if (! $query instanceof WP_Query) {
-			return;
-		}
-
-		if (! is_admin() || ! $query->is_main_query()) {
-			return;
-		}
-
-		$screen_post_type = isset($_GET['post_type']) ? sanitize_key(wp_unslash($_GET['post_type'])) : '';
-		if ($screen_post_type !== 'destination') {
-			return;
-		}
-
-		$orderby = $query->get('orderby');
-		if ($orderby !== 'tourism_destination_order') {
-			return;
-		}
-
-		$query->set('meta_key', 'tourism_destination_order');
-		$query->set('orderby', 'meta_value_num');
+		$this->register_order_column($loader);
 	}
 
 	public function add_meta_boxes()
@@ -168,10 +113,9 @@ class Tourism_Core_Destination_Metaboxes
 
 		$tourism_core_destination_intro = $this->get_destination_intro_for_edit((int) $post->ID);
 
-		$template = TOURISM_CORE_PATH . 'modules/destinations/templates/introduccion-metabox.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		Metabox_Helper::include_template('modules/destinations/templates/introduccion-metabox.php', array(
+			'tourism_core_destination_intro' => $tourism_core_destination_intro,
+		));
 	}
 
 	/**
@@ -195,10 +139,9 @@ class Tourism_Core_Destination_Metaboxes
 
 		$tourism_core_destination_hero = $this->get_destination_hero_for_edit((int) $post->ID);
 
-		$template = TOURISM_CORE_PATH . 'modules/destinations/templates/hero-metabox.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		Metabox_Helper::include_template('modules/destinations/templates/hero-metabox.php', array(
+			'tourism_core_destination_hero' => $tourism_core_destination_hero,
+		));
 	}
 
 	/**
@@ -246,10 +189,26 @@ class Tourism_Core_Destination_Metaboxes
 
 		$tourism_core_destination_gallery_images = $this->get_destination_gallery_images_for_edit((int) $post->ID);
 
-		$template = TOURISM_CORE_PATH . 'modules/destinations/templates/gallery-metabox.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		Metabox_Helper::include_template('includes/templates/gallery-metabox.php', array(
+			'gc_images' => $tourism_core_destination_gallery_images,
+			'gc_config' => array(
+				'present_key'     => 'tourism_destination_gallery_metabox_present',
+				'post_key'        => 'tourism_destination_gallery_images',
+				'wrapper_class'   => 'tourism-core-destination-gallery-metabox-container',
+				'container_class' => 'tourism-core-destination-gallery-images-container',
+				'item_class'      => 'tourism-core-destination-gallery-image-item',
+				'field_id_class'  => 'tourism-core-destination-gallery-field-id',
+				'field_url_class' => 'tourism-core-destination-gallery-field-url',
+				'preview_class'   => 'tourism-core-destination-image-preview',
+				'no_image_class'  => 'tourism-core-destination-no-image',
+				'actions_class'   => 'tourism-core-destination-image-actions',
+				'details_class'   => 'tourism-core-destination-image-details',
+				'replace_class'   => 'tourism-core-replace-destination-image',
+				'remove_class'    => 'tourism-core-remove-destination-gallery-image',
+				'add_id'          => 'tourism-core-add-destination-gallery-image',
+				'template_id'     => 'tourism-core-destination-gallery-image-template',
+			),
+		));
 	}
 
 	/**
@@ -286,10 +245,9 @@ class Tourism_Core_Destination_Metaboxes
 
 		$tourism_core_destination_highlights = $this->get_destination_highlights_for_edit((int) $post->ID);
 
-		$template = TOURISM_CORE_PATH . 'modules/destinations/templates/highlights-metabox.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		Metabox_Helper::include_template('modules/destinations/templates/highlights-metabox.php', array(
+			'tourism_core_destination_highlights' => $tourism_core_destination_highlights,
+		));
 	}
 
 	/**
@@ -344,10 +302,10 @@ class Tourism_Core_Destination_Metaboxes
 		$tourism_core_destination_season = $this->get_destination_season_for_edit((int) $post->ID);
 		$tourism_core_destination_month_labels = $this->get_destination_month_labels();
 
-		$template = TOURISM_CORE_PATH . 'modules/destinations/templates/season-metabox.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		Metabox_Helper::include_template('modules/destinations/templates/season-metabox.php', array(
+			'tourism_core_destination_season'      => $tourism_core_destination_season,
+			'tourism_core_destination_month_labels' => $tourism_core_destination_month_labels,
+		));
 	}
 
 	/**
@@ -426,45 +384,27 @@ class Tourism_Core_Destination_Metaboxes
 
 		$tourism_core_destination_ubication = $this->get_destination_ubication_for_edit((int) $post->ID);
 
-		$template = TOURISM_CORE_PATH . 'modules/destinations/templates/ubication-metabox.php';
-		if (is_readable($template)) {
-			include $template;
-		}
+		Metabox_Helper::include_template('modules/destinations/templates/ubication-metabox.php', array(
+			'tourism_core_destination_ubication' => $tourism_core_destination_ubication,
+		));
 	}
 
 	public function save($post_id, $post)
 	{
 		// 1) Quick Edit: allow saving only the manual order field with its own nonce.
-		if (isset($_POST['tourism_core_destination_quickedit_nonce']) &&
-			wp_verify_nonce(
-				sanitize_text_field(wp_unslash($_POST['tourism_core_destination_quickedit_nonce'])),
-				'tourism_core_quickedit_destination'
-			)
-		) {
-			if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
-			if (! current_user_can('edit_post', $post_id)) return;
-
-			if (isset($_POST['tourism_destination_order'])) {
-				$order = (int) wp_unslash($_POST['tourism_destination_order']);
-				if ($order < 0) {
-					$order = 0;
-				}
-				update_post_meta($post_id, 'tourism_destination_order', $order);
-			}
+		if ($this->maybe_save_quick_edit_order($post_id)) {
 			return;
 		}
 
 		// 2) Full edit screen save: require the main metabox nonce.
-		if (! isset($_POST['tourism_core_destination_nonce']) ||
-			! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['tourism_core_destination_nonce'])), 'tourism_core_save_destination')) {
+		if (! Metabox_Helper::verify_nonce('tourism_core_destination_nonce', 'tourism_core_save_destination')) {
 			return;
 		}
 
-		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
-		if (! current_user_can('edit_post', $post_id)) return;
+		if (! Metabox_Helper::can_save($post_id)) return;
 
 		// Hero (imagen + textos opcionales; sólo si el metabox está visible).
-		if (isset($_POST['tourism_destination_hero_metabox_present'])) {
+		if (Metabox_Helper::metabox_present('tourism_destination_hero_metabox_present')) {
 			$hero_id = isset($_POST['destination_hero_image']) ? (int) wp_unslash($_POST['destination_hero_image']) : 0;
 			update_post_meta($post_id, '_destination_hero_image', $hero_id);
 
@@ -475,7 +415,7 @@ class Tourism_Core_Destination_Metaboxes
 		}
 
 		// INTRO
-		if (isset($_POST['tourism_destination_intro_metabox_present'])) {
+		if (Metabox_Helper::metabox_present('tourism_destination_intro_metabox_present')) {
 			$title = isset($_POST['tourism_destination_intro_title']) ? sanitize_text_field(wp_unslash($_POST['tourism_destination_intro_title'])) : '';
 			$description = isset($_POST['tourism_destination_intro_description']) ? sanitize_textarea_field(wp_unslash($_POST['tourism_destination_intro_description'])) : '';
 
@@ -484,68 +424,26 @@ class Tourism_Core_Destination_Metaboxes
 		}
 
 		// GALLERY
-		if (isset($_POST['tourism_destination_gallery_metabox_present'])) {
-			$gallery_rows = array();
-			$sync_ids = array();
-
-			if (isset($_POST['tourism_destination_gallery_images']) && is_array($_POST['tourism_destination_gallery_images'])) {
-				foreach (wp_unslash($_POST['tourism_destination_gallery_images']) as $row) {
-					if (! is_array($row)) {
-						continue;
-					}
-					$gid = isset($row['id']) ? (int) $row['id'] : 0;
-					$gurl = isset($row['url']) ? esc_url_raw($row['url']) : '';
-					$gtitle = isset($row['title']) ? sanitize_text_field($row['title']) : '';
-					$gcaption = isset($row['caption']) ? sanitize_textarea_field($row['caption']) : '';
-
-					if ($gid <= 0 && $gurl === '') {
-						continue;
-					}
-					if ($gid > 0) {
-						$att_url = wp_get_attachment_url($gid);
-						if ($att_url) {
-							$gurl = $att_url;
-						}
-						$sync_ids[] = $gid;
-					}
-
-					$gallery_rows[] = array(
-						'id'      => $gid,
-						'url'     => $gurl,
-						'title'   => $gtitle,
-						'caption' => $gcaption,
-					);
-				}
-			}
-
-			update_post_meta($post_id, 'tourism_destination_gallery_images', $gallery_rows);
-			update_post_meta($post_id, 'tourism_destination_gallery_ids', array_values(array_unique(array_filter($sync_ids))));
+		if (Metabox_Helper::metabox_present('tourism_destination_gallery_metabox_present')) {
+			$gallery = Metabox_Helper::sanitize_gallery_post_rows('tourism_destination_gallery_images');
+			update_post_meta($post_id, 'tourism_destination_gallery_images', $gallery['rows']);
+			update_post_meta($post_id, 'tourism_destination_gallery_ids', $gallery['ids']);
 		}
 
 		// Highlights (repeater: sólo cuando el metabox está visible).
-		if (isset($_POST['tourism_destination_highlights_metabox_present'])) {
-			$highlight_rows = array();
-			if (isset($_POST['tourism_destination_highlights']) && is_array($_POST['tourism_destination_highlights'])) {
-				foreach (wp_unslash($_POST['tourism_destination_highlights']) as $row) {
-					if (! is_array($row)) {
-						continue;
-					}
-					$htitle = isset($row['title']) ? sanitize_text_field($row['title']) : '';
-					$hdesc = isset($row['description']) ? sanitize_textarea_field($row['description']) : '';
-					if ($htitle === '' && $hdesc === '') {
-						continue;
-					}
-					$highlight_rows[] = array(
-						'title'       => $htitle,
-						'description' => $hdesc,
-					);
-				}
-			}
+		if (Metabox_Helper::metabox_present('tourism_destination_highlights_metabox_present')) {
+			$highlight_rows = Metabox_Helper::sanitize_rows(
+				isset($_POST['tourism_destination_highlights']) ? wp_unslash($_POST['tourism_destination_highlights']) : array(),
+				array(
+					'title'       => 'sanitize_text_field',
+					'description' => 'sanitize_textarea_field',
+				)
+			);
 			update_post_meta($post_id, 'tourism_destination_highlights', $highlight_rows);
 		}
 
 		// Season (mejores meses + tip; sólo si el metabox está visible).
-		if (isset($_POST['tourism_destination_season_metabox_present'])) {
+		if (Metabox_Helper::metabox_present('tourism_destination_season_metabox_present')) {
 			$best_months = array();
 			if (isset($_POST['tourism_destination_best_months']) && is_array($_POST['tourism_destination_best_months'])) {
 				foreach (wp_unslash($_POST['tourism_destination_best_months']) as $v) {
@@ -564,7 +462,7 @@ class Tourism_Core_Destination_Metaboxes
 		}
 
 		// Ubicación (taxonomías + coordenadas + altitud; sólo si el metabox está visible).
-		if (isset($_POST['tourism_destination_ubication_metabox_present'])) {
+		if (Metabox_Helper::metabox_present('tourism_destination_ubication_metabox_present')) {
 			$departamento_term_id = isset($_POST['tourism_destination_departamento_term']) ? (int) wp_unslash($_POST['tourism_destination_departamento_term']) : 0;
 			$provincia_term_id = isset($_POST['tourism_destination_provincia_term']) ? (int) wp_unslash($_POST['tourism_destination_provincia_term']) : 0;
 			$distrito_term_id = isset($_POST['tourism_destination_distrito_term']) ? (int) wp_unslash($_POST['tourism_destination_distrito_term']) : 0;
@@ -596,232 +494,60 @@ class Tourism_Core_Destination_Metaboxes
 		wp_enqueue_media();
 		wp_enqueue_script('jquery-ui-sortable');
 
-		wp_add_inline_style(
-			'wp-admin',
-			'
-			.tourism-core-destination-gallery-metabox-container{margin-top:4px;}
-			#tourism-core-destination-gallery-images-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:12px;}
-			.tourism-core-destination-gallery-image-item{border:1px solid #c3c4c7;background:#fff;padding:10px;}
-			.tourism-core-destination-image-preview{position:relative;aspect-ratio:4/3;background:#f0f0f1;border:1px solid #dcdcde;margin-bottom:10px;overflow:hidden;}
-			.tourism-core-destination-image-preview img{display:block;width:100%;height:100%;object-fit:cover;}
-			.tourism-core-destination-no-image{display:flex;align-items:center;justify-content:center;height:100%;min-height:120px;color:#646970;font-size:12px;text-align:center;padding:8px;}
-			.tourism-core-destination-image-actions{position:absolute;right:6px;top:6px;z-index:2;display:flex;gap:4px;}
-			.tourism-core-destination-image-actions .button{min-width:32px;padding:0 6px;}
-			.tourism-core-destination-image-details label{display:block;margin:6px 0 2px;font-weight:600;}
-			.tourism-core-destination-image-details input,.tourism-core-destination-image-details textarea{width:100%;}
-			.tourism-core-destination-hero-text-fields label{display:block;margin:0 0 4px;}
-			.tourism-core-destination-hero-preview-wrap{
-				display:flex;
-				justify-content:center;
-				align-items:center;
-				min-height:72px;
-				max-height:220px;
-				border:1px solid #dcdcde;
-				background:#f0f0f1;
-				padding:8px;
-				box-sizing:border-box;
-			}
-			.tourism-core-destination-hero-preview-wrap img{
-				max-width:100%;
-				max-height:200px;
-				width:auto;
-				height:auto;
-				object-fit:contain;
-				display:block;
-			}
-			#tourism-core-destination-highlights-container .tourism-core-destination-highlight-item{border:1px solid #c3c4c7;background:#fff;margin-bottom:10px;}
-			#tourism-core-destination-highlights-container .tourism-core-destination-highlight-header{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #c3c4c7;background:#f6f7f7;}
-			#tourism-core-destination-highlights-container .tourism-core-destination-highlight-header h4{margin:0;flex:1;font-size:13px;}
-			#tourism-core-destination-highlights-container .tourism-core-handle{cursor:move;color:#787c82;}
-			#tourism-core-destination-highlights-container .tourism-core-destination-highlight-content{padding:10px;}
-			.tourism-core-season-best-months-heading{margin-bottom:6px;}
-			.tourism-core-season-months-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px 12px;margin-top:10px;max-width:720px;}
-			.tourism-core-season-month-label{display:flex;align-items:center;gap:6px;font-size:13px;}
-			.tourism-core-season-month-label input{margin:0;}
-			@media (max-width:782px){.tourism-core-season-months-grid{grid-template-columns:1fr 1fr;}}
-			'
+		$css_path = TOURISM_CORE_PATH . 'assets/css/destination-admin-metabox.css';
+		$ver_css  = file_exists($css_path) ? (string) filemtime($css_path) : TOURISM_CORE_VERSION;
+		wp_enqueue_style(
+			'tourism-core-destination-admin',
+			TOURISM_CORE_URL . 'assets/css/destination-admin-metabox.css',
+			array(),
+			$ver_css
 		);
 
-		wp_add_inline_script('jquery', "
-			jQuery(document).ready(function($){
-				let frame;
+		$gallery_js_path = TOURISM_CORE_PATH . 'assets/js/gallery-metabox.js';
+		$gallery_js_ver  = file_exists($gallery_js_path) ? (string) filemtime($gallery_js_path) : TOURISM_CORE_VERSION;
+		wp_enqueue_script(
+			'tourism-core-gallery-metabox',
+			TOURISM_CORE_URL . 'assets/js/gallery-metabox.js',
+			array('jquery', 'jquery-ui-sortable', 'media-editor'),
+			$gallery_js_ver,
+			true
+		);
+		wp_localize_script(
+			'tourism-core-gallery-metabox',
+			'TourismCoreGalleries',
+			array(
+				array(
+					'containerId'   => 'tourism-core-destination-gallery-images-container',
+					'itemClass'     => 'tourism-core-destination-gallery-image-item',
+					'fieldIdClass'  => 'tourism-core-destination-gallery-field-id',
+					'fieldUrlClass' => 'tourism-core-destination-gallery-field-url',
+					'detailsClass'  => 'tourism-core-destination-image-details',
+					'previewClass'  => 'tourism-core-destination-image-preview',
+					'noImageClass'  => 'tourism-core-destination-no-image',
+					'postKey'       => 'tourism_destination_gallery_images',
+					'addId'         => 'tourism-core-add-destination-gallery-image',
+					'templateId'    => 'tourism-core-destination-gallery-image-template',
+					'removeClass'   => 'tourism-core-remove-destination-gallery-image',
+					'replaceClass'  => 'tourism-core-replace-destination-image',
+				),
+			)
+		);
 
-				$('.tourism-upload-destination-hero').on('click', function(e){
-					e.preventDefault();
+		$use_min = !(defined('SCRIPT_DEBUG') && SCRIPT_DEBUG);
+		$js_rel  = ($use_min && file_exists(TOURISM_CORE_PATH . 'assets/js/destination-admin-metabox.min.js'))
+			? 'destination-admin-metabox.min.js'
+			: 'destination-admin-metabox.js';
+		$js_path = TOURISM_CORE_PATH . 'assets/js/' . $js_rel;
+		$ver_js  = file_exists($js_path) ? (string) filemtime($js_path) : TOURISM_CORE_VERSION;
 
-					if(frame){
-						frame.open();
-						return;
-					}
-
-					frame = wp.media({
-						title: 'Select Hero Image',
-						button: { text: 'Use image' },
-						multiple: false
-					});
-
-					frame.on('select', function(){
-						const attachment = frame.state().get('selection').first().toJSON();
-						$('#destination_hero_image').val(attachment.id);
-						const url = (attachment.sizes && attachment.sizes.medium && attachment.sizes.medium.url) ? attachment.sizes.medium.url : attachment.url;
-						$('#destination-hero-preview').html('<img src=\"'+url+'\" alt=\"\" />');
-					});
-
-					frame.open();
-				});
-
-				$('.tourism-remove-destination-hero').on('click', function(){
-					$('#destination_hero_image').val('');
-					$('#destination-hero-preview').html('');
-				});
-
-				function tourismCoreRenumberDestinationGallery(){
-					const \$g = $('#tourism-core-destination-gallery-images-container');
-					if(!\$g.length) return;
-					\$g.children('.tourism-core-destination-gallery-image-item').each(function(i){
-						const \$item = $(this);
-						\$item.find('.tourism-core-destination-gallery-field-id').attr('name', 'tourism_destination_gallery_images['+i+'][id]');
-						\$item.find('.tourism-core-destination-gallery-field-url').attr('name', 'tourism_destination_gallery_images['+i+'][url]');
-						\$item.find('.tourism-core-destination-image-details input[type=\"text\"]').attr('name', 'tourism_destination_gallery_images['+i+'][title]');
-						\$item.find('.tourism-core-destination-image-details textarea').attr('name', 'tourism_destination_gallery_images['+i+'][caption]');
-					});
-				}
-
-				function tourismCoreRenumberDestinationHighlights(){
-					const \$c = $('#tourism-core-destination-highlights-container');
-					if(!\$c.length) return;
-					\$c.children('.tourism-core-destination-highlight-item').each(function(i){
-						const \$item = $(this);
-						\$item.attr('data-tourism-core-index', String(i));
-						\$item.find('.tourism-core-item-number').text(String(i + 1));
-						\$item.find('input[name^=\"tourism_destination_highlights[\"]').attr('name', 'tourism_destination_highlights['+i+'][title]');
-						\$item.find('textarea[name^=\"tourism_destination_highlights[\"]').attr('name', 'tourism_destination_highlights['+i+'][description]');
-						\$item.find('label[for^=\"tourism_core_destination_highlight_title_\"]').attr('for', 'tourism_core_destination_highlight_title_'+i);
-						\$item.find('input[id^=\"tourism_core_destination_highlight_title_\"]').attr('id', 'tourism_core_destination_highlight_title_'+i);
-						\$item.find('label[for^=\"tourism_core_destination_highlight_description_\"]').attr('for', 'tourism_core_destination_highlight_description_'+i);
-						\$item.find('textarea[id^=\"tourism_core_destination_highlight_description_\"]').attr('id', 'tourism_core_destination_highlight_description_'+i);
-					});
-				}
-
-				const \$galleryContainer = $('#tourism-core-destination-gallery-images-container');
-				if(\$galleryContainer.length){
-					\$galleryContainer.sortable({
-						items: '> .tourism-core-destination-gallery-image-item',
-						cancel: 'input,textarea,button,select,option',
-						update: function(){
-							tourismCoreRenumberDestinationGallery();
-						}
-					});
-
-					$(document).on('click', '#tourism-core-add-destination-gallery-image', function(e){
-						e.preventDefault();
-						const \$tpl = $('#tourism-core-destination-gallery-image-template').children('.tourism-core-destination-gallery-image-item').first();
-						if(!\$tpl.length) return;
-						const \$clone = \$tpl.clone(true, true);
-						\$galleryContainer.append(\$clone);
-						tourismCoreRenumberDestinationGallery();
-					});
-
-					$(document).on('click', '.tourism-core-remove-destination-gallery-image', function(e){
-						e.preventDefault();
-						$(this).closest('.tourism-core-destination-gallery-image-item').remove();
-						tourismCoreRenumberDestinationGallery();
-					});
-
-					$(document).on('click', '.tourism-core-replace-destination-image', function(e){
-						e.preventDefault();
-						const \$item = $(this).closest('.tourism-core-destination-gallery-image-item');
-						const media = wp.media({
-							title: 'Select image',
-							button: { text: 'Use image' },
-							multiple: false
-						});
-						media.on('select', function(){
-							const att = media.state().get('selection').first().toJSON();
-							const url = (att.sizes && att.sizes.medium && att.sizes.medium.url) ? att.sizes.medium.url : att.url;
-							\$item.find('.tourism-core-destination-gallery-field-id').val(String(att.id));
-							\$item.find('.tourism-core-destination-gallery-field-url').val(att.url);
-							\$item.find('.tourism-core-destination-image-preview .tourism-core-destination-no-image').remove();
-							\$item.find('.tourism-core-destination-image-preview img').remove();
-							\$item.find('.tourism-core-destination-image-preview').prepend('<img src=\"'+url+'\" alt=\"\" />');
-						});
-						media.open();
-					});
-				}
-
-				const \$highlightsContainer = $('#tourism-core-destination-highlights-container');
-				if(\$highlightsContainer.length){
-					\$highlightsContainer.sortable({
-						handle: '.tourism-core-handle',
-						items: '> .tourism-core-destination-highlight-item',
-						cancel: 'input,textarea,button,select,option',
-						update: function(){
-							tourismCoreRenumberDestinationHighlights();
-						}
-					});
-
-					$(document).on('click', '#tourism-core-add-destination-highlight', function(e){
-						e.preventDefault();
-						const tmpl = $('#tourism-core-tmpl-destination-highlight-item').html();
-						if(!tmpl) return;
-						const idx = \$highlightsContainer.children('.tourism-core-destination-highlight-item').length;
-						const html = tmpl
-							.split('{{tourism_index}}').join(String(idx))
-							.split('{{tourism_index_plus_one}}').join(String(idx + 1));
-						\$highlightsContainer.append(html);
-						tourismCoreRenumberDestinationHighlights();
-					});
-
-					$(document).on('click', '.tourism-core-delete-destination-highlight', function(e){
-						e.preventDefault();
-						$(this).closest('.tourism-core-destination-highlight-item').remove();
-						tourismCoreRenumberDestinationHighlights();
-					});
-
-					tourismCoreRenumberDestinationHighlights();
-				}
-
-				// Quick edit: populate manual order field from the list table column.
-				if (typeof inlineEditPost !== 'undefined') {
-					const originalEdit = inlineEditPost.edit;
-					inlineEditPost.edit = function(id){
-						originalEdit.apply(this, arguments);
-						let postId = 0;
-						if (typeof id === 'object' && id !== null) {
-							postId = parseInt(this.getId(id), 10);
-						} else {
-							postId = parseInt(id, 10);
-						}
-						if (!postId) return;
-
-						const \$row = $('#post-' + postId);
-						const \$editRow = $('#edit-' + postId);
-						if (!\$row.length || !\$editRow.length) return;
-
-						const current = $.trim(\$row.find('td.column-tourism_destination_order').text());
-						\$editRow.find('input[name=\"tourism_destination_order\"]').val(current !== '' ? parseInt(current, 10) : 0);
-					};
-				}
-			});
-		");
+		wp_enqueue_script(
+			'tourism-core-destination-admin',
+			TOURISM_CORE_URL . 'assets/js/' . $js_rel,
+			array('jquery', 'jquery-ui-sortable', 'media-editor'),
+			$ver_js,
+			true
+		);
 	}
 
-	public function render_quick_edit_order_field($column_name, $post_type)
-	{
-		if ($post_type !== 'destination' || $column_name !== 'tourism_destination_order') {
-			return;
-		}
-		?>
-		<fieldset class="inline-edit-col-right">
-			<div class="inline-edit-col">
-				<?php wp_nonce_field('tourism_core_quickedit_destination', 'tourism_core_destination_quickedit_nonce'); ?>
-				<label class="inline-edit-group">
-					<span class="title"><?php esc_html_e('Orden', TOURISM_CORE_TD); ?></span>
-					<input type="number" min="0" step="1" name="tourism_destination_order" value="" />
-				</label>
-			</div>
-		</fieldset>
-		<?php
-	}
 }
 

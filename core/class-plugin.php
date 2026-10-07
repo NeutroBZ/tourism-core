@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once TOURISM_CORE_PATH . 'includes/class-module-registry.php';
 require_once TOURISM_CORE_PATH . 'includes/class-config.php';
+require_once TOURISM_CORE_PATH . 'modules/payments/class-payment-providers.php';
 require_once TOURISM_CORE_PATH . 'helpers/helpers-site.php';
 require_once TOURISM_CORE_PATH . 'modules/site/class-site-module.php';
 require_once TOURISM_CORE_PATH . 'frontend/class-assets.php';
@@ -62,10 +63,15 @@ class Tourism_Core_Plugin {
 	}
 
 	public function register_core() {
+		$payments = new Tourism_Core_Payment_Providers();
+		$payments->register( $this->loader );
+
 		$this->site = new Tourism_Core_Module_Site();
 		$this->site->register( $this->loader );
 
 		$config = Tourism_Core_Config::instance();
+		$this->emails = new Tourism_Core_Email_Manager();
+		$this->emails->register( $this->loader );
 
 		if ( $config->is_module_enabled( 'tours' ) ) {
 			$this->tours = new Tourism_Core_Module_Tours();
@@ -78,7 +84,6 @@ class Tourism_Core_Plugin {
 		}
 
 		if ( $config->is_module_enabled( 'bookings' ) ) {
-			$this->emails   = new Tourism_Core_Email_Manager();
 			$this->bookings = new Tourism_Core_Module_Bookings( $this->emails );
 			$this->bookings->register( $this->loader );
 		}
