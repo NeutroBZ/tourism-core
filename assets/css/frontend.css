@@ -4,6 +4,23 @@
 	gap: 16px;
 }
 
+.tourism-core-list--columns-1 { grid-template-columns: minmax(0, 1fr); }
+.tourism-core-list--columns-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.tourism-core-list--columns-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tourism-core-list--columns-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.tourism-core-card { min-width: 0; overflow-wrap: anywhere; }
+.tourism-core-card__image { aspect-ratio: 4 / 3; overflow: hidden; border-radius: 8px; margin-bottom: 14px; }
+.tourism-core-card__image img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.tourism-core-card__category { font-size: 12px; margin-bottom: 8px; }
+.tourism-core-card__excerpt { font-size: 14px; margin: 0 0 12px; }
+.tourism-core-card__link:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
+@media (max-width: 900px) {
+	.tourism-core-list--columns-3, .tourism-core-list--columns-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+	.tourism-core-list[class*="tourism-core-list--columns-"] { grid-template-columns: minmax(0, 1fr); }
+}
+
 .tourism-core-payment-actions {
 	display: flex;
 	flex-direction: column;

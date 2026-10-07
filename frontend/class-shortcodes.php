@@ -22,6 +22,11 @@ class Tourism_Core_Frontend_Shortcodes {
 		$atts = shortcode_atts(
 			array(
 				'posts_per_page' => 6,
+				'limit'         => '',
+				'category'      => '',
+				'tour_type'     => '',
+				'columns'       => 3,
+				'fields'        => 'image,title,duration,price',
 				'order'          => 'DESC',
 				'orderby'        => 'date',
 			),
@@ -29,29 +34,8 @@ class Tourism_Core_Frontend_Shortcodes {
 			'tour_list'
 		);
 
-		$q = new WP_Query(
-			array(
-				'post_type'      => 'tour',
-				'posts_per_page' => (int) $atts['posts_per_page'],
-				'order'          => sanitize_text_field( $atts['order'] ),
-				'orderby'        => sanitize_text_field( $atts['orderby'] ),
-			)
-		);
-
-		if ( ! $q->have_posts() ) {
-			return '';
-		}
-
-		ob_start();
-		echo '<div class="tourism-core-list">';
-		while ( $q->have_posts() ) {
-			$q->the_post();
-			echo Tourism_Core_Template::render( 'tour-card.php', array( 'post_id' => get_the_ID() ) );
-		}
-		echo '</div>';
-		wp_reset_postdata();
-
-		return (string) ob_get_clean();
+		if ( '' === $atts['limit'] ) { unset( $atts['limit'] ); }
+		return tourism_core_render_tours( $atts );
 	}
 
 	public function booking_form( $atts ) {

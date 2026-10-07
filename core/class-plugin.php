@@ -19,6 +19,7 @@ require_once TOURISM_CORE_PATH . 'modules/emails/class-email-manager.php';
 require_once TOURISM_CORE_PATH . 'modules/bookings/class-bookings-module.php';
 require_once TOURISM_CORE_PATH . 'admin/class-admin.php';
 require_once TOURISM_CORE_PATH . 'helpers/helpers-tours.php';
+require_once TOURISM_CORE_PATH . 'helpers/helpers-tour-list.php';
 
 class Tourism_Core_Plugin {
 	/** @var self|null */

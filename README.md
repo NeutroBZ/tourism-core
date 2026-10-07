@@ -1,6 +1,35 @@
 # Tourism Core
 
-Plugin de WordPress para contenido turístico y checkout externo. Versión 0.4.3.
+Plugin de WordPress para contenido turístico y checkout externo. Versión 0.5.0.
+
+## Secciones de tours en el frontend (0.5.0)
+
+En `front-page.php` o cualquier plantilla del tema:
+
+```php
+if ( function_exists( 'tourism_core_render_tours' ) ) {
+    echo tourism_core_render_tours( array(
+        'category' => 'aventura',
+        'limit' => 6,
+        'columns' => 3,
+        'fields' => array( 'image', 'title', 'duration', 'price', 'difficulty' ),
+    ) );
+}
+```
+
+En el contenido de una página, usar el bloque Shortcode:
+
+```text
+[tour_list category="aventura" limit="6" columns="3" fields="image,title,duration,price,difficulty"]
+```
+
+`category` utiliza el **slug** de Categorías de tours (`tour_category`), no una categoría de entradas. Se pueden indicar varios slugs separados por comas; basta pertenecer a uno. `tour_type` filtra Tipos de tour y se combina con la categoría. Omitir ambos muestra todos los tours publicados sin contraseña. Los campos disponibles son `image`, `title`, `duration`, `price`, `difficulty`, `group_size`, `max_elevation`, `excerpt` y `category`. Se omiten los datos vacíos; `excerpt` usa la introducción del tour. La imagen usa portada, imagen destacada o galería, en ese orden.
+
+`limit` admite de 1 a 48 tours. El atributo anterior `posts_per_page` sigue funcionando; `limit` tiene prioridad si se especifican ambos. `columns` admite 1 a 4 y se adapta a tabletas y móviles. `orderby` admite `date`, `title`, `menu_order`, `modified` y `rand`; `order` admite `ASC` o `DESC`. Las listas vacías no generan un contenedor. La función devuelve HTML y conserva el loop de la página; las consultas no calculan paginación.
+
+Para cambiar el diseño, copiar `templates/tour-card.php` a `tourism-core/tour-card.php` dentro del tema activo. La plantilla recibe `$post_id`, `$card` y `$fields`. Los overrides existentes siguen recibiendo `$post_id`, pero deben adoptar `$fields` para respetar la selección de detalles. Para construir HTML propio, `tourism_core_get_tour_card_data( $id )` devuelve los datos del tour; escapar cada valor según su contexto. No se ha agregado todavía un bloque visual de Gutenberg ni modificado la portada del tema.
+
+Validación local: `php -c <php.ini-del-sitio> tests/wordpress-tour-list-test.php`. Crea tours y términos temporales, comprueba filtros, privacidad, selección de campos, precios, compatibilidad y conservación del loop, y elimina sus datos al terminar.
 
 ## Configuración de pagos
 
