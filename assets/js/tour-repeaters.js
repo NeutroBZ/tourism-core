@@ -5,6 +5,7 @@
 		if (!$('body').hasClass('tourism-editor-active')) return;
 		var sequence = 0;
 		var groups = [
+			{ container: '#tourism-core-booking-policy-container', item: '.tourism-core-repeater-item', header: '.tourism-core-repeater-item-header', body: '.tourism-core-repeater-item-body', title: 'input[name$="[title]"]', fallback: 'Política sin título' },
 			{ container: '#tourism-core-faqs-container', item: '.tourism-core-faq-item', header: '.tourism-core-faq-header', body: '.tourism-core-faq-content', title: 'input[name$="[question]"]', fallback: 'Pregunta sin título' },
 			{ container: '#tourism-core-highlights-container', item: '.tourism-core-repeater-item', header: '.tourism-core-repeater-item-header', body: '.tourism-core-repeater-item-body', title: 'input[name$="[title]"]', fallback: 'Destacado sin título' },
 			{ container: '#tourism-core-what-to-expect-container', item: '.tourism-core-repeater-item', header: '.tourism-core-repeater-item-header', body: '.tourism-core-repeater-item-body', title: 'input[name$="[title]"]', fallback: 'Experiencia sin título' },

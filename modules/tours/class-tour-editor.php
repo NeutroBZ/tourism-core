@@ -54,7 +54,7 @@ class Tourism_Core_Tour_Editor {
 			'photos' => array( 'label' => 'Fotos', 'help' => 'Elige la portada del tour y las imágenes de su galería.', 'boxes' => array( 'tourism-core-tour-hero', 'tourism-core-tour-gallery', 'postimagediv' ) ),
 			'experience' => array( 'label' => 'Experiencia', 'help' => 'Explica qué disfrutará el viajero y qué necesita preparar.', 'boxes' => array( 'tourism-core-tour-highlights', 'tourism-core-tour-what-to-expect', 'tourism-core-whats-included', 'tourism-core-tour-what-to-bring' ) ),
 			'itinerary' => array( 'label' => 'Itinerario', 'help' => 'Organiza las etapas. Puedes desplegar, duplicar y mover cada día.', 'boxes' => array( 'tourism-core-tour-itinerary' ) ),
-			'pricing' => array( 'label' => 'Precio y reservas', 'help' => 'Define el precio y revisa las opciones de reserva de este tour.', 'boxes' => array( 'tourism-core-tour-pricing', 'tourism-core-tour-wetravel', 'tourism-core-tour-pricing-details' ) ),
+			'pricing' => array( 'label' => 'Precio y reservas', 'help' => 'Define el precio y revisa las opciones de reserva de este tour.', 'boxes' => array( 'tourism-core-tour-pricing', 'tourism-core-tour-wetravel', 'tourism-core-tour-pricing-details', 'tourism-core-tour-booking-policy' ) ),
 			'faqs' => array( 'label' => 'Preguntas frecuentes', 'help' => 'Responde las dudas habituales antes de la reserva.', 'boxes' => array( 'tourism-core-tour-faqs' ) ),
 			'advanced' => array( 'label' => 'Avanzado', 'help' => 'Código comercial, orden en los listados y controles del marcado automático.', 'boxes' => array( 'tourism-core-tour-schema', 'tourism-core-tour-order' ) ),
 		);

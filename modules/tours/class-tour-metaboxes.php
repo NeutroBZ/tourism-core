@@ -113,6 +113,15 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 			'default'
 		);
 
+		add_meta_box(
+			'tourism-core-tour-booking-policy',
+			__('Políticas de reserva', TOURISM_CORE_TD),
+			array($this, 'render_booking_policy'),
+			'tour',
+			'normal',
+			'default'
+		);
+
 		// Itinerary (days + description + dynamic features)
 		add_meta_box(
 			'tourism-core-tour-itinerary',
@@ -618,6 +627,14 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 	 *
 	 * @param \WP_Post $post Post object.
 	 */
+	public function render_booking_policy($post)
+	{
+		wp_enqueue_editor();
+		Metabox_Helper::include_template('modules/tours/templates/booking-policy-metabox.php', array(
+			'tourism_core_booking_policy' => $this->get_tour_title_content_items_for_edit((int) $post->ID, 'tourism_booking_policy'),
+		));
+	}
+
 	public function render_pricing_details($post)
 	{
 		wp_enqueue_editor();
@@ -1187,6 +1204,11 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 		}
 
 		// Pricing Details (repeater: title + WYSIWYG content).
+		if (Metabox_Helper::metabox_present('tourism_booking_policy_metabox_present')) {
+			$booking_policy_items = isset($_POST['tourism_booking_policy_items']) ? wp_unslash($_POST['tourism_booking_policy_items']) : array();
+			update_post_meta($post_id, 'tourism_booking_policy', $this->sanitize_title_content_items($booking_policy_items));
+		}
+
 		if (Metabox_Helper::metabox_present('tourism_pricing_details_metabox_present')) {
 			$pricing_details_items = isset($_POST['tourism_pricing_info_items']) ? wp_unslash($_POST['tourism_pricing_info_items']) : array();
 			update_post_meta($post_id, 'tourism_pricing_details', $this->sanitize_title_content_items($pricing_details_items));
@@ -1466,7 +1488,7 @@ class Tourism_Core_Tour_Metaboxes extends Tourism_Core_Metabox_Base
 			foreach ($source_files as $file) {
 				$filename = basename($file);
 				$dependencies = array( 'jquery', 'jquery-ui-sortable', 'editor', 'tourism-core-tour-rich-editor' );
-				if ( in_array( $filename, array( 'highlights-metabox.js', 'what-to-expect-metabox.js', 'whats-included-metabox.js' ), true ) ) {
+				if ( in_array( $filename, array( 'booking-policy-metabox.js', 'highlights-metabox.js', 'what-to-expect-metabox.js', 'whats-included-metabox.js' ), true ) ) {
 					$dependencies[] = 'tourism-core-tour-experience-editors';
 				}
 				$handle = 'tourism-core-tour-' . sanitize_title(str_replace('.js', '', $filename));
