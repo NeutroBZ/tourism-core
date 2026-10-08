@@ -36,14 +36,12 @@ function tourism_core_get_tour_card_data( $post_id ) {
 	return $data;
 }
 
-/** Return HTML without altering the surrounding WordPress loop. */
-function tourism_core_render_tours( $args = array() ) {
-	if ( ! tourism_core_is_module_enabled( 'tours' ) ) { return ''; }
+/** Public tour data for completely custom theme markup; preserves the outer loop. */
+function tourism_core_get_tours( $args = array() ) {
+	if ( ! tourism_core_is_module_enabled( 'tours' ) ) { return array(); }
 	$args = is_array( $args ) ? $args : array();
 	if ( ! isset( $args['limit'] ) && isset( $args['posts_per_page'] ) ) { $args['limit'] = $args['posts_per_page']; }
 	$args = wp_parse_args( $args, array( 'category' => '', 'tour_type' => '', 'limit' => 6, 'columns' => 3, 'order' => 'DESC', 'orderby' => 'date', 'fields' => array( 'image', 'title', 'duration', 'price' ) ) );
-	$fields = tourism_core_tour_card_fields( $args['fields'] );
-	if ( ! $fields ) { return ''; }
 	$order = is_string( $args['order'] ) ? strtoupper( $args['order'] ) : 'DESC';
 	$orderby = is_string( $args['orderby'] ) && in_array( $args['orderby'], array( 'date', 'title', 'menu_order', 'modified', 'rand' ), true ) ? $args['orderby'] : 'date';
 	$query_args = array( 'post_type' => 'tour', 'post_status' => 'publish', 'has_password' => false, 'posts_per_page' => max( 1, min( 48, (int) $args['limit'] ) ), 'order' => 'ASC' === $order ? 'ASC' : 'DESC', 'orderby' => $orderby, 'no_found_rows' => true, 'ignore_sticky_posts' => true );
@@ -53,10 +51,22 @@ function tourism_core_render_tours( $args = array() ) {
 		}
 	}
 	$query = new WP_Query( $query_args );
-	$html = '';
+	$tours = array();
 	foreach ( $query->posts as $tour ) {
 		$card = tourism_core_get_tour_card_data( $tour->ID );
-		if ( $card ) { $html .= Tourism_Core_Template::render( 'tour-card.php', array( 'post_id' => $tour->ID, 'card' => $card, 'fields' => $fields ) ); }
+		if ( $card ) { $tours[] = $card; }
+	}
+	return $tours;
+}
+
+/** Return HTML without altering the surrounding WordPress loop. */
+function tourism_core_render_tours( $args = array() ) {
+	$args = wp_parse_args( is_array( $args ) ? $args : array(), array( 'columns' => 3, 'fields' => array( 'image', 'title', 'duration', 'price' ) ) );
+	$fields = tourism_core_tour_card_fields( $args['fields'] );
+	if ( ! $fields ) { return ''; }
+	$html = '';
+	foreach ( tourism_core_get_tours( $args ) as $card ) {
+		$html .= Tourism_Core_Template::render( 'tour-card.php', array( 'post_id' => $card['id'], 'card' => $card, 'fields' => $fields ) );
 	}
 	if ( '' === $html ) { return ''; }
 	$columns = max( 1, min( 4, (int) $args['columns'] ) );

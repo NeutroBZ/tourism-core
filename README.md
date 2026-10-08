@@ -1,6 +1,18 @@
 # Tourism Core
 
-Plugin de WordPress para contenido turístico y checkout externo. Versión 0.5.0.
+Plugin de WordPress para contenido turístico y checkout externo. Versión 0.5.1.
+
+## Diseños propios sin HTML del plugin (0.5.1)
+
+`tourism_core_get_tours( array( 'category' => 'aventura', 'limit' => 6 ) )` devuelve una lista de datos de tours publicados, sin contraseña. Comparte los filtros y límites de `tourism_core_render_tours()`, pero permite que cada tema decida todo el HTML:
+
+```php
+foreach ( tourism_core_get_tours( array( 'category' => 'aventura', 'limit' => 6 ) ) as $tour ) {
+    get_template_part( 'components/tour-card', null, $tour );
+}
+```
+
+Los datos contienen `id`, `title`, `url`, `currency`, `price` (formateado), `duration`, `difficulty`, `group_size`, `max_elevation`, `excerpt`, `category`, `image_id` y `image_url`. Escapar los valores según su contexto. La imagen con ID se puede renderizar mediante `wp_get_attachment_image()`. No modifica el loop de WordPress y devuelve una lista vacía cuando no hay resultados o el módulo está desactivado.
 
 ## Secciones de tours en el frontend (0.5.0)
 

@@ -41,6 +41,8 @@ try {
 	$GLOBALS['post'] = get_post( $ids[5] );
 	$args = array( 'category' => $slug, 'orderby' => 'title', 'order' => 'ASC' );
 	$html = tourism_core_render_tours( $args );
+	$data = tourism_core_get_tours( $args );
+	list_check( 2 === count( $data ) && $id === $data[0]['id'] && 'Alpha public' === $data[0]['title'], 'Data API returns filtered tour cards without HTML wrappers' );
 	list_check( 2 === substr_count( $html, '<article' ), 'Category selects only public tours without passwords' );
 	list_check( strpos( $html, 'Alpha public' ) < strpos( $html, 'Beta public' ), 'Title ordering applied' );
 	list_check( $GLOBALS['post']->ID === $ids[5], 'Rendering preserves outer WordPress loop' );
