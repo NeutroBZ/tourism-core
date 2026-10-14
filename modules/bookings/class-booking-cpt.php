@@ -31,7 +31,7 @@ class Tourism_Core_Booking_CPT {
 				'public'             => false,
 				'show_ui'            => true,
 				'show_in_menu'       => true,
-				'menu_icon'          => TOURISM_CORE_URL . 'assets/ico/bookings3.svg',
+				'menu_icon'          => TOURISM_CORE_BRAND_ICON,
 				'supports'           => array( 'title' ),
 				'capability_type'    => array( 'tourism_booking', 'tourism_bookings' ),
 				'capabilities'       => Tourism_Core_Booking_Permissions::capabilities(),

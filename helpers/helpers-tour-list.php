@@ -16,6 +16,7 @@ function tourism_core_get_tour_card_data( $post_id ) {
 	foreach ( array( 'duration', 'difficulty', 'group_size', 'max_elevation' ) as $field ) {
 		$value = get_post_meta( $post_id, 'tourism_' . $field, true );
 		$data[ $field ] = is_scalar( $value ) ? wp_strip_all_tags( (string) $value ) : '';
+		if (function_exists('travel_t')) $data[$field] = travel_t($data[$field]);
 	}
 	$price = get_post_meta( $post_id, 'tourism_price_from', true );
 	$data['price'] = is_scalar( $price ) && is_numeric( $price ) && is_finite( (float) $price ) && (float) $price >= 0 && $data['currency'] ? $data['currency'] . ' ' . number_format_i18n( (float) $price, 2 ) : '';
@@ -47,7 +48,7 @@ function tourism_core_get_tours( $args = array() ) {
 	$query_args = array( 'post_type' => 'tour', 'post_status' => 'publish', 'has_password' => false, 'posts_per_page' => max( 1, min( 48, (int) $args['limit'] ) ), 'order' => 'ASC' === $order ? 'ASC' : 'DESC', 'orderby' => $orderby, 'no_found_rows' => true, 'ignore_sticky_posts' => true );
 	foreach ( array( 'category' => 'tour_category', 'tour_type' => 'tour_type' ) as $key => $taxonomy ) {
 		if ( ! empty( $args[ $key ] ) && is_string( $args[ $key ] ) ) {
-			$query_args['tax_query'][] = array( 'taxonomy' => $taxonomy, 'field' => 'slug', 'terms' => array_map( 'sanitize_title', explode( ',', $args[ $key ] ) ) );
+			$query_args['tax_query'][] = array( 'taxonomy' => $taxonomy, 'field' => 'slug', 'terms' => array_map( static function ($slug) use ($taxonomy) { return tourism_core_language_term_slug(sanitize_title($slug), $taxonomy); }, explode( ',', $args[ $key ] ) ) );
 		}
 	}
 	$query = new WP_Query( $query_args );

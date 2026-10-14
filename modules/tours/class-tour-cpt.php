@@ -52,7 +52,7 @@ class Tourism_Core_Module_Tours {
 				'public'       => true,
 				'has_archive'  => true,
 				'show_in_rest' => true,
-				'menu_icon'    => TOURISM_CORE_URL . 'assets/ico/tours3.svg',
+				'menu_icon'    => TOURISM_CORE_BRAND_ICON,
 				'supports'     => array( 'title',  'thumbnail', 'revisions' ),
 				'rewrite'      => array( 'slug' => 'tours' ),
 				'taxonomies' => array( 'tour_category' ),

@@ -202,7 +202,7 @@ class Tourism_Core_Tour_Schema {
 		if ( $availability && isset( Tourism_Core_Tour_Schema_Metabox::availability()[ $availability ] ) ) { $values['Disponibilidad'] = Tourism_Core_Tour_Schema_Metabox::availability()[ $availability ]; }
 		if ( ! $values ) { return ''; }
 		$html = '<dl class="tourism-core-tour-facts">';
-		foreach ( $values as $label => $value ) { $html .= '<div><dt>' . esc_html( $label ) . '</dt><dd>' . esc_html( $value ) . '</dd></div>'; }
+		foreach ( $values as $label => $value ) { $html .= '<div><dt>' . esc_html( __( $label, TOURISM_CORE_TD ) ) . '</dt><dd>' . esc_html( __( $value, TOURISM_CORE_TD ) ) . '</dd></div>'; }
 		return $html . '</dl>';
 	}
 }

@@ -3,7 +3,7 @@
  * Plugin Name: Tourism Core
  * Description: Core functionality (CPTs, shortcodes, templates) for tourism agency themes.
  * Version: 0.5.1
- * Author: jcortez
+ * Author: Humble Labz
  * Text Domain: tourism-core
  * Domain Path: /languages
  */

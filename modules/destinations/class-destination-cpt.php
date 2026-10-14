@@ -34,7 +34,7 @@ class Tourism_Core_Module_Destinations {
 				'public'       => true,
 				'has_archive'  => true,
 				'show_in_rest' => true,
-				'menu_icon'    => TOURISM_CORE_URL . 'assets/ico/destinations3.svg',
+				'menu_icon'    => TOURISM_CORE_BRAND_ICON,
 				'supports'     => array( 'title', 'thumbnail' ),
 				'rewrite'      => array( 'slug' => 'destinations' ),
 			)

@@ -28,7 +28,7 @@ class Tourism_Core_Site_Admin {
 			'manage_options',
 			self::MENU_SLUG,
 			array( $this, 'render_menu_landing' ),
-			TOURISM_CORE_URL . 'assets/ico/admin-digixonic.svg',
+			TOURISM_CORE_BRAND_ICON,
 			3
 		);
 

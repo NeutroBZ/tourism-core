@@ -11,4 +11,5 @@ define( 'TOURISM_CORE_URL', trailingslashit( plugin_dir_url( __FILE__ ) ) . '../
 
 define( 'TOURISM_CORE_TD', 'tourism-core' );
 define( 'TOURISM_CORE_TEMPLATES_DIR', TOURISM_CORE_PATH . 'templates/' );
+define( 'TOURISM_CORE_BRAND_ICON', TOURISM_CORE_URL . 'assets/brand/humble-labz-menu-icon.svg' );
 
