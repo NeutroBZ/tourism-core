@@ -2,7 +2,13 @@ name: Publish WordPress plugin
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to publish
+        required: true
+        type: string
 permissions:
   contents: write
 jobs:
@@ -10,12 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
       - name: Validate version and PHP
         env:
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           python3 - <<'PY'
           import os, pathlib, re
+          assert re.fullmatch(r'v\d+\.\d+\.\d+', os.environ['RELEASE_TAG'])
           version = os.environ['RELEASE_TAG'].removeprefix('v')
           header = pathlib.Path('tourism-core.php').read_text()
           constants = pathlib.Path('config/constants.php').read_text()
@@ -33,5 +42,5 @@ jobs:
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: gh release create "$RELEASE_TAG" tourism-core.zip --verify-tag --title "Tourism Core $RELEASE_TAG" --generate-notes
