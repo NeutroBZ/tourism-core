@@ -20,5 +20,8 @@ principal o lateral. No cambian las claves de los datos existentes.
 - Usuario, sesiones, tour y archivo de prueba temporales eliminados.
 
 La publicación de la etiqueta `v0.6.2` genera `tourism-core.zip` mediante GitHub
-Actions. Los sitios con 0.6.1 pueden actualizar desde WordPress. La consulta
-de versiones de GitHub mantiene una caché de hasta una hora.
+Actions. La prueba posterior encontró un fallo de identificación en el
+actualizador de 0.6.1 y 0.6.2: necesitan reemplazarse una vez por 0.6.3 o
+posterior. Véase [la corrección](release-0.6.3.md) y [la actualización real
+verificada](release-0.6.4.md). La consulta de versiones mantiene una caché
+de hasta una hora.
