@@ -1,6 +1,8 @@
 <?php
 /** Local-only API integration checks. Mail is intercepted; synthetic private posts are removed. */
 if ( 'cli' !== PHP_SAPI ) { exit; }
+define( 'TOURISM_TEST_HEADLESS_MODE', 'enabled' );
+require __DIR__ . '/headless-test-bootstrap.php';
 define( 'DISABLE_WP_CRON', true ); define( 'WP_HTTP_BLOCK_EXTERNAL', true );
 $_SERVER['HTTP_HOST'] = 'palota-2026.local'; $_SERVER['REQUEST_METHOD'] = 'POST';
 require dirname( __DIR__, 4 ) . '/wp-load.php';

@@ -10,6 +10,11 @@ class Tourism_Core_Module_Registry {
 	 */
 	public static function all() {
 		return array(
+			'headless'     => array(
+				'label'       => __( 'Integración con Astro / headless', TOURISM_CORE_TD ),
+				'description' => __( 'Activa la API de exportación y contacto para un frontend externo como Astro. Desactivada por defecto; no es necesaria para un sitio WordPress. Al desactivarla se conservan los mensajes y la configuración.', TOURISM_CORE_TD ),
+				'default'     => false,
+			),
 			'tours'        => array(
 				'label'       => __( 'Tours', TOURISM_CORE_TD ),
 				'description' => __( 'Tour custom post type, taxonomies, and tour metaboxes.', TOURISM_CORE_TD ),

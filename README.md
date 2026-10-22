@@ -1,5 +1,11 @@
 # Tourism Core
 
+## Uso con WordPress o Astro
+
+El plugin funciona con WordPress sin Astro. En **Tourism Core → Configuration → Enabled modules**, el interruptor **Integración con Astro / headless** está desactivado por defecto, también al actualizar una instalación que aún no tenga esta opción.
+
+Actívalo y guarda la configuración solo si vas a conectar un frontend externo. Al activarlo se cargan la API de exportación, la API de contacto y la sección de mensajes de contacto con sus notificaciones. Esto no instala ni ejecuta Astro; el frontend y sus credenciales se configuran por separado. Al desactivarlo, esas rutas y la sección de mensajes dejan de registrarse; los mensajes y ajustes guardados se conservan. Los tours, shortcodes, reservas y pagos de WordPress siguen funcionando según sus propios ajustes.
+
 ## Entrega a Astro (0.6.0)
 
 WordPress administra los datos; el frontend definitivo será Astro. El tema PHP y sus shortcodes actuales son la referencia local de contenido, no el frontend terminado. Ver [contrato de datos y conservación de URLs](docs/headless.md).
