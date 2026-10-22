@@ -21,10 +21,12 @@ if ( 'prepare' === $action ) {
 	$attachment = wp_insert_attachment( array( 'post_title' => 'Tourism Core media fixture', 'post_mime_type' => 'image/png', 'post_status' => 'inherit', 'guid' => home_url( '/wp-content/plugins/tourism-core/assets/ico/tours.png' ) ), false, $id );
 	wp_update_attachment_metadata( $attachment, array( 'width' => 32, 'height' => 32, 'sizes' => array() ) );
 	$expiry = time() + 3600;
+	$base_url = untrailingslashit( home_url() );
+	$cookie_host = wp_parse_url( $base_url, PHP_URL_HOST );
 	$token = WP_Session_Tokens::get_instance( $user )->create( $expiry );
-	$state = array( 'userId' => $user, 'tourId' => $id, 'attachmentId' => $attachment, 'cookies' => array(
-		array( 'name' => AUTH_COOKIE, 'value' => wp_generate_auth_cookie( $user, $expiry, 'auth', $token ), 'domain' => 'travel-theme.local', 'path' => '/', 'httpOnly' => true, 'sameSite' => 'Lax' ),
-		array( 'name' => LOGGED_IN_COOKIE, 'value' => wp_generate_auth_cookie( $user, $expiry, 'logged_in', $token ), 'domain' => 'travel-theme.local', 'path' => '/', 'httpOnly' => true, 'sameSite' => 'Lax' ),
+	$state = array( 'baseUrl' => $base_url, 'userId' => $user, 'tourId' => $id, 'attachmentId' => $attachment, 'cookies' => array(
+		array( 'name' => AUTH_COOKIE, 'value' => wp_generate_auth_cookie( $user, $expiry, 'auth', $token ), 'domain' => $cookie_host, 'path' => '/', 'httpOnly' => true, 'sameSite' => 'Lax' ),
+		array( 'name' => LOGGED_IN_COOKIE, 'value' => wp_generate_auth_cookie( $user, $expiry, 'logged_in', $token ), 'domain' => $cookie_host, 'path' => '/', 'httpOnly' => true, 'sameSite' => 'Lax' ),
 	) );
 	file_put_contents( $state_path, wp_json_encode( $state ) );
 	update_post_meta( $id, 'tourism_intro_title', 'A local adventure' );

@@ -1,5 +1,9 @@
 # Tourism Core
 
+## Videos y reseñas (0.6.2)
+
+El editor de tours incorpora **Videos y reseñas** como una sección junto a las demás. Usa **Añadir video**, **Añadir reseña** y sus botones **Eliminar** para gestionar varias filas sin guardar entre cada una. Guarda el tour para aplicar los cambios. Los videos usan enlaces de YouTube; las reseñas nuevas requieren aprobación explícita antes de publicarse. La eliminación conserva la identidad de las filas restantes. Sin JavaScript siguen disponibles la fila vacía y las casillas de eliminación.
+
 ## Actualizaciones (0.6.1)
 
 Incluye actualizaciones desde GitHub Releases mediante WordPress y publicación del ZIP al subir una etiqueta de versión. Requiere instalar esta versión una vez en cada sitio; después permite **Actualizar ahora** o activar las actualizaciones automáticas de WordPress. Los repositorios privados requieren un token de solo lectura configurado en el sitio. Consulta [la configuración y publicación de actualizaciones](docs/updates.md).

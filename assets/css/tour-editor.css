@@ -1,4 +1,9 @@
 /* Only applies after section preparation has succeeded. */
+.tourism-extras-group { margin: 20px 0 28px; }
+.tourism-extras-row { border: 1px solid #dcdcde; border-radius: 6px; padding: 12px 16px; margin: 0 0 18px; min-width: 0; }
+.tourism-extras-row legend { padding: 0 6px; }
+.tourism-extras-row > p > label { display: block; margin-bottom: 4px; }
+.tourism-extras-row[hidden], .tourism-extras-group [hidden] { display: none !important; }
 .tourism-editor-active .tourism-tour-editor {
 	position: sticky;
 	top: 32px;

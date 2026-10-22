@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Tourism Core
  * Description: Core functionality (CPTs, shortcodes, templates) for tourism agency themes.
- * Version: 0.6.1
+ * Version: 0.6.2
  * Requires at least: 5.8
  * Requires PHP: 8.0
  * Update URI: https://github.com/NeutroBZ/tourism-core

@@ -1,6 +1,6 @@
 === Tourism Core ===
 Tags: tourism, tours, bookings
-Stable tag: 0.6.1
+Stable tag: 0.6.2
 Requires at least: 5.8
 Requires PHP: 8.0
 License: GPL-2.0-or-later
@@ -25,3 +25,9 @@ and NOTICE for the authorship notice. Distributed without warranty.
 Modifications and redistribution are allowed under the license terms.
 Preserve applicable copyright and license notices and identify changes
 in modified files as required by the license.
+
+== Changelog ==
+
+= 0.6.2 =
+Videos and reviews are now part of the tour editor sections, with add/remove
+buttons, preserved review approvals and a usable fallback without JavaScript.

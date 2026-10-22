@@ -56,6 +56,7 @@ class Tourism_Core_Tour_Editor {
 			'itinerary' => array( 'label' => 'Itinerario', 'help' => 'Organiza las etapas. Puedes desplegar, duplicar y mover cada día.', 'boxes' => array( 'tourism-core-tour-itinerary' ) ),
 			'pricing' => array( 'label' => 'Precio y reservas', 'help' => 'Define el precio y revisa las opciones de reserva de este tour.', 'boxes' => array( 'tourism-core-tour-pricing', 'tourism-core-tour-wetravel', 'tourism-core-tour-pricing-details', 'tourism-core-tour-booking-policy' ) ),
 			'faqs' => array( 'label' => 'Preguntas frecuentes', 'help' => 'Responde las dudas habituales antes de la reserva.', 'boxes' => array( 'tourism-core-tour-faqs' ) ),
+			'extras' => array( 'label' => 'Videos y reseñas', 'help' => 'Añade videos del tour y reseñas verificadas. Guarda el tour para aplicar los cambios.', 'boxes' => array( 'tourism-tour-extras' ) ),
 			'advanced' => array( 'label' => 'Avanzado', 'help' => 'Código comercial, orden en los listados y controles del marcado automático.', 'boxes' => array( 'tourism-core-tour-schema', 'tourism-core-tour-order' ) ),
 		);
 	}

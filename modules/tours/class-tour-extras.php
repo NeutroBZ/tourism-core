@@ -7,6 +7,7 @@ class Tourism_Core_Tour_Extras {
         $loader->add_action( 'init', $this, 'register_meta' );
         $loader->add_action( 'add_meta_boxes_tour', $this, 'metabox' );
         $loader->add_action( 'save_post_tour', $this, 'save', 30, 2 );
+        $loader->add_action( 'admin_enqueue_scripts', $this, 'assets' );
         $loader->add_filter( 'tourism_core_tour_schema_graph', $this, 'schema', 10, 2 );
     }
 
@@ -165,31 +166,65 @@ class Tourism_Core_Tour_Extras {
 
     public function metabox() { add_meta_box( 'tourism-tour-extras', __( 'Videos y reseñas', TOURISM_CORE_TD ), array( $this, 'editor' ), 'tour', 'normal' ); }
 
+    public function assets() {
+        $screen = get_current_screen();
+        if ( ! $screen || 'tour' !== $screen->post_type || 'post' !== $screen->base ) { return; }
+        wp_enqueue_script( 'tourism-core-tour-extras', TOURISM_CORE_URL . 'assets/js/tour-extras.js', array( 'jquery' ), (string) filemtime( TOURISM_CORE_PATH . 'assets/js/tour-extras.js' ), true );
+    }
+
     public function editor( $post ) {
         wp_nonce_field( 'tourism_extras_save', 'tourism_extras_nonce' );
-        echo '<p>' . esc_html__( 'Completa la fila vacía y guarda para añadir otro elemento. Las reseñas solo se publican al aprobarlas.', TOURISM_CORE_TD ) . '</p>';
-        $groups = array( 'tourism_videos' => array( 'title' => 'Título', 'url' => 'URL de YouTube', 'location' => 'Ubicación: main o sidebar', 'thumbnail' => 'URL de miniatura', 'upload_date' => 'Fecha original del video (AAAA-MM-DD)', 'description' => 'Descripción' ), 'tourism_review_items' => array( 'author' => 'Nombre público del autor', 'rating' => 'Valoración de 1 a 5', 'date' => 'Fecha (AAAA-MM-DD)', 'content' => 'Reseña' ) );
-        foreach ( $groups as $key => $fields ) {
+        echo '<p>' . esc_html__( 'Las reseñas solo se publican al aprobarlas. Añadir o eliminar elementos se aplica al guardar el tour.', TOURISM_CORE_TD ) . '</p>';
+        echo '<p class="tourism-extras-no-js">' . esc_html__( 'Sin JavaScript: completa la fila vacía y guarda para añadir otro elemento; marca la casilla Eliminar para quitarlo.', TOURISM_CORE_TD ) . '</p>';
+        foreach ( array( 'tourism_videos', 'tourism_review_items' ) as $key ) {
             $rows = get_post_meta( $post->ID, $key, true ); $rows = is_array( $rows ) ? array_values( $rows ) : array(); $rows[] = array();
+            echo '<div class="tourism-extras-group" data-key="' . esc_attr( $key ) . '" data-next-index="' . esc_attr( count( $rows ) ) . '">';
+            echo '<input type="hidden" name="tourism_extras_present[' . esc_attr( $key ) . ']" value="1">';
             echo '<h3>' . esc_html( 'tourism_videos' === $key ? __( 'Videos', TOURISM_CORE_TD ) : __( 'Reseñas', TOURISM_CORE_TD ) ) . '</h3>';
+            echo '<div class="tourism-extras-rows">';
             foreach ( $rows as $i => $row ) {
-                echo '<fieldset style="border:1px solid #ccc;padding:12px;margin-bottom:12px">';
-                foreach ( $fields as $field => $label ) {
-                    $name = $key . '[' . $i . '][' . $field . ']'; $value = $row[ $field ] ?? '';
-                    echo '<p><label>' . esc_html( $label ) . '<textarea class="widefat" rows="' . ( in_array( $field, array( 'content', 'description' ), true ) ? '4' : '1' ) . '" name="' . esc_attr( $name ) . '">' . esc_textarea( $value ) . '</textarea></label></p>';
-                }
-                if ( 'tourism_review_items' === $key ) { echo '<p><label><input type="checkbox" name="' . esc_attr( $key . '[' . $i . '][approved]' ) . '" value="1" ' . checked( ! empty( $row['approved'] ), true, false ) . '> ' . esc_html__( 'Reseña verificada y aprobada para publicar', TOURISM_CORE_TD ) . '</label></p>'; }
-                echo '<p><label><input type="checkbox" name="' . esc_attr( $key . '[' . $i . '][remove]' ) . '" value="1"> ' . esc_html__( 'Eliminar este elemento', TOURISM_CORE_TD ) . '</label></p></fieldset>';
+                $this->editor_row( $key, $i, is_array( $row ) ? $row : array(), $i === count( $rows ) - 1 );
             }
+            echo '</div><template class="tourism-extras-template">';
+            $this->editor_row( $key, '__INDEX__', array() );
+            echo '</template><button type="button" class="button button-secondary tourism-extras-add" hidden>' . esc_html( 'tourism_videos' === $key ? __( 'Añadir video', TOURISM_CORE_TD ) : __( 'Añadir reseña', TOURISM_CORE_TD ) ) . '</button>';
+            echo '<p class="tourism-extras-status screen-reader-text" role="status" aria-live="polite"></p></div>';
         }
+    }
+
+    private function editor_row( $key, $index, $row, $placeholder = false ) {
+        $video = 'tourism_videos' === $key;
+        $fields = $video
+            ? array( 'title' => 'Título', 'url' => 'URL de YouTube', 'location' => 'Ubicación del video', 'thumbnail' => 'URL de miniatura', 'upload_date' => 'Fecha original de publicación', 'description' => 'Descripción' )
+            : array( 'author' => 'Nombre público del autor', 'rating' => 'Valoración de 1 a 5', 'date' => 'Fecha de la reseña', 'content' => 'Reseña' );
+        echo '<fieldset class="tourism-extras-row" data-placeholder="' . ( $placeholder ? 'true' : 'false' ) . '"><legend><strong>' . esc_html( $video ? __( 'Video', TOURISM_CORE_TD ) : __( 'Reseña', TOURISM_CORE_TD ) ) . '</strong></legend>';
+        foreach ( $fields as $field => $label ) {
+            $name = $key . '[' . $index . '][' . $field . ']';
+            $id = $key . '-' . $index . '-' . $field;
+            $value = isset( $row[$field] ) && is_scalar( $row[$field] ) ? (string) $row[$field] : '';
+            echo '<p><label for="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</label>';
+            if ( in_array( $field, array( 'content', 'description' ), true ) ) {
+                echo '<textarea class="widefat" rows="4" id="' . esc_attr( $id ) . '" name="' . esc_attr( $name ) . '">' . esc_textarea( $value ) . '</textarea>';
+            } elseif ( 'location' === $field ) {
+                echo '<select class="widefat" id="' . esc_attr( $id ) . '" name="' . esc_attr( $name ) . '"><option value="sidebar" ' . selected( 'main' !== $value, true, false ) . '>' . esc_html__( 'Barra lateral', TOURISM_CORE_TD ) . '</option><option value="main" ' . selected( 'main', $value, false ) . '>' . esc_html__( 'Contenido principal', TOURISM_CORE_TD ) . '</option></select>';
+            } else {
+                $type = in_array( $field, array( 'url', 'thumbnail' ), true ) ? 'url' : ( 'rating' === $field ? 'number' : ( in_array( $field, array( 'date', 'upload_date' ), true ) ? 'date' : 'text' ) );
+                echo '<input class="widefat" type="' . esc_attr( $type ) . '" id="' . esc_attr( $id ) . '" name="' . esc_attr( $name ) . '" value="' . esc_attr( $value ) . '"' . ( 'rating' === $field ? ' min="1" max="5" step="any"' : '' ) . '>';
+            }
+            echo '</p>';
+        }
+        if ( ! $video ) { echo '<p><label><input type="checkbox" name="' . esc_attr( $key . '[' . $index . '][approved]' ) . '" value="1" ' . checked( ! empty( $row['approved'] ), true, false ) . '> ' . esc_html__( 'Reseña verificada y aprobada para publicar', TOURISM_CORE_TD ) . '</label></p>'; }
+        echo '<p class="tourism-extras-remove-fallback"><label><input class="tourism-extras-remove-flag" type="checkbox" name="' . esc_attr( $key . '[' . $index . '][remove]' ) . '" value="1"> ' . esc_html__( 'Eliminar este elemento', TOURISM_CORE_TD ) . '</label></p>';
+        echo '<button type="button" class="button tourism-extras-remove" hidden>' . esc_html( $video ? __( 'Eliminar video', TOURISM_CORE_TD ) : __( 'Eliminar reseña', TOURISM_CORE_TD ) ) . '</button></fieldset>';
     }
 
     public function save( $post_id, $post ) {
         if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) || ! current_user_can( 'edit_post', $post_id ) || ! isset( $_POST['tourism_extras_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tourism_extras_nonce'] ) ), 'tourism_extras_save' ) ) { return; }
         foreach ( array( 'tourism_videos', 'tourism_review_items' ) as $key ) {
-            if ( ! isset( $_POST[ $key ] ) || ! is_array( $_POST[ $key ] ) ) { continue; }
+            if ( ! isset( $_POST[ $key ] ) && ! isset( $_POST['tourism_extras_present'][ $key ] ) ) { continue; }
+            if ( isset( $_POST[ $key ] ) && ! is_array( $_POST[ $key ] ) ) { continue; }
             $old = get_post_meta( $post_id, $key, true ); $old = is_array( $old ) ? array_values( $old ) : array(); $rows = array();
-            foreach ( wp_unslash( $_POST[ $key ] ) as $i => $row ) {
+            foreach ( wp_unslash( $_POST[ $key ] ?? array() ) as $i => $row ) {
                 if ( ! is_array( $row ) || ! empty( $row['remove'] ) ) { continue; }
                 $clean = array();
                 foreach ( array( 'title', 'author', 'date', 'upload_date', 'description' ) as $field ) { if ( isset( $row[ $field ] ) && is_scalar( $row[ $field ] ) ) { $clean[ $field ] = sanitize_text_field( $row[ $field ] ); } }

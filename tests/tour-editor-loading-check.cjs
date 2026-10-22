@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const assert = require('node:assert/strict');
 const { chromium } = require(process.env.TOURISM_PLAYWRIGHT || 'playwright-core');
 const state = JSON.parse(fs.readFileSync(process.env.TOURISM_EDITOR_STATE, 'utf8'));
-const url = `http://travel-theme.local/wp-admin/post.php?post=${state.tourId}&action=edit`;
+const url = `${state.baseUrl || 'http://travel-theme.local'}/wp-admin/post.php?post=${state.tourId}&action=edit`;
 const check = (condition, label) => { assert(condition, label); console.log('PASS: ' + label); };
 async function main() {
  const browser = await chromium.launch({ executablePath: process.env.TOURISM_CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });

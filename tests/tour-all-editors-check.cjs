@@ -6,7 +6,7 @@ async function main(){
  try{
   const context=await browser.newContext();await context.addCookies(state.cookies);
   const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
-  await page.goto(`http://travel-theme.local/wp-admin/post.php?post=${state.tourId}&action=edit`,{waitUntil:'networkidle'});
+  await page.goto(`${state.baseUrl || 'http://travel-theme.local'}/wp-admin/post.php?post=${state.tourId}&action=edit`,{waitUntil:'networkidle'});
   async function checkEditors(){
    const editors=await page.locator('.tourism-editor-panel .wp-editor-wrap').all();
    for(const editor of editors){

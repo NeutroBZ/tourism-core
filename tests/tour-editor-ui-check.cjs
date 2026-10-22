@@ -4,7 +4,7 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const { chromium } = require(process.env.TOURISM_PLAYWRIGHT || 'playwright-core');
 const state = JSON.parse(fs.readFileSync(process.env.TOURISM_EDITOR_STATE, 'utf8'));
-const url = `http://travel-theme.local/wp-admin/post.php?post=${state.tourId}&action=edit`;
+const url = `${state.baseUrl || 'http://travel-theme.local'}/wp-admin/post.php?post=${state.tourId}&action=edit`;
 const screenshots = process.env.TOURISM_EDITOR_SCREENSHOTS;
 const check = (condition, label) => { assert(condition, label); console.log('PASS: ' + label); };
 async function main() {
@@ -18,7 +18,7 @@ async function main() {
   await page.goto(url, { waitUntil: 'networkidle' });
   await page.waitForSelector('.tourism-editor-active');
   await page.waitForFunction(() => window.tinymce && tinymce.get('tourism_core_itinerary_description_0')?.initialized);
-  check(await page.locator('.tourism-editor-tabs [role="tab"]:visible').count() === 7, 'Seven editor sections available');
+  check(await page.locator('.tourism-editor-tabs [role="tab"]:visible').count() === 8, 'Eight editor sections available');
   check(await page.locator('.tourism-editor-panel:visible').count() === 1, 'Only one section visible');
   check(await page.locator('#tourism_trip_origin').evaluate(node => node.closest('[data-section]').dataset.section) === 'general', 'Origin appears in general information');
   check(await page.locator('#tourism_price_currency').evaluate(node => node.closest('[data-section]').dataset.section) === 'pricing', 'Currency appears beside price');
