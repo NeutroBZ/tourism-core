@@ -1,5 +1,11 @@
 # Tourism Core
 
+## Autoría y licencia
+
+Tourism Core es desarrollado por **Humble Labz**. Copyright (C) 2026 Humble Labz.
+
+El código se distribuye bajo **GNU GPL v2 o posterior** (`GPL-2.0-or-later`); consulta [LICENSE](LICENSE) y [NOTICE](NOTICE). Esta licencia permite modificar y redistribuir el código conforme a sus condiciones, incluida la conservación de los avisos aplicables de copyright y licencia y la identificación de los cambios en los archivos modificados. La atribución original y la autoría de las modificaciones deben distinguirse. El historial del repositorio documenta los cambios; estos avisos no bloquean la edición de los archivos ni constituyen un registro de marca.
+
 ## Uso con WordPress o Astro
 
 El plugin funciona con WordPress sin Astro. En **Tourism Core → Configuration → Enabled modules**, el interruptor **Integración con Astro / headless** está desactivado por defecto, también al actualizar una instalación que aún no tenga esta opción.
