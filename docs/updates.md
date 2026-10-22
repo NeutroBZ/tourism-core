@@ -1,14 +1,16 @@
 # Actualizaciones desde GitHub
 
-Desde 0.6.1, Tourism Core consulta las GitHub Releases estables de
+Desde 0.6.3, Tourism Core consulta las GitHub Releases estables de
 `NeutroBZ/tourism-core`. No instala código de `main` ni versiones preliminares.
 La consulta se realiza durante las comprobaciones de actualizaciones de WordPress;
 se conserva en caché una hora (cinco minutos si falla).
 
 ## Preparar cada sitio una sola vez
 
-Instala el ZIP `tourism-core.zip` de la release 0.6.1 o posterior reemplazando
-el plugin existente. Las versiones anteriores no incluyen el actualizador.
+Instala el ZIP `tourism-core.zip` de la release 0.6.3 o posterior reemplazando
+el plugin existente. Las versiones 0.6.1 y 0.6.2 incluían el actualizador,
+pero una ruta no normalizada impedía identificar el plugin durante la detección
+nativa de WordPress. Requieren este reemplazo inicial para corregirlo.
 La carpeta instalada debe ser `tourism-core`.
 
 El repositorio es público actualmente: no necesitas configurar tokens.

@@ -1,6 +1,6 @@
 === Tourism Core ===
 Tags: tourism, tours, bookings
-Stable tag: 0.6.2
+Stable tag: 0.6.3
 Requires at least: 5.8
 Requires PHP: 8.0
 License: GPL-2.0-or-later
@@ -27,6 +27,9 @@ Preserve applicable copyright and license notices and identify changes
 in modified files as required by the license.
 
 == Changelog ==
+
+= 0.6.3 =
+Fix the canonical plugin file path so WordPress can identify GitHub updates.
 
 = 0.6.2 =
 Videos and reviews are now part of the tour editor sections, with add/remove
