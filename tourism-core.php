@@ -2,7 +2,10 @@
 /**
  * Plugin Name: Tourism Core
  * Description: Core functionality (CPTs, shortcodes, templates) for tourism agency themes.
- * Version: 0.6.0
+ * Version: 0.6.1
+ * Requires at least: 5.8
+ * Requires PHP: 8.0
+ * Update URI: https://github.com/NeutroBZ/tourism-core
  * Author: Humble Labz
  * License: GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -33,6 +36,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once __DIR__ . '/config/constants.php';
+require_once TOURISM_CORE_PATH . 'includes/class-github-updater.php';
+( new Tourism_Core_GitHub_Updater() )->register();
 require_once TOURISM_CORE_PATH . 'includes/class-metabox-helper.php';
 require_once TOURISM_CORE_PATH . 'includes/trait-order-column.php';
 require_once TOURISM_CORE_PATH . 'includes/class-metabox-base.php';

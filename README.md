@@ -1,5 +1,9 @@
 # Tourism Core
 
+## Actualizaciones (0.6.1)
+
+Incluye actualizaciones desde GitHub Releases mediante WordPress y publicación del ZIP al subir una etiqueta de versión. Requiere instalar esta versión una vez en cada sitio; después permite **Actualizar ahora** o activar las actualizaciones automáticas de WordPress. Los repositorios privados requieren un token de solo lectura configurado en el sitio. Consulta [la configuración y publicación de actualizaciones](docs/updates.md).
+
 ## Autoría y licencia
 
 Tourism Core es desarrollado por **Humble Labz**. Copyright (C) 2026 Humble Labz.
