@@ -24,6 +24,6 @@ El workflow `.github/workflows/release.yml` valida la versión y publica el ZIP.
 No reemplazar `v0.6.0` ni otras etiquetas existentes.
 
 Los sitios con 0.6.0 necesitan una instalación inicial de 0.6.1 para incorporar
-el actualizador. El repositorio es privado: configurar después el token de solo
-lectura según [updates.md](updates.md). Activar las actualizaciones automáticas
+el actualizador. El repositorio es público: no se necesita token. Si se cambia
+a privado, configurar el acceso según [updates.md](updates.md). Activar las actualizaciones automáticas
 en WordPress si se desean instalaciones sin pulsar «Actualizar ahora».

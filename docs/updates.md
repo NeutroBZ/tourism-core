@@ -11,6 +11,8 @@ Instala el ZIP `tourism-core.zip` de la release 0.6.1 o posterior reemplazando
 el plugin existente. Las versiones anteriores no incluyen el actualizador.
 La carpeta instalada debe ser `tourism-core`.
 
+El repositorio es público actualmente: no necesitas configurar tokens.
+
 Si el repositorio es privado, crea un fine-grained personal access token de GitHub
 limitado a este repositorio con **Contents: Read-only**. En el `wp-config.php`
 de cada sitio, antes de cargar WordPress, añade:
