@@ -1,6 +1,28 @@
 # Tourism Core
 
-Plugin de WordPress para contenido turístico y checkout externo. Versión 0.5.1.
+## Entrega a Astro (0.6.0)
+
+WordPress administra los datos; el frontend definitivo será Astro. El tema PHP y sus shortcodes actuales son la referencia local de contenido, no el frontend terminado. Ver [contrato de datos y conservación de URLs](docs/headless.md).
+
+`GET /wp-json/tourism/v1/headless` entrega un contrato versionado para la construcción del sitio, con autenticación de administrador o la capacidad específica `tourism_export_headless`. Incluye contenidos publicados sin contraseña, campos públicos de tours, SEO, schema, traducciones, menús, taxonomías, rutas, aliases y el catálogo de archivos públicos conservados. No entrega opciones o metadatos arbitrarios, usuarios privados, reservas ni mensajes de contacto. Las credenciales solo pertenecen al servidor de construcción.
+
+La entrega de Palotoa conserva `/tour/`, `/tour-category/` y `/tour-tag/` del origen. No cambia los permalinks ni el `noindex` del sitio local. La publicación requiere contrastar las rutas con el sitemap y Search Console del sitio público y ejecutar el rastreo sobre Astro.
+
+## Preparación de migración (0.5.2)
+
+Incluye videos de YouTube y reseñas propias de cada tour en **Videos y reseñas**. La fila vacía permite añadir un elemento al guardar. Las reseñas requieren aprobación explícita; una fila inválida conserva su valor anterior. No se guardan correos de clientes en estos campos públicos.
+
+El tema puede usar `Tourism_Core_Tour_Extras::render_videos($post_id, 'main')`, `render_videos($post_id, 'sidebar')`, `render_sidebar_content($post_id)` y `render_reviews($post_id)`. Solo después de renderizar esos datos debe activar `tourism_core_tour_extras_visible`. Así el mismo conjunto de reseñas determina la valoración visible y `aggregateRating`, sin reutilizar contadores históricos inconsistentes. No se agregan opiniones generales de la agencia como si fueran opiniones de un tour.
+
+Los videos conservan su URL original y tiempo de inicio. Se muestran mediante YouTube con privacidad mejorada. `VideoObject` solo se genera cuando se conocen título, miniatura y fecha original de publicación. No se inventan esos datos.
+
+Los tours importados con `_tourism_preserve_language_values` conservan sus valores por idioma al guardarlos. Los demás tours mantienen la política anterior de sincronización. El importador separado trabaja por defecto en simulación y, al aplicarlo, crea borradores con claves de origen, comprobaciones de archivos e historial de importación. Las reservas antiguas permanecen en un archivo privado; los pagos nuevos siguen usando PayPal y WeTravel.
+
+Prueba aislada: `php tests/tour-extras-test.php`. No sustituye las verificaciones de WordPress, del tema o de los proveedores de pago.
+
+Referencias de marcado: [reseñas](https://developers.google.com/search/docs/appearance/structured-data/review-snippet) y [videos](https://developers.google.com/search/docs/appearance/structured-data/video).
+
+Plugin de WordPress para contenido turístico y checkout externo. Versión 0.5.2.
 
 ## Diseños propios sin HTML del plugin (0.5.1)
 
@@ -46,7 +68,7 @@ Validación local: `php -c <php.ini-del-sitio> tests/wordpress-tour-list-test.ph
 ## Configuración de pagos
 
 1. Abrir **Tourism Core → Payments**. WeTravel y PayPal se configuran juntos, sin selector.
-2. Verificar el ID de cuenta de WeTravel. Para conservar las instalaciones existentes, el valor anterior (`1685394`) sigue siendo el predeterminado hasta cambiarlo.
+2. Configurar únicamente el ID real y verificado de WeTravel. No existe un ID predeterminado; sin él, este proveedor permanece desactivado.
 3. En cada tour, completar únicamente su UUID de WeTravel, si se desea ofrecer ese método.
 4. Para PayPal, configurar un único correo receptor y la moneda (USD o EUR) en Payments. No hay correo PayPal por tour. Configurar el número de WhatsApp con código de país en los datos de la agencia.
 5. Insertar el botón en una página o plantilla.
@@ -109,7 +131,7 @@ El editor de tours tiene una sola caja **Qué llevar**, con una lista de equipaj
 
 ## Datos estructurados de tours
 
-Cada página pública de un tour incluye un único bloque JSON-LD con una entidad de tipos `TouristTrip` y `Product`, una oferta cuando existe un precio válido y la agencia como `TravelAgency` cuando está configurada. No se publica en previews, feeds, borradores ni tours protegidos por contraseña.
+Cada página pública de un tour incluye un único bloque JSON-LD con una entidad de tipos `TouristTrip` y `Product`, una oferta cuando existe un precio válido y la agencia como `TravelAgency` cuando está configurada. Cuando no hay oferta ni reseñas publicables se emite solo `TouristTrip`, sin campos exclusivos de producto. No se publica en previews, feeds, borradores ni tours protegidos por contraseña. Si falta la introducción, la descripción resume el texto del itinerario que se muestra en esa página, sin modificar el contenido guardado.
 
 Los datos salen de los metaboxes existentes:
 
@@ -126,7 +148,11 @@ Los datos salen de los metaboxes existentes:
 
 La nueva caja **Datos estructurados del tour** añade moneda (USD/EUR/PEN o heredar la general), disponibilidad declarada, vigencia del precio, SKU y lugar de salida. No exige rellenar datos opcionales ni inventa disponibilidad, reseñas, estrellas o códigos comerciales. Su diagnóstico señala datos básicos incompletos. La disponibilidad declarada no sincroniza cupos ni bloquea por sí sola los checkouts externos.
 
-Moneda y precio son compartidos con PayPal: una moneda PEN se identifica como PEN y no se cobra como USD/EUR mediante una conversión implícita. El precio cero explícito es válido para Schema.org; un precio vacío, negativo, no numérico o vencido no genera `Offer`. Sin oferta, el tour sigue teniendo ambos tipos, pero no reúne por esa vía los requisitos de un resultado enriquecido de producto.
+Moneda y precio son compartidos con PayPal: una moneda PEN se identifica como PEN y no se cobra como USD/EUR mediante una conversión implícita. El precio cero explícito es válido para Schema.org; un precio vacío, negativo, no numérico o vencido no genera `Offer`. Sin oferta, el tipo `Product` se conserva únicamente si hay reseñas publicables o una valoración agregada. No se inventan precios, disponibilidad ni fechas de vigencia.
+
+**Tours → Revisión de schema** muestra los tours publicados de todos los idiomas, sus precios, valoraciones y datos pendientes, con enlaces para editarlos. También avisa si WordPress mantiene la opción de no indexar y enlaza a Rich Results Test. En Local hay que usar la pestaña de código de esa herramienta; en producción, revisar las URLs definitivas, acceso para Google, canonicals, sitemap y Search Console. No añadir envíos o devoluciones de bienes físicos a estos tours para eliminar avisos de Shopping.
+
+`php -c <php.ini-del-sitio> tests/schema-readiness-test.php` comprueba sin escribir datos el resumen del itinerario, la emisión condicional de Product y la coherencia de ofertas/reseñas. Las pruebas locales no sustituyen Rich Results Test ni una revisión de indexación en producción.
 
 Los campos adicionales tienen un renderizador público `Tourism_Core_Tour_Schema::public_details($post_id)` para mostrar SKU, salida, disponibilidad y vigencia junto al precio. Los temas deben usar también `tourism_core_get_tour_currency($post_id)` para mostrar la misma moneda del marcado. La plantilla `single-tour.php` de travel-theme ya incorpora ambos y conserva los decimales del precio.
 

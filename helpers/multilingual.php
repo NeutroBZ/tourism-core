@@ -9,7 +9,7 @@ add_filter('pll_get_post_types', static function ($types, $settings) {
     return $types;
 }, 10, 2);
 add_filter('pll_get_taxonomies', static function ($taxonomies, $settings) {
-    foreach (array('tour_category', 'tour_type', 'departamento', 'provincia', 'distrito') as $name) $taxonomies[$name] = $name;
+    foreach (array('tour_category', 'tour_type', 'tour_tag', 'departamento', 'provincia', 'distrito') as $name) $taxonomies[$name] = $name;
     return $taxonomies;
 }, 10, 2);
 
@@ -18,6 +18,7 @@ function tourism_core_shared_language_meta() {
 }
 add_filter('pll_copy_post_metas', static function ($metas, $sync = false, $from = 0, $to = 0, $lang = '') {
     if (!in_array(get_post_type($from), array('tour', 'destination'), true)) return $metas;
+    if ($sync && get_post_meta($from, '_tourism_preserve_language_values', true)) return array();
     // Polylang's initial copy includes rich text and nested repeaters, preserving HTML.
     if (!$sync) return array_values(array_unique(array_merge($metas, array_filter(array_keys(get_post_meta($from)), static function ($key) { return str_starts_with($key, 'tourism_') || in_array($key, tourism_core_shared_language_meta(), true); }))));
     // Never synchronize translated text, captions, itineraries or policy repeaters.
@@ -32,6 +33,7 @@ add_filter('pll_translate_post_meta', static function ($value, $key, $lang) {
 // Synchronize only shared values when a tour is saved outside Polylang's editor.
 add_action('save_post_tour', static function ($id) {
     if (!function_exists('pll_get_post_translations') || wp_is_post_revision($id) || wp_is_post_autosave($id)) return;
+    if (get_post_meta($id, '_tourism_preserve_language_values', true)) return;
     static $running = false;
     if ($running) return;
     $running = true;

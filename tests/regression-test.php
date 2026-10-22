@@ -58,7 +58,7 @@ function check( $condition, $message ) {
 	echo "PASS: $message\n";
 }
 $payments = new Tourism_Core_Payment_Providers();
-check( '1685394' === tourism_core_get_wetravel_uid(), 'Legacy WeTravel account preserved' );
+check( '' === tourism_core_get_wetravel_uid(), 'WeTravel stays disabled without a configured account' );
 $GLOBALS['tc_options'][ Tourism_Core_Payment_Providers::OPTION ] = array( 'wetravel_uid' => '987654' );
 check( '987654' === tourism_core_get_wetravel_uid(), 'Configured WeTravel account used' );
 check( '987654' === $payments->sanitize_settings( array( 'wetravel_uid' => 'bad' ) )['wetravel_uid'], 'Invalid account preserves previous value' );

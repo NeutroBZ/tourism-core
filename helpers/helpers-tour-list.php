@@ -11,7 +11,8 @@ function tourism_core_tour_card_fields( $fields ) {
 /** Plain data for custom cards; escape values when rendering your own HTML. */
 function tourism_core_get_tour_card_data( $post_id ) {
 	$post_id = absint( $post_id );
-	if ( 'tour' !== get_post_type( $post_id ) || 'publish' !== get_post_status( $post_id ) || post_password_required( $post_id ) ) { return array(); }
+	$review = function_exists( 'tourism_migration_review' ) && tourism_migration_review() && current_user_can( 'edit_post', $post_id );
+	if ( 'tour' !== get_post_type( $post_id ) || ( 'publish' !== get_post_status( $post_id ) && ! ( $review && 'draft' === get_post_status( $post_id ) ) ) || post_password_required( $post_id ) ) { return array(); }
 	$data = array( 'id' => $post_id, 'title' => get_the_title( $post_id ), 'url' => get_permalink( $post_id ), 'currency' => tourism_core_get_tour_currency( $post_id ) );
 	foreach ( array( 'duration', 'difficulty', 'group_size', 'max_elevation' ) as $field ) {
 		$value = get_post_meta( $post_id, 'tourism_' . $field, true );

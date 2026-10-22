@@ -4,6 +4,14 @@
 	gap: 16px;
 }
 
+.tourism-tour-videos iframe { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border: 0; }
+.tourism-tour-videos figure { margin: 1rem 0; }
+.tourism-tour-videos figcaption { margin-top: .5rem; font-size: .875rem; }
+.tourism-tour-map img { display: block; width: 100%; height: auto; object-fit: contain; }
+.tourism-tour-map figcaption { margin-top: .75rem; }
+.tourism-core-payment-actions .tourism-paypal-note { flex-basis: 100%; margin-top: .5rem; font-size: .875rem; line-height: 1.5; }
+.tourism-tour-reviews article { margin: 1.5rem 0; padding: 1rem 0; border-top: 1px solid #ddd; }
+
 .tourism-core-list--columns-1 { grid-template-columns: minmax(0, 1fr); }
 .tourism-core-list--columns-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .tourism-core-list--columns-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }

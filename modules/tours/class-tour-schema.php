@@ -20,6 +20,19 @@ class Tourism_Core_Tour_Schema {
 
 	private static function meta( $id, $key ) { return self::text( get_post_meta( $id, $key, true ) ); }
 
+	/** Use the visible introduction, or summarize the visible itinerary when it is absent. */
+	public static function description( $id ) {
+		$description = self::meta( $id, 'tourism_intro_description' );
+		if ( '' !== $description ) { return $description; }
+		$rows = get_post_meta( $id, 'tourism_itinerary_items', true );
+		foreach ( is_array( $rows ) ? $rows : array() as $row ) {
+			if ( ! is_array( $row ) ) { continue; }
+			$description = self::text( $row['description'] ?? '' );
+			if ( '' !== $description ) { return wp_trim_words( $description, 55, '…' ); }
+		}
+		return '';
+	}
+
 	private static function url( $url ) {
 		if ( ! is_string( $url ) || ! in_array( wp_parse_url( $url, PHP_URL_SCHEME ), array( 'http', 'https' ), true ) || ! wp_parse_url( $url, PHP_URL_HOST ) ) { return ''; }
 		return esc_url_raw( $url, array( 'http', 'https' ) );
@@ -134,7 +147,7 @@ class Tourism_Core_Tour_Schema {
 		if ( '' === $name ) { return array(); }
 		$url = get_permalink( $id );
 		$tour = array( '@type' => array( 'TouristTrip', 'Product' ), '@id' => $url . '#tour', 'name' => $name, 'url' => $url, 'mainEntityOfPage' => $url );
-		$description = self::meta( $id, 'tourism_intro_description' );
+		$description = self::description( $id );
 		if ( $description ) { $tour['description'] = $description; }
 		$images = self::images( $id );
 		if ( $images ) { $tour['image'] = $images; }
@@ -167,7 +180,18 @@ class Tourism_Core_Tour_Schema {
 		}
 		$graph = array( $tour );
 		if ( $agency ) { $graph[] = $agency; }
-		return apply_filters( 'tourism_core_tour_schema_graph', array( '@context' => 'https://schema.org', '@graph' => $graph ), $id );
+		$graph = apply_filters( 'tourism_core_tour_schema_graph', array( '@context' => 'https://schema.org', '@graph' => $graph ), $id );
+		// Product snippets require an offer, review or aggregate rating. Keep the trip
+		// description without advertising an incomplete Product to search engines.
+		foreach ( $graph['@graph'] as &$entity ) {
+			if ( ( $entity['@id'] ?? '' ) !== $tour['@id'] ) { continue; }
+			if ( empty( $entity['offers'] ) && empty( $entity['review'] ) && empty( $entity['aggregateRating'] ) ) {
+				$entity['@type'] = 'TouristTrip';
+				unset( $entity['sku'], $entity['brand'], $entity['category'], $entity['additionalProperty'] );
+			}
+		}
+		unset( $entity );
+		return $graph;
 	}
 
 	public function output() {
@@ -183,9 +207,9 @@ class Tourism_Core_Tour_Schema {
 	public static function diagnostics( $id ) {
 		$warnings = array();
 		if ( '' === self::text( get_the_title( $id ) ) ) { $warnings[] = 'Falta el nombre del tour.'; }
-		if ( '' === self::meta( $id, 'tourism_intro_description' ) ) { $warnings[] = 'Completa la descripción de la introducción.'; }
+		if ( '' === self::description( $id ) ) { $warnings[] = 'Completa la descripción de la introducción o el itinerario visible.'; }
 		if ( ! self::images( $id ) ) { $warnings[] = 'Añade una imagen de portada, destacada o galería.'; }
-		if ( ! self::offer( $id ) ) { $warnings[] = 'No se publicará Offer: revisa precio, moneda y vigencia. Product seguirá describiendo el tour, pero no tendrá una oferta válida.'; }
+		if ( ! self::offer( $id ) ) { $warnings[] = 'No se publicará Offer: revisa precio, moneda y vigencia. Sin oferta ni reseñas publicables se emitirá solo TouristTrip.'; }
 		if ( ! self::agency() ) { $warnings[] = 'Configura el nombre de la agencia para identificar al proveedor y vendedor.'; }
 		if ( get_post_meta( $id, 'tourism_schema_disabled', true ) ) { $warnings[] = 'El marcado está desactivado para este tour.'; }
 		return $warnings;

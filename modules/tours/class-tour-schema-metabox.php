@@ -11,6 +11,49 @@ class Tourism_Core_Tour_Schema_Metabox {
 		$loader->add_action( 'save_post_tour', $this, 'save', 20, 2 );
 		$loader->add_action( 'admin_notices', $this, 'notice' );
 		$loader->add_filter( 'redirect_post_location', $this, 'redirect' );
+		$loader->add_action( 'admin_menu', $this, 'add_review_page' );
+	}
+
+	public function add_review_page() {
+		add_submenu_page( 'edit.php?post_type=tour', 'Revisión de schema', 'Revisión de schema', 'manage_options', 'tourism-schema-review', array( $this, 'review_page' ) );
+	}
+
+	public function review_page() {
+		if ( ! current_user_can( 'manage_options' ) ) { return; }
+		echo '<div class="wrap"><h1>Revisión de schema de los tours</h1>';
+		echo '<p>Los datos se calculan desde el marcado actual. Completa precios, disponibilidad y reseñas únicamente con información real y visible en cada tour. Guardar el tour actualiza su marcado automáticamente.</p>';
+		if ( '0' === (string) get_option( 'blog_public' ) ) {
+			echo '<div class="notice notice-warning inline"><p>El sitio está configurado para no indexarse. Mantén esta opción en Local; revísala al publicar el dominio definitivo.</p></div>';
+		}
+		echo '<p><a href="https://search.google.com/test/rich-results" target="_blank" rel="noopener noreferrer">Prueba de resultados enriquecidos de Google</a>: en Local usa la pestaña de código con el HTML de una página. Después de publicar, prueba su URL y revisa Search Console. Esta tabla no sustituye la validación de Google ni garantiza estrellas.</p>';
+		$posts = get_posts( array( 'post_type' => 'tour', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC', 'suppress_filters' => true, 'lang' => '' ) );
+		$rows = array(); $offers = 0; $ratings = 0; $products = 0;
+		foreach ( $posts as $post ) {
+			$graph = Tourism_Core_Tour_Schema::build( $post->ID );
+			$entity = $graph['@graph'][0] ?? array();
+			$is_product = in_array( 'Product', (array) ( $entity['@type'] ?? array() ), true );
+			$products += (int) $is_product;
+			$offers += (int) ! empty( $entity['offers'] );
+			$ratings += (int) ! empty( $entity['aggregateRating'] );
+			$notes = Tourism_Core_Tour_Schema::diagnostics( $post->ID );
+			if ( $entity && ! $is_product ) { $notes[] = 'Solo TouristTrip: para Product falta una oferta o reseña real.'; }
+			if ( empty( $entity['aggregateRating'] ) ) { $notes[] = 'Sin valoración publicable; no se generan estrellas.'; }
+			if ( empty( $entity['offers']['availability'] ) ) { $notes[] = 'Disponibilidad sin especificar (opcional para el fragmento de producto).'; }
+			$rows[] = array( $post, $entity, $notes );
+		}
+		echo '<p><strong>' . esc_html( sprintf( '%d tours publicados · %d con Product · %d con precio y moneda · %d con valoración', count( $posts ), $products, $offers, $ratings ) ) . '</strong></p>';
+		echo '<table class="widefat striped"><thead><tr><th>Tour</th><th>Oferta</th><th>Valoración</th><th>Datos por revisar</th></tr></thead><tbody>';
+		foreach ( $rows as $row ) {
+			list( $post, $entity, $notes ) = $row;
+			$offer = $entity['offers'] ?? array(); $rating = $entity['aggregateRating'] ?? array();
+			echo '<tr><td><a href="' . esc_url( get_edit_post_link( $post->ID ) ) . '">' . esc_html( get_the_title( $post ) ) . '</a><br><a href="' . esc_url( get_permalink( $post ) ) . '" target="_blank" rel="noopener noreferrer">Ver tour</a></td>';
+			echo '<td>' . esc_html( $offer ? $offer['price'] . ' ' . $offer['priceCurrency'] : 'Sin oferta válida' ) . '</td>';
+			echo '<td>' . esc_html( $rating ? $rating['ratingValue'] . '/5 · ' . $rating['reviewCount'] . ' reseñas' : 'Sin valoración' ) . '</td><td>';
+			foreach ( $notes as $note ) { echo '<p>' . esc_html( $note ) . '</p>'; }
+			if ( ! $notes ) { echo 'Datos básicos completos.'; }
+			echo '</td></tr>';
+		}
+		echo '</tbody></table></div>';
 	}
 
 	public static function availability() {

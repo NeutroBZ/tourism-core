@@ -24,9 +24,9 @@ class Tourism_Core_Payment_Providers {
 	public static function settings() {
 		$stored = get_option( self::OPTION, array() );
 		return wp_parse_args( is_array( $stored ) ? $stored : array(), array(
-			// Preserve the account used by existing WeTravel buttons.
-			'wetravel_uid' => '1685394',
+			'wetravel_uid' => '',
 			'paypal_email' => '',
+			'paypal_me_url' => '',
 			'paypal_currency' => 'USD',
 		) );
 	}
@@ -41,6 +41,12 @@ class Tourism_Core_Payment_Providers {
 
 	public static function valid_email( $value ) {
 		return is_string( $value ) && is_email( trim( $value ) ) ? sanitize_email( trim( $value ) ) : '';
+	}
+
+	public static function valid_paypal_link( $value ) {
+		if ( ! is_string( $value ) ) { return ''; }
+		$value = trim( $value );
+		return preg_match( '~^https://(?:(?:www\.)?paypal\.com/paypalme/|paypal\.me/)[A-Za-z0-9_-]+/?$~D', $value ) ? $value : '';
 	}
 
 	public function sanitize_settings( $raw ) {
@@ -59,9 +65,15 @@ class Tourism_Core_Payment_Providers {
 			$email = $previous['paypal_email'];
 		}
 		$currency = $raw['paypal_currency'] ?? $previous['paypal_currency'];
+		$paypal_link = array_key_exists( 'paypal_me_url', $raw ) ? self::valid_paypal_link( $raw['paypal_me_url'] ) : $previous['paypal_me_url'];
+		if ( array_key_exists( 'paypal_me_url', $raw ) && '' === $paypal_link && ( ! is_string( $raw['paypal_me_url'] ) || '' !== trim( $raw['paypal_me_url'] ) ) ) {
+			add_settings_error( self::OPTION, 'invalid_paypal_link', __( 'Enter a base PayPal.me profile URL without an amount.', TOURISM_CORE_TD ) );
+			$paypal_link = $previous['paypal_me_url'];
+		}
 		return array(
 			'wetravel_uid' => trim( $uid ),
 			'paypal_email' => $email,
+			'paypal_me_url' => $paypal_link,
 			'paypal_currency' => in_array( $currency, array( 'USD', 'EUR' ), true ) ? $currency : $previous['paypal_currency'],
 		);
 	}
@@ -85,7 +97,7 @@ class Tourism_Core_Payment_Providers {
 					</td></tr>
 					<tr><th><label for="tc-paypal-email"><?php esc_html_e( 'PayPal email', TOURISM_CORE_TD ); ?></label></th><td>
 						<input id="tc-paypal-email" name="tourism_core_payments[paypal_email]" type="email" class="regular-text" value="<?php echo esc_attr( $settings['paypal_email'] ); ?>" />
-						<p class="description"><?php esc_html_e( 'One receiving email for all tours. Leave blank to hide PayPal.', TOURISM_CORE_TD ); ?></p>
+						<p class="description"><?php esc_html_e( 'One receiving email for all tours. Leave blank to use PayPal.me, if provided. Leave both fields blank to hide PayPal.', TOURISM_CORE_TD ); ?></p>
 					</td></tr>
 					<tr><th><label for="tc-paypal-currency"><?php esc_html_e( 'PayPal currency', TOURISM_CORE_TD ); ?></label></th><td>
 						<select id="tc-paypal-currency" name="tourism_core_payments[paypal_currency]">
@@ -93,7 +105,11 @@ class Tourism_Core_Payment_Providers {
 								<option value="<?php echo esc_attr( $currency ); ?>" <?php selected( $settings['paypal_currency'], $currency ); ?>><?php echo esc_html( $currency ); ?></option>
 							<?php endforeach; ?>
 						</select>
-						<p class="description"><?php esc_html_e( 'PayPal uses the current tour price. Enter tour prices in this currency; no currency conversion is performed.', TOURISM_CORE_TD ); ?></p>
+						<p class="description"><?php esc_html_e( 'Email checkout uses the current tour price in this currency; no currency conversion is performed. With PayPal.me, the traveler enters the agreed amount.', TOURISM_CORE_TD ); ?></p>
+					</td></tr>
+					<tr><th><label for="tc-paypal-me">PayPal.me</label></th><td>
+						<input id="tc-paypal-me" name="tourism_core_payments[paypal_me_url]" type="url" class="regular-text" value="<?php echo esc_attr( $settings['paypal_me_url'] ); ?>" />
+						<p class="description"><?php esc_html_e( 'Optional existing PayPal.me link when no receiving email is configured. The traveler enters the agreed amount on PayPal; no amount is charged automatically.', TOURISM_CORE_TD ); ?></p>
 					</td></tr>
 				</table>
 				<p><?php esc_html_e( 'Set the WhatsApp number, including country code, in Tourism Core → Configuration → Agency details. It is used when no payment method is available.', TOURISM_CORE_TD ); ?></p>
@@ -109,6 +125,7 @@ class Tourism_Core_Payment_Providers {
 	public static function paypal_url( $post_id ) {
 		$settings = self::settings();
 		$email = self::valid_email( $settings['paypal_email'] );
+		if ( '' === $email ) { return self::valid_paypal_link( $settings['paypal_me_url'] ); }
 		$price = get_post_meta( $post_id, 'tourism_price_from', true );
 		$currency = tourism_core_get_tour_currency( $post_id );
 		// Old per-tour emails and links must not override the general settings.
@@ -170,6 +187,9 @@ class Tourism_Core_Payment_Providers {
 
 	public static function render_paypal( $args ) {
 		$url = self::paypal_url( $args['post_id'] );
+		if ( $url && preg_match( '~paypalme/|paypal\.me/~', $url ) ) {
+			return sprintf( '<a class="%s" href="%s" target="_blank" rel="noopener noreferrer">%s</a><p class="tourism-paypal-note">%s</p>', esc_attr( $args['class'] ), esc_url( $url ), esc_html__( 'Pay with PayPal', TOURISM_CORE_TD ), esc_html__( 'Confirm the agreed amount before paying on PayPal.', TOURISM_CORE_TD ) );
+		}
 		return '' === $url ? '' : sprintf( '<a class="%s" href="%s">%s</a>', esc_attr( $args['class'] ), esc_url( $url ), esc_html( $args['label'] ) );
 	}
 

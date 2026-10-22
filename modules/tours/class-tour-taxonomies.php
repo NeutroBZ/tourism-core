@@ -10,6 +10,11 @@ class Tourism_Core_Tour_Taxonomies {
 	}
 
 	public function register_taxonomies() {
+		register_taxonomy( 'tour_tag', array( 'tour' ), array(
+			'label' => __( 'Etiquetas de tours', TOURISM_CORE_TD ), 'public' => true,
+			'hierarchical' => false, 'show_in_rest' => true, 'show_admin_column' => true,
+			'rewrite' => array( 'slug' => 'tour_tag' ),
+		) );
 
 		$this->register_taxonomy(
 			'tour_category',

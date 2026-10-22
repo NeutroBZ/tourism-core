@@ -16,11 +16,15 @@ require_once TOURISM_CORE_PATH . 'modules/destinations/class-destination-cpt.php
 require_once TOURISM_CORE_PATH . 'modules/destinations/class-destination-metaboxes.php';
 require_once TOURISM_CORE_PATH . 'modules/destinations/class-destination-taxonomies.php';
 require_once TOURISM_CORE_PATH . 'modules/emails/class-email-manager.php';
+require_once TOURISM_CORE_PATH . 'modules/emails/class-contact-mail.php';
 require_once TOURISM_CORE_PATH . 'modules/bookings/class-bookings-module.php';
 require_once TOURISM_CORE_PATH . 'admin/class-admin.php';
 require_once TOURISM_CORE_PATH . 'helpers/helpers-tours.php';
 require_once TOURISM_CORE_PATH . 'helpers/helpers-tour-list.php';
 require_once TOURISM_CORE_PATH . 'helpers/multilingual.php';
+require_once TOURISM_CORE_PATH . 'modules/headless/class-headless-export.php';
+require_once TOURISM_CORE_PATH . 'modules/headless/class-headless-reviews.php';
+require_once TOURISM_CORE_PATH . 'modules/headless/class-headless-contact.php';
 
 class Tourism_Core_Plugin {
 	/** @var self|null */
@@ -65,6 +69,10 @@ class Tourism_Core_Plugin {
 	}
 
 	public function register_core() {
+		$headless = new Tourism_Core_Headless_Export();
+		$headless->register( $this->loader );
+		$headless_contact = new Tourism_Core_Headless_Contact();
+		$headless_contact->register( $this->loader );
 		$payments = new Tourism_Core_Payment_Providers();
 		$payments->register( $this->loader );
 

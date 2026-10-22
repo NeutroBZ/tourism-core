@@ -9,10 +9,13 @@ require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-taxonomies.php';
 require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-metaboxes.php';
 require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-schema.php';
 require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-schema-metabox.php';
+require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-extras.php';
 require_once TOURISM_CORE_PATH . 'modules/tours/class-tour-editor.php';
 
 class Tourism_Core_Module_Tours {
 	public function register( Tourism_Core_Loader $loader ) {
+		$extras = new Tourism_Core_Tour_Extras();
+		$extras->register( $loader );
 		$loader->add_action( 'init', $this, 'register_cpt' );
 		$loader->add_action( 'init', $this, 'register_meta' );
 
