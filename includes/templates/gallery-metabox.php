@@ -115,7 +115,7 @@ $key = $gc['post_key'];
 
 	<p>
 		<button type="button" id="<?php echo esc_attr($gc['add_id']); ?>" class="button button-primary">
-			<?php esc_html_e('Add Image', TOURISM_CORE_TD); ?>
+			<?php esc_html_e('Añadir imágenes', TOURISM_CORE_TD); ?>
 		</button>
 	</p>
 

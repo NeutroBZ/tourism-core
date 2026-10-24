@@ -1,5 +1,5 @@
 /**
- * Shared gallery metabox behaviour (sortable images + WP media replace).
+	 * Shared gallery metabox behaviour (sortable images + WP media selection).
  * Configured via window.TourismCoreGalleries array of config objects.
  */
 (function ($) {
@@ -25,6 +25,15 @@
 			return;
 		}
 
+		function setImage($item, att) {
+			var url = att.sizes && att.sizes.medium && att.sizes.medium.url ? att.sizes.medium.url : att.url;
+			$item.find('.' + config.fieldIdClass).val(String(att.id));
+			$item.find('.' + config.fieldUrlClass).val(att.url);
+			var $preview = $item.find('.' + config.previewClass);
+			$preview.find('.' + config.noImageClass + ', img').remove();
+			$preview.prepend($('<img>', { src: url, alt: '' }));
+		}
+
 		$c.sortable({
 			items: '> .' + config.itemClass,
 			cancel: 'input,textarea,button,select,option',
@@ -39,8 +48,24 @@
 			if (!$tpl.length) {
 				return;
 			}
-			$c.append($tpl.clone(true, true));
-			renumber(config);
+			var media = wp.media({
+				title: 'Seleccionar imágenes',
+				button: { text: 'Añadir a la galería' },
+				library: { type: 'image' },
+				multiple: true
+			});
+			media.on('select', function () {
+				media.state().get('selection').each(function (attachment) {
+					var att = attachment.toJSON();
+					var $item = $tpl.clone();
+					setImage($item, att);
+					$item.find('.' + config.detailsClass + ' input[type="text"]').val(att.title || '');
+					$item.find('.' + config.detailsClass + ' textarea').val(att.caption || '');
+					$c.append($item);
+				});
+				renumber(config);
+			});
+			media.open();
 		});
 
 		$(document).on('click', '.' + config.removeClass, function (e) {
@@ -55,16 +80,12 @@
 			var media = wp.media({
 				title: 'Select image',
 				button: { text: 'Use image' },
+				library: { type: 'image' },
 				multiple: false
 			});
 			media.on('select', function () {
 				var att = media.state().get('selection').first().toJSON();
-				var url = att.sizes && att.sizes.medium && att.sizes.medium.url ? att.sizes.medium.url : att.url;
-				$item.find('.' + config.fieldIdClass).val(String(att.id));
-				$item.find('.' + config.fieldUrlClass).val(att.url);
-				$item.find('.' + config.previewClass + ' .' + config.noImageClass).remove();
-				$item.find('.' + config.previewClass + ' img').remove();
-				$item.find('.' + config.previewClass).prepend('<img src="' + url + '" alt="" />');
+				setImage($item, att);
 			});
 			media.open();
 		});
