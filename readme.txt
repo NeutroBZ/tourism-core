@@ -1,6 +1,6 @@
 === Tourism Core ===
 Tags: tourism, tours, bookings
-Stable tag: 0.6.4
+Stable tag: 0.6.5
 Requires at least: 5.8
 Requires PHP: 8.0
 License: GPL-2.0-or-later
@@ -27,6 +27,10 @@ Preserve applicable copyright and license notices and identify changes
 in modified files as required by the license.
 
 == Changelog ==
+
+= 0.6.5 =
+Select multiple gallery images and assign images to tour categories.
+Published for native WordPress update verification from 0.6.4.
 
 = 0.6.4 =
 Verification release for native WordPress updates from the corrected 0.6.3 build.
